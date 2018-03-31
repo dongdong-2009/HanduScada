@@ -1,0 +1,194 @@
+[
+  {
+    "Key": {
+      "x": 0,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16385,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "Io",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 0,
+      "ItemShowType": 0,
+      "ItemSize": 0,
+      "ItemType": 10,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 1,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16386,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "Ia",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 1,
+      "ItemShowType": 0,
+      "ItemSize": 0,
+      "ItemType": 10,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 2,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16387,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "Ib",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 2,
+      "ItemShowType": 0,
+      "ItemSize": 0,
+      "ItemType": 10,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 3,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16388,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "Ic",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 3,
+      "ItemShowType": 0,
+      "ItemSize": 0,
+      "ItemType": 10,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 4,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16389,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "Up",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 4,
+      "ItemShowType": 0,
+      "ItemSize": 0,
+      "ItemType": 10,
+      "ItemUnit": "kV",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 5,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16390,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "I2",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 5,
+      "ItemShowType": 0,
+      "ItemSize": 0,
+      "ItemType": 10,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 6,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16391,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "Ubat",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 6,
+      "ItemShowType": 0,
+      "ItemSize": 0,
+      "ItemType": 10,
+      "ItemUnit": "KV",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 7,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16392,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "Udr",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 7,
+      "ItemShowType": 0,
+      "ItemSize": 0,
+      "ItemType": 10,
+      "ItemUnit": "KV",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  }
+]

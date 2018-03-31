@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="main.com.handu.scada.db.mapper.DeviceDtuMapper">
+  <resultMap id="BaseResultMap" type="main.com.handu.scada.db.bean.DeviceDtu">
+    <id column="Oid" jdbcType="VARCHAR" property="oid" />
+    <result column="Name" jdbcType="VARCHAR" property="name" />
+    <result column="DepartmentId" jdbcType="VARCHAR" property="departmentid" />
+    <result column="Address" jdbcType="VARCHAR" property="address" />
+    <result column="TerminalId" jdbcType="VARCHAR" property="terminalid" />
+    <result column="PhoneNum" jdbcType="VARCHAR" property="phonenum" />
+    <result column="IPAddress" jdbcType="VARCHAR" property="ipaddress" />
+    <result column="BackIP" jdbcType="VARCHAR" property="backip" />
+    <result column="PORT" jdbcType="INTEGER" property="port" />
+    <result column="WorkDateTime" jdbcType="TIMESTAMP" property="workdatetime" />
+    <result column="Validate" jdbcType="VARCHAR" property="validate" />
+    <result column="SortCode" jdbcType="INTEGER" property="sortcode" />
+    <result column="DeleteMark" jdbcType="INTEGER" property="deletemark" />
+    <result column="EnabledMark" jdbcType="INTEGER" property="enabledmark" />
+    <result column="Description" jdbcType="VARCHAR" property="description" />
+    <result column="CreateDate" jdbcType="TIMESTAMP" property="createdate" />
+    <result column="CreateUserId" jdbcType="VARCHAR" property="createuserid" />
+    <result column="CreateUserName" jdbcType="VARCHAR" property="createusername" />
+    <result column="ModifyDate" jdbcType="TIMESTAMP" property="modifydate" />
+    <result column="ModifyUserId" jdbcType="VARCHAR" property="modifyuserid" />
+    <result column="ModifyUserName" jdbcType="VARCHAR" property="modifyusername" />
+    <result column="OrganizeId" jdbcType="VARCHAR" property="organizeid" />
+    <result column="Mfrs" jdbcType="VARCHAR" property="mfrs" />
+    <result column="DtuModel" jdbcType="VARCHAR" property="dtumodel" />
+    <result column="TelecomOperator" jdbcType="VARCHAR" property="telecomoperator" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    Oid, Name, DepartmentId, Address, TerminalId, PhoneNum, IPAddress, BackIP, PORT, 
+    WorkDateTime, Validate, SortCode, DeleteMark, EnabledMark, Description, CreateDate, 
+    CreateUserId, CreateUserName, ModifyDate, ModifyUserId, ModifyUserName, OrganizeId, 
+    Mfrs, DtuModel, TelecomOperator
+  </sql>
+  <select id="selectByExample" parameterType="main.com.handu.scada.db.bean.DeviceDtuExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from device_dtu
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from device_dtu
+    where Oid = #{oid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from device_dtu
+    where Oid = #{oid,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="main.com.handu.scada.db.bean.DeviceDtuExample">
+    delete from device_dtu
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="main.com.handu.scada.db.bean.DeviceDtu">
+    insert into device_dtu (Oid, Name, DepartmentId, 
+      Address, TerminalId, PhoneNum, 
+      IPAddress, BackIP, PORT, 
+      WorkDateTime, Validate, SortCode, 
+      DeleteMark, EnabledMark, Description, 
+      CreateDate, CreateUserId, CreateUserName, 
+      ModifyDate, ModifyUserId, ModifyUserName, 
+      OrganizeId, Mfrs, DtuModel, 
+      TelecomOperator)
+    values (#{oid,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{departmentid,jdbcType=VARCHAR}, 
+      #{address,jdbcType=VARCHAR}, #{terminalid,jdbcType=VARCHAR}, #{phonenum,jdbcType=VARCHAR}, 
+      #{ipaddress,jdbcType=VARCHAR}, #{backip,jdbcType=VARCHAR}, #{port,jdbcType=INTEGER}, 
+      #{workdatetime,jdbcType=TIMESTAMP}, #{validate,jdbcType=VARCHAR}, #{sortcode,jdbcType=INTEGER}, 
+      #{deletemark,jdbcType=INTEGER}, #{enabledmark,jdbcType=INTEGER}, #{description,jdbcType=VARCHAR}, 
+      #{createdate,jdbcType=TIMESTAMP}, #{createuserid,jdbcType=VARCHAR}, #{createusername,jdbcType=VARCHAR}, 
+      #{modifydate,jdbcType=TIMESTAMP}, #{modifyuserid,jdbcType=VARCHAR}, #{modifyusername,jdbcType=VARCHAR}, 
+      #{organizeid,jdbcType=VARCHAR}, #{mfrs,jdbcType=VARCHAR}, #{dtumodel,jdbcType=VARCHAR}, 
+      #{telecomoperator,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="main.com.handu.scada.db.bean.DeviceDtu">
+    insert into device_dtu
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="oid != null">
+        Oid,
+      </if>
+      <if test="name != null">
+        Name,
+      </if>
+      <if test="departmentid != null">
+        DepartmentId,
+      </if>
+      <if test="address != null">
+        Address,
+      </if>
+      <if test="terminalid != null">
+        TerminalId,
+      </if>
+      <if test="phonenum != null">
+        PhoneNum,
+      </if>
+      <if test="ipaddress != null">
+        IPAddress,
+      </if>
+      <if test="backip != null">
+        BackIP,
+      </if>
+      <if test="port != null">
+        PORT,
+      </if>
+      <if test="workdatetime != null">
+        WorkDateTime,
+      </if>
+      <if test="validate != null">
+        Validate,
+      </if>
+      <if test="sortcode != null">
+        SortCode,
+      </if>
+      <if test="deletemark != null">
+        DeleteMark,
+      </if>
+      <if test="enabledmark != null">
+        EnabledMark,
+      </if>
+      <if test="description != null">
+        Description,
+      </if>
+      <if test="createdate != null">
+        CreateDate,
+      </if>
+      <if test="createuserid != null">
+        CreateUserId,
+      </if>
+      <if test="createusername != null">
+        CreateUserName,
+      </if>
+      <if test="modifydate != null">
+        ModifyDate,
+      </if>
+      <if test="modifyuserid != null">
+        ModifyUserId,
+      </if>
+      <if test="modifyusername != null">
+        ModifyUserName,
+      </if>
+      <if test="organizeid != null">
+        OrganizeId,
+      </if>
+      <if test="mfrs != null">
+        Mfrs,
+      </if>
+      <if test="dtumodel != null">
+        DtuModel,
+      </if>
+      <if test="telecomoperator != null">
+        TelecomOperator,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="oid != null">
+        #{oid,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="departmentid != null">
+        #{departmentid,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null">
+        #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="terminalid != null">
+        #{terminalid,jdbcType=VARCHAR},
+      </if>
+      <if test="phonenum != null">
+        #{phonenum,jdbcType=VARCHAR},
+      </if>
+      <if test="ipaddress != null">
+        #{ipaddress,jdbcType=VARCHAR},
+      </if>
+      <if test="backip != null">
+        #{backip,jdbcType=VARCHAR},
+      </if>
+      <if test="port != null">
+        #{port,jdbcType=INTEGER},
+      </if>
+      <if test="workdatetime != null">
+        #{workdatetime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="validate != null">
+        #{validate,jdbcType=VARCHAR},
+      </if>
+      <if test="sortcode != null">
+        #{sortcode,jdbcType=INTEGER},
+      </if>
+      <if test="deletemark != null">
+        #{deletemark,jdbcType=INTEGER},
+      </if>
+      <if test="enabledmark != null">
+        #{enabledmark,jdbcType=INTEGER},
+      </if>
+      <if test="description != null">
+        #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null">
+        #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createuserid != null">
+        #{createuserid,jdbcType=VARCHAR},
+      </if>
+      <if test="createusername != null">
+        #{createusername,jdbcType=VARCHAR},
+      </if>
+      <if test="modifydate != null">
+        #{modifydate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyuserid != null">
+        #{modifyuserid,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyusername != null">
+        #{modifyusername,jdbcType=VARCHAR},
+      </if>
+      <if test="organizeid != null">
+        #{organizeid,jdbcType=VARCHAR},
+      </if>
+      <if test="mfrs != null">
+        #{mfrs,jdbcType=VARCHAR},
+      </if>
+      <if test="dtumodel != null">
+        #{dtumodel,jdbcType=VARCHAR},
+      </if>
+      <if test="telecomoperator != null">
+        #{telecomoperator,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="main.com.handu.scada.db.bean.DeviceDtuExample" resultType="java.lang.Long">
+    select count(*) from device_dtu
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update device_dtu
+    <set>
+      <if test="tripEventRecord.oid != null">
+        Oid = #{tripEventRecord.oid,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.name != null">
+        Name = #{tripEventRecord.name,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.departmentid != null">
+        DepartmentId = #{tripEventRecord.departmentid,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.address != null">
+        Address = #{tripEventRecord.address,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.terminalid != null">
+        TerminalId = #{tripEventRecord.terminalid,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.phonenum != null">
+        PhoneNum = #{tripEventRecord.phonenum,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.ipaddress != null">
+        IPAddress = #{tripEventRecord.ipaddress,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.backip != null">
+        BackIP = #{tripEventRecord.backip,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.port != null">
+        PORT = #{tripEventRecord.port,jdbcType=INTEGER},
+      </if>
+      <if test="tripEventRecord.workdatetime != null">
+        WorkDateTime = #{tripEventRecord.workdatetime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="tripEventRecord.validate != null">
+        Validate = #{tripEventRecord.validate,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.sortcode != null">
+        SortCode = #{tripEventRecord.sortcode,jdbcType=INTEGER},
+      </if>
+      <if test="tripEventRecord.deletemark != null">
+        DeleteMark = #{tripEventRecord.deletemark,jdbcType=INTEGER},
+      </if>
+      <if test="tripEventRecord.enabledmark != null">
+        EnabledMark = #{tripEventRecord.enabledmark,jdbcType=INTEGER},
+      </if>
+      <if test="tripEventRecord.description != null">
+        Description = #{tripEventRecord.description,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.createdate != null">
+        CreateDate = #{tripEventRecord.createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="tripEventRecord.createuserid != null">
+        CreateUserId = #{tripEventRecord.createuserid,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.createusername != null">
+        CreateUserName = #{tripEventRecord.createusername,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.modifydate != null">
+        ModifyDate = #{tripEventRecord.modifydate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="tripEventRecord.modifyuserid != null">
+        ModifyUserId = #{tripEventRecord.modifyuserid,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.modifyusername != null">
+        ModifyUserName = #{tripEventRecord.modifyusername,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.organizeid != null">
+        OrganizeId = #{tripEventRecord.organizeid,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.mfrs != null">
+        Mfrs = #{tripEventRecord.mfrs,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.dtumodel != null">
+        DtuModel = #{tripEventRecord.dtumodel,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.telecomoperator != null">
+        TelecomOperator = #{tripEventRecord.telecomoperator,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update device_dtu
+    set Oid = #{tripEventRecord.oid,jdbcType=VARCHAR},
+      Name = #{tripEventRecord.name,jdbcType=VARCHAR},
+      DepartmentId = #{tripEventRecord.departmentid,jdbcType=VARCHAR},
+      Address = #{tripEventRecord.address,jdbcType=VARCHAR},
+      TerminalId = #{tripEventRecord.terminalid,jdbcType=VARCHAR},
+      PhoneNum = #{tripEventRecord.phonenum,jdbcType=VARCHAR},
+      IPAddress = #{tripEventRecord.ipaddress,jdbcType=VARCHAR},
+      BackIP = #{tripEventRecord.backip,jdbcType=VARCHAR},
+      PORT = #{tripEventRecord.port,jdbcType=INTEGER},
+      WorkDateTime = #{tripEventRecord.workdatetime,jdbcType=TIMESTAMP},
+      Validate = #{tripEventRecord.validate,jdbcType=VARCHAR},
+      SortCode = #{tripEventRecord.sortcode,jdbcType=INTEGER},
+      DeleteMark = #{tripEventRecord.deletemark,jdbcType=INTEGER},
+      EnabledMark = #{tripEventRecord.enabledmark,jdbcType=INTEGER},
+      Description = #{tripEventRecord.description,jdbcType=VARCHAR},
+      CreateDate = #{tripEventRecord.createdate,jdbcType=TIMESTAMP},
+      CreateUserId = #{tripEventRecord.createuserid,jdbcType=VARCHAR},
+      CreateUserName = #{tripEventRecord.createusername,jdbcType=VARCHAR},
+      ModifyDate = #{tripEventRecord.modifydate,jdbcType=TIMESTAMP},
+      ModifyUserId = #{tripEventRecord.modifyuserid,jdbcType=VARCHAR},
+      ModifyUserName = #{tripEventRecord.modifyusername,jdbcType=VARCHAR},
+      OrganizeId = #{tripEventRecord.organizeid,jdbcType=VARCHAR},
+      Mfrs = #{tripEventRecord.mfrs,jdbcType=VARCHAR},
+      DtuModel = #{tripEventRecord.dtumodel,jdbcType=VARCHAR},
+      TelecomOperator = #{tripEventRecord.telecomoperator,jdbcType=VARCHAR}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="main.com.handu.scada.db.bean.DeviceDtu">
+    update device_dtu
+    <set>
+      <if test="name != null">
+        Name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="departmentid != null">
+        DepartmentId = #{departmentid,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null">
+        Address = #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="terminalid != null">
+        TerminalId = #{terminalid,jdbcType=VARCHAR},
+      </if>
+      <if test="phonenum != null">
+        PhoneNum = #{phonenum,jdbcType=VARCHAR},
+      </if>
+      <if test="ipaddress != null">
+        IPAddress = #{ipaddress,jdbcType=VARCHAR},
+      </if>
+      <if test="backip != null">
+        BackIP = #{backip,jdbcType=VARCHAR},
+      </if>
+      <if test="port != null">
+        PORT = #{port,jdbcType=INTEGER},
+      </if>
+      <if test="workdatetime != null">
+        WorkDateTime = #{workdatetime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="validate != null">
+        Validate = #{validate,jdbcType=VARCHAR},
+      </if>
+      <if test="sortcode != null">
+        SortCode = #{sortcode,jdbcType=INTEGER},
+      </if>
+      <if test="deletemark != null">
+        DeleteMark = #{deletemark,jdbcType=INTEGER},
+      </if>
+      <if test="enabledmark != null">
+        EnabledMark = #{enabledmark,jdbcType=INTEGER},
+      </if>
+      <if test="description != null">
+        Description = #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null">
+        CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createuserid != null">
+        CreateUserId = #{createuserid,jdbcType=VARCHAR},
+      </if>
+      <if test="createusername != null">
+        CreateUserName = #{createusername,jdbcType=VARCHAR},
+      </if>
+      <if test="modifydate != null">
+        ModifyDate = #{modifydate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyuserid != null">
+        ModifyUserId = #{modifyuserid,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyusername != null">
+        ModifyUserName = #{modifyusername,jdbcType=VARCHAR},
+      </if>
+      <if test="organizeid != null">
+        OrganizeId = #{organizeid,jdbcType=VARCHAR},
+      </if>
+      <if test="mfrs != null">
+        Mfrs = #{mfrs,jdbcType=VARCHAR},
+      </if>
+      <if test="dtumodel != null">
+        DtuModel = #{dtumodel,jdbcType=VARCHAR},
+      </if>
+      <if test="telecomoperator != null">
+        TelecomOperator = #{telecomoperator,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where Oid = #{oid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="main.com.handu.scada.db.bean.DeviceDtu">
+    update device_dtu
+    set Name = #{name,jdbcType=VARCHAR},
+      DepartmentId = #{departmentid,jdbcType=VARCHAR},
+      Address = #{address,jdbcType=VARCHAR},
+      TerminalId = #{terminalid,jdbcType=VARCHAR},
+      PhoneNum = #{phonenum,jdbcType=VARCHAR},
+      IPAddress = #{ipaddress,jdbcType=VARCHAR},
+      BackIP = #{backip,jdbcType=VARCHAR},
+      PORT = #{port,jdbcType=INTEGER},
+      WorkDateTime = #{workdatetime,jdbcType=TIMESTAMP},
+      Validate = #{validate,jdbcType=VARCHAR},
+      SortCode = #{sortcode,jdbcType=INTEGER},
+      DeleteMark = #{deletemark,jdbcType=INTEGER},
+      EnabledMark = #{enabledmark,jdbcType=INTEGER},
+      Description = #{description,jdbcType=VARCHAR},
+      CreateDate = #{createdate,jdbcType=TIMESTAMP},
+      CreateUserId = #{createuserid,jdbcType=VARCHAR},
+      CreateUserName = #{createusername,jdbcType=VARCHAR},
+      ModifyDate = #{modifydate,jdbcType=TIMESTAMP},
+      ModifyUserId = #{modifyuserid,jdbcType=VARCHAR},
+      ModifyUserName = #{modifyusername,jdbcType=VARCHAR},
+      OrganizeId = #{organizeid,jdbcType=VARCHAR},
+      Mfrs = #{mfrs,jdbcType=VARCHAR},
+      DtuModel = #{dtumodel,jdbcType=VARCHAR},
+      TelecomOperator = #{telecomoperator,jdbcType=VARCHAR}
+    where Oid = #{oid,jdbcType=VARCHAR}
+  </update>
+</mapper>

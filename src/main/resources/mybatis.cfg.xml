@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <!-- 引入外部配置文件 -->
+    <properties resource="db.properties"/>
+    <settings>
+        <setting name="callSettersOnNulls" value="true"/>
+        <!--一级缓存-->
+        <setting name="localCacheScope" value="STATEMENT"/>
+        <!--二级缓存-->
+        <setting name="cacheEnabled" value="true"/>
+    </settings>
+
+
+    <!-- 配置mybatis运行环境 -->
+    <typeAliases>
+        <typeAlias type="main.com.handu.scada.db.data.source.DBCPDataSourceFactory" alias="DBCP"/>
+    </typeAliases>
+
+    <environments default="dbcp">
+
+        <environment id="mysql">
+            <!-- type="JDBC" 代表使用JDBC的提交和回滚来管理事务 -->
+            <transactionManager type="JDBC"/>
+            <!-- mybatis提供了3种数据源类型，分别是：POOLED,UNPOOLED,JNDI -->
+            <!-- POOLED 表示支持JDBC数据源连接池 -->
+            <!-- UNPOOLED 表示不支持数据源连接池 -->
+            <!-- JNDI 表示支持外部数据源连接池 -->
+            <dataSource type="POOLED">
+                <property name="driver" value="${jdbc.driver}"/>
+                <property name="url" value="${jdbc.url}"/>
+                <property name="username" value="${jdbc.username}"/>
+                <property name="password" value="${jdbc.password}"/>
+
+                <property name="poolPingEnabled" value="true"/>
+                <property name="poolPingQuery" value="select 1 from dual"/>
+                <property name="poolPingConnectionsNotUsedFor" value="300000"/>
+
+                <property name="poolMaximumActiveConnections" value="300"/>
+                <property name="poolMaximumIdleConnections" value="10"/>
+            </dataSource>
+        </environment>
+
+        <!--自定义数据源DBCP-->
+        <environment id="dbcp">
+            <transactionManager type="JDBC"/>
+            <dataSource type="DBCP">
+                <property name="driver" value="${jdbc.driver}"/>
+                <property name="url" value="${jdbc.url}"/>
+                <property name="username" value="${jdbc.username}"/>
+                <property name="password" value="${jdbc.password}"/>
+
+                <property name="poolMaximumActiveConnections" value="300"/>
+                <property name="poolMaximumIdleConnections" value="10"/>
+                <property name="initialSize" value="20"/>
+                <property name="autoCommit" value="0"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <mappers>
+        <!--注解dao; 注册Mapper.xml文件-->
+        <!--<mapper resource="mapper/common/CommonMapper.xml"/>-->
+        <package name="main.com.handu.scada.db.mapper"/>
+    </mappers>
+
+</configuration>

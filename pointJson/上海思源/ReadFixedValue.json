@@ -1,0 +1,386 @@
+[
+  {
+    "Key": {
+      "x": 0,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 33346,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "过流I段出口投退",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 0,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 1,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 1,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 33347,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "过流I段定值",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 1,
+      "ItemShowType": 0,
+      "ItemSize": 4,
+      "ItemType": 9,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 2,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 33348,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "过流I段时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 2,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "s",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 3,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 33350,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "过流II段出口投退",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 3,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 1,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 4,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 33351,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "过流II段定值",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 4,
+      "ItemShowType": 0,
+      "ItemSize": 4,
+      "ItemType": 9,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 5,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 33352,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "过流II段时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 5,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "s",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 6,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 33360,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "过流III段出口投退",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 6,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 1,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 7,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 33361,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "过流III段定值",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 7,
+      "ItemShowType": 0,
+      "ItemSize": 4,
+      "ItemType": 9,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 8,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 33362,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "过流III段时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 8,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "s",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 9,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 33354,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "零序过流出口投退",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 9,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 1,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 10,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 33355,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "零序过流定值",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 10,
+      "ItemShowType": 0,
+      "ItemSize": 4,
+      "ItemType": 9,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 11,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 33356,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "零序过流时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 11,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "s",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 12,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 33328,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "重合闸次数",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 12,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 1,
+      "ItemUnit": "次",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 13,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 33329,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "一次重合时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 13,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 6,
+      "ItemUnit": "ms",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 15,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 33330,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "二次重合时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 15,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 6,
+      "ItemUnit": "ms",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 17,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 33331,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "三次重合时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 17,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 6,
+      "ItemUnit": "ms",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  }
+]

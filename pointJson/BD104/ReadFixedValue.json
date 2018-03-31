@@ -1,0 +1,698 @@
+[
+  {
+    "Key": {
+      "x": 0,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20481,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "控制字1",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 0,
+      "ItemShowType": 2,
+      "ItemSize": 2,
+      "ItemType": 6,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 1,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20482,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "控制字2",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 1,
+      "ItemShowType": 2,
+      "ItemSize": 2,
+      "ItemType": 6,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 2,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20483,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "速断定值",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 2,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 3,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20484,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "限时速断定值",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 3,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 4,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20485,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "过流定值",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 4,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 5,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20486,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "加速段过流",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 5,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 6,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20487,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "过负荷定值",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 6,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 7,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20488,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "零序过流保护",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 7,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 8,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20489,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "零序过流加速段",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 8,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 9,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20490,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "负序过流I段",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 9,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 10,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20491,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "负序过流II段过流",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 10,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 11,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20492,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "二次谐波制动比率",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 11,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 12,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20493,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "速断时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 12,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "S",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 13,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20494,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "限时速断时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 13,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "S",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 14,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20495,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "过流时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 14,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "S",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 15,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20496,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "过流加速时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 15,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "S",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 16,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20497,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "过负荷时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 16,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "S",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 17,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20498,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "零序过流时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 17,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "S",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 18,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20499,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "零序加速时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 18,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "S",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 19,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20500,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "一次重合闸时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 19,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "S",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 20,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20501,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "二次重合闸时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 20,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "S",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 21,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20502,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "三次重合闸时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 21,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "S",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 22,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20503,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "四次重合闸时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 22,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "S",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 23,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20504,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "负序I段时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 23,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "S",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 24,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20505,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "负序II段时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 24,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "S",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 25,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20506,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "涌流开放时间",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 25,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "S",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 26,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20507,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "负序II段反时限特性",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 26,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 27,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20508,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "CT变比",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 27,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 28,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 20509,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "零序CT变比",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 28,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  }
+]

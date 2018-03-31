@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="main.com.handu.scada.db.mapper.common.CommonMapper">
+
+    <!--mybatis ehcache缓存配置 -->
+    <!-- 以下两个<cache>标签二选一,第一个可以输出日志,第二个不输出日志 -->
+    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>
+    <!--<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>-->
+
+    <insert id="insertBySql">
+        ${value}
+    </insert>
+
+    <delete id="deleteBySql">
+    ${value}
+    </delete>
+
+    <update id="updateBySql">
+    ${value}
+    </update>
+
+    <select id="selectOneBySql" resultType="Map" useCache="true">
+    ${value}
+    </select>
+
+    <select id="selectListBySql" resultType="Map" useCache="true">
+    ${value}
+    </select>
+
+    <resultMap id="DeviceDtuCacheResultMap" type="main.com.handu.scada.db.bean.common.DeviceDtuCacheResult">
+    </resultMap>
+
+    <select id="selectDeviceDtuCacheResult" parameterType="java.lang.String"
+            resultMap="DeviceDtuCacheResultMap" useCache="true">
+        SELECT
+        c.oid AS dtuId,
+        a.oid AS deviceId,
+        b.deviceTableName,
+        a. NAME,
+        a.Address AS deviceAddress,
+        a.terminalId,
+        IFNULL(d.protocolType, 0) AS protocolType,
+        c.Address AS dtuAddress,
+        a.daId,
+        a.level,
+        IFNULL(ua, 0) AS ua,
+        IFNULL(ub, 0) AS ub,
+        IFNULL(uc, 0) AS uc,
+        IFNULL(ia, 0) AS ia,
+        IFNULL(ib, 0) AS ib,
+        IFNULL(ic, 0) AS ic,
+        IFNULL(io, 0) AS io
+        FROM
+        device_rcd a
+        LEFT JOIN relation_dtu_device b ON a.Oid = b.DeviceId
+        LEFT JOIN device_dtu c ON c.oid = b.DtuId
+        LEFT JOIN device_terminal d ON d.TerminalId = a.TerminalId
+        WHERE
+        1 = 1
+        AND c.PORT IN
+        <foreach collection="ports" index="index" item="item" open="(" separator="," close=")">#{item}</foreach>
+
+        UNION
+
+        SELECT
+        c.oid AS dtuId,
+        a.oid AS deviceId,
+        b.deviceTableName,
+        a. NAME,
+        a.Address AS deviceAddress,
+        a.terminalId,
+        ifnull(d.protocolType, 0) AS protocolType,
+        c.Address AS dtuAddress,
+        a.daId,
+        0,0,0,0,0,0,0,0
+        FROM
+        device_temperature a
+        LEFT JOIN relation_dtu_device b ON a.Oid = b.DeviceId
+        LEFT JOIN device_dtu c ON c.oid = b.DtuId
+        LEFT JOIN device_terminal d ON d.TerminalId = a.TerminalId
+        WHERE
+        1 = 1
+        AND c.PORT IN
+        <foreach collection="ports" index="index" item="item" open="(" separator="," close=")">#{item}</foreach>
+
+        UNION
+
+        SELECT
+        c.oid AS dtuId,
+        a.oid AS deviceId,
+        b.deviceTableName,
+        a. NAME,
+        a.Address AS deviceAddress,
+        a.terminalId,
+        ifnull(d.protocolType, 0) AS protocolType,
+        c.Address AS dtuAddress,
+        a.daId,
+        0,0,0,0,0,0,0,0
+        FROM
+        device_fallingtypeswitch a
+        LEFT JOIN relation_dtu_device b ON a.Oid = b.DeviceId
+        LEFT JOIN device_dtu c ON c.oid = b.DtuId
+        LEFT JOIN device_terminal d ON d.TerminalId = a.TerminalId
+        WHERE
+        1 = 1
+        AND c.PORT IN
+        <foreach collection="ports" index="index" item="item" open="(" separator="," close=")">#{item}</foreach>
+    </select>
+
+    <resultMap id="DeviceRemoteIndexesMap" type="main.com.handu.scada.db.bean.DeviceRemoteindexs">
+    </resultMap>
+
+    <select id="selectDeviceRemoteIndexes" parameterType="java.lang.String"
+            resultMap="DeviceRemoteIndexesMap">
+        SELECT
+        a.RemoteIndexsId AS remoteindexsid,
+        a.DataItem AS dataitem,
+        a.DeviceId AS deviceid,
+        a.DeviceTableName as devicetablename
+        FROM
+        device_remoteindexs a
+        WHERE 1=1 and
+        a.DeviceId in (
+        SELECT
+        c.Oid
+        FROM
+        device_dtu d
+        LEFT JOIN relation_dtu_device b ON b.DtuId = d.Oid
+        LEFT JOIN device_rcd c ON c.Oid = b.DeviceId
+        WHERE 1=1
+        and d.PORT IN
+        <foreach collection="ports" index="index" item="item" open="(" separator="," close=")">#{item}</foreach>
+        ) and a.RemoteIndexsId is not null
+
+        UNION
+
+        SELECT
+        a.RemoteIndexsId AS remoteindexsid,
+        a.DataItem AS dataitem,
+        a.DeviceId AS deviceid,
+        a.DeviceTableName as devicetablename
+        FROM
+        device_remoteindexs a
+        WHERE 1=1 and
+        a.DeviceId in (
+        SELECT
+        c.Oid
+        FROM
+        device_dtu d
+        LEFT JOIN relation_dtu_device b ON b.DtuId = d.Oid
+        LEFT JOIN device_temperature c ON c.Oid = b.DeviceId
+        WHERE 1=1
+        and d.PORT IN
+        <foreach collection="ports" index="index" item="item" open="(" separator="," close=")">#{item}</foreach>
+        ) and a.RemoteIndexsId is not null
+
+        UNION
+
+        SELECT
+        a.RemoteIndexsId AS remoteindexsid,
+        a.DataItem AS dataitem,
+        a.DeviceId AS deviceid,
+        a.DeviceTableName as devicetablename
+        FROM
+        device_remoteindexs a
+        WHERE 1=1 and
+        a.DeviceId in (
+        SELECT
+        c.Oid
+        FROM
+        device_dtu d
+        LEFT JOIN relation_dtu_device b ON b.DtuId = d.Oid
+        LEFT JOIN device_fallingtypeswitch c ON c.Oid = b.DeviceId
+        WHERE 1=1
+        and d.PORT IN
+        <foreach collection="ports" index="index" item="item" open="(" separator="," close=")">#{item}</foreach>
+        ) and a.RemoteIndexsId is not null
+
+    </select>
+
+    <resultMap id="DeviceRealRemoteTelemetryMap" type="main.com.handu.scada.db.bean.DeviceRealRemotetelemetry">
+    </resultMap>
+
+    <select id="selectDeviceRealRemoteTelemetry" parameterType="java.lang.String"
+            resultMap="DeviceRealRemoteTelemetryMap">
+        SELECT
+        x.RemoteIndexsId AS remoteindexsid,
+        x.RemoteTelemetryId as remotetelemetryid
+        FROM
+        device_real_remotetelemetry x
+        LEFT JOIN (
+        SELECT
+        a.RemoteIndexsId AS remoteindexsid,
+        a.DataItem AS dataitem,
+        a.DeviceId AS deviceid
+        FROM
+        device_remoteindexs a
+        WHERE a.DeviceId in (
+        SELECT
+        c.Oid
+        FROM
+        device_dtu d
+        LEFT JOIN relation_dtu_device b ON b.DtuId = d.Oid
+        LEFT JOIN device_rcd c ON c.Oid = b.DeviceId
+        WHERE
+        1=1
+        and d. PORT IN
+        <foreach collection="ports" index="index" item="item" open="(" separator="," close=")">#{item}</foreach>
+        )
+        ) z ON x.remoteindexsid = z.remoteindexsid
+        WHERE
+        z.remoteindexsid IS NOT NULL
+
+        UNION
+        SELECT
+        x.RemoteIndexsId AS remoteindexsid,
+        x.RemoteTelemetryId as remotetelemetryid
+        FROM
+        device_real_remotetelemetry x
+        LEFT JOIN (
+        SELECT
+        a.RemoteIndexsId AS remoteindexsid,
+        a.DataItem AS dataitem,
+        a.DeviceId AS deviceid
+        FROM
+        device_remoteindexs a
+        WHERE a.DeviceId in (
+        SELECT
+        c.Oid
+        FROM
+        device_dtu d
+        LEFT JOIN relation_dtu_device b ON b.DtuId = d.Oid
+        LEFT JOIN device_temperature c ON c.Oid = b.DeviceId
+        WHERE
+        1=1
+        and d.PORT IN
+        <foreach collection="ports" index="index" item="item" open="(" separator="," close=")">#{item}</foreach>
+        )
+        ) z ON x.remoteindexsid = z.remoteindexsid
+        WHERE
+        z.remoteindexsid IS NOT NULL
+
+        UNION
+
+        SELECT
+        x.RemoteIndexsId AS remoteindexsid,
+        x.RemoteTelemetryId as remotetelemetryid
+        FROM
+        device_real_remotetelemetry x
+        LEFT JOIN (
+        SELECT
+        a.RemoteIndexsId AS remoteindexsid,
+        a.DataItem AS dataitem,
+        a.DeviceId AS deviceid
+        FROM
+        device_remoteindexs a
+        WHERE a.DeviceId in (
+        SELECT
+        c.Oid
+        FROM
+        device_dtu d
+        LEFT JOIN relation_dtu_device b ON b.DtuId = d.Oid
+        LEFT JOIN device_fallingtypeswitch c ON c.Oid = b.DeviceId
+        WHERE
+        1=1
+        and d.PORT IN
+        <foreach collection="ports" index="index" item="item" open="(" separator="," close=")">#{item}</foreach>
+        )
+        ) z ON x.remoteindexsid = z.remoteindexsid
+        WHERE
+        z.remoteindexsid IS NOT NULL
+    </select>
+
+    <resultMap id="DeviceRealRemoteSignallingMap" type="main.com.handu.scada.db.bean.DeviceRealRemotesignalling">
+    </resultMap>
+
+    <select id="selectDeviceRealRemoteSignalling" parameterType="java.lang.String"
+            resultMap="DeviceRealRemoteSignallingMap">
+        SELECT
+        x.RemoteIndexsId AS remoteindexsid,
+        x.RemoteSignallingId as remotesignallingid
+        FROM
+        device_real_remotesignalling x
+        LEFT JOIN (
+        SELECT
+        a.RemoteIndexsId AS remoteindexsid,
+        a.DataItem AS dataitem,
+        a.DeviceId AS deviceid
+        FROM
+        device_remoteindexs a
+        where a.DeviceId in (
+        SELECT
+        c.Oid
+        FROM
+        device_dtu d
+        LEFT JOIN relation_dtu_device b ON b.DtuId = d.Oid
+        LEFT JOIN device_rcd c ON c.Oid = b.DeviceId
+        WHERE
+        1=1
+        and d. PORT IN
+        <foreach collection="ports" index="index" item="item" open="(" separator="," close=")">#{item}</foreach>
+        )
+        ) z ON x.remoteindexsid = z.remoteindexsid
+        WHERE
+        z.remoteindexsid IS NOT NULL
+
+        UNION
+
+        SELECT
+        x.RemoteIndexsId AS remoteindexsid,
+        x.RemoteSignallingId as remotesignallingid
+        FROM
+        device_real_remotesignalling x
+        LEFT JOIN (
+        SELECT
+        a.RemoteIndexsId AS remoteindexsid,
+        a.DataItem AS dataitem,
+        a.DeviceId AS deviceid
+        FROM
+        device_remoteindexs a
+        where a.DeviceId in (
+        SELECT
+        c.Oid
+        FROM
+        device_dtu d
+        LEFT JOIN relation_dtu_device b ON b.DtuId = d.Oid
+        LEFT JOIN device_temperature c ON c.Oid = b.DeviceId
+        WHERE
+        1=1
+        and d.PORT IN
+        <foreach collection="ports" index="index" item="item" open="(" separator="," close=")">#{item}</foreach>
+        )
+        ) z ON x.remoteindexsid = z.remoteindexsid
+        WHERE
+        z.remoteindexsid IS NOT NULL
+
+        UNION
+
+        SELECT
+        x.RemoteIndexsId AS remoteindexsid,
+        x.RemoteSignallingId as remotesignallingid
+        FROM
+        device_real_remotesignalling x
+        LEFT JOIN (
+        SELECT
+        a.RemoteIndexsId AS remoteindexsid,
+        a.DataItem AS dataitem,
+        a.DeviceId AS deviceid
+        FROM
+        device_remoteindexs a
+        where a.DeviceId in (
+        SELECT
+        c.Oid
+        FROM
+        device_dtu d
+        LEFT JOIN relation_dtu_device b ON b.DtuId = d.Oid
+        LEFT JOIN device_fallingtypeswitch c ON c.Oid = b.DeviceId
+        WHERE
+        1=1
+        and d.PORT IN
+        <foreach collection="ports" index="index" item="item" open="(" separator="," close=")">#{item}</foreach>
+        )
+        ) z ON x.remoteindexsid = z.remoteindexsid
+        WHERE
+        z.remoteindexsid IS NOT NULL
+
+    </select>
+
+    <update id="updateDeviceStateRecord" parameterType="java.lang.String">
+        UPDATE device_staterecord
+        SET Description = #{description},
+        State = #{state},
+        UnLineTime = NOW()
+        WHERE
+        DeviceId IN (
+        SELECT
+        d.Oid
+        FROM
+        device_dtu d
+        WHERE
+        1=1
+        <if test="ports !=null">
+            AND d.PORT IN
+            <foreach collection="ports" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        )
+    </update>
+
+    <resultMap id="DeviceDtuIdByDtuAddressMap" type="main.com.handu.scada.db.bean.DeviceDtu">
+    </resultMap>
+
+    <select id="selectDeviceDtuIdByDtuAddress" parameterType="java.lang.String" resultMap="DeviceDtuIdByDtuAddressMap">
+        SELECT Oid as oid,Address as address,d.Name as name,PORT as port from device_dtu d where 1=1
+        <if test="dtuAddress!=null">
+            and d.Address = #{dtuAddress}
+        </if>
+    </select>
+</mapper>

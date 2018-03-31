@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="main.com.handu.scada.db.mapper.DeviceRcdTrialswitchlogMapper">
+  <resultMap id="BaseResultMap" type="main.com.handu.scada.db.bean.DeviceRcdTrialswitchlog">
+    <id column="Oid" jdbcType="VARCHAR" property="oid" />
+    <result column="RcdId" jdbcType="VARCHAR" property="rcdid" />
+    <result column="TrialTime" jdbcType="TIMESTAMP" property="trialtime" />
+    <result column="Result" jdbcType="INTEGER" property="result" />
+    <result column="Operator" jdbcType="VARCHAR" property="operator" />
+    <result column="ResultText" jdbcType="VARCHAR" property="resulttext" />
+    <result column="OnTime" jdbcType="TIMESTAMP" property="ontime" />
+    <result column="DownTime" jdbcType="TIMESTAMP" property="downtime" />
+    <result column="WorkOrderId" jdbcType="VARCHAR" property="workorderid" />
+    <result column="IsSendWorkOrder" jdbcType="INTEGER" property="issendworkorder" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    Oid, RcdId, TrialTime, Result, Operator, ResultText, OnTime, DownTime, WorkOrderId, 
+    IsSendWorkOrder
+  </sql>
+  <select id="selectByExample" parameterType="main.com.handu.scada.db.bean.DeviceRcdTrialswitchlogExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from device_rcd_trialswitchlog
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from device_rcd_trialswitchlog
+    where Oid = #{oid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from device_rcd_trialswitchlog
+    where Oid = #{oid,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="main.com.handu.scada.db.bean.DeviceRcdTrialswitchlogExample">
+    delete from device_rcd_trialswitchlog
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="main.com.handu.scada.db.bean.DeviceRcdTrialswitchlog">
+    insert into device_rcd_trialswitchlog (Oid, RcdId, TrialTime, 
+      Result, Operator, ResultText, 
+      OnTime, DownTime, WorkOrderId, 
+      IsSendWorkOrder)
+    values (#{oid,jdbcType=VARCHAR}, #{rcdid,jdbcType=VARCHAR}, #{trialtime,jdbcType=TIMESTAMP}, 
+      #{result,jdbcType=INTEGER}, #{operator,jdbcType=VARCHAR}, #{resulttext,jdbcType=VARCHAR}, 
+      #{ontime,jdbcType=TIMESTAMP}, #{downtime,jdbcType=TIMESTAMP}, #{workorderid,jdbcType=VARCHAR}, 
+      #{issendworkorder,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective" parameterType="main.com.handu.scada.db.bean.DeviceRcdTrialswitchlog">
+    insert into device_rcd_trialswitchlog
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="oid != null">
+        Oid,
+      </if>
+      <if test="rcdid != null">
+        RcdId,
+      </if>
+      <if test="trialtime != null">
+        TrialTime,
+      </if>
+      <if test="result != null">
+        Result,
+      </if>
+      <if test="operator != null">
+        Operator,
+      </if>
+      <if test="resulttext != null">
+        ResultText,
+      </if>
+      <if test="ontime != null">
+        OnTime,
+      </if>
+      <if test="downtime != null">
+        DownTime,
+      </if>
+      <if test="workorderid != null">
+        WorkOrderId,
+      </if>
+      <if test="issendworkorder != null">
+        IsSendWorkOrder,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="oid != null">
+        #{oid,jdbcType=VARCHAR},
+      </if>
+      <if test="rcdid != null">
+        #{rcdid,jdbcType=VARCHAR},
+      </if>
+      <if test="trialtime != null">
+        #{trialtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="result != null">
+        #{result,jdbcType=INTEGER},
+      </if>
+      <if test="operator != null">
+        #{operator,jdbcType=VARCHAR},
+      </if>
+      <if test="resulttext != null">
+        #{resulttext,jdbcType=VARCHAR},
+      </if>
+      <if test="ontime != null">
+        #{ontime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="downtime != null">
+        #{downtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="workorderid != null">
+        #{workorderid,jdbcType=VARCHAR},
+      </if>
+      <if test="issendworkorder != null">
+        #{issendworkorder,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="main.com.handu.scada.db.bean.DeviceRcdTrialswitchlogExample" resultType="java.lang.Long">
+    select count(*) from device_rcd_trialswitchlog
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update device_rcd_trialswitchlog
+    <set>
+      <if test="tripEventRecord.oid != null">
+        Oid = #{tripEventRecord.oid,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.rcdid != null">
+        RcdId = #{tripEventRecord.rcdid,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.trialtime != null">
+        TrialTime = #{tripEventRecord.trialtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="tripEventRecord.result != null">
+        Result = #{tripEventRecord.result,jdbcType=INTEGER},
+      </if>
+      <if test="tripEventRecord.operator != null">
+        Operator = #{tripEventRecord.operator,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.resulttext != null">
+        ResultText = #{tripEventRecord.resulttext,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.ontime != null">
+        OnTime = #{tripEventRecord.ontime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="tripEventRecord.downtime != null">
+        DownTime = #{tripEventRecord.downtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="tripEventRecord.workorderid != null">
+        WorkOrderId = #{tripEventRecord.workorderid,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.issendworkorder != null">
+        IsSendWorkOrder = #{tripEventRecord.issendworkorder,jdbcType=INTEGER},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update device_rcd_trialswitchlog
+    set Oid = #{tripEventRecord.oid,jdbcType=VARCHAR},
+      RcdId = #{tripEventRecord.rcdid,jdbcType=VARCHAR},
+      TrialTime = #{tripEventRecord.trialtime,jdbcType=TIMESTAMP},
+      Result = #{tripEventRecord.result,jdbcType=INTEGER},
+      Operator = #{tripEventRecord.operator,jdbcType=VARCHAR},
+      ResultText = #{tripEventRecord.resulttext,jdbcType=VARCHAR},
+      OnTime = #{tripEventRecord.ontime,jdbcType=TIMESTAMP},
+      DownTime = #{tripEventRecord.downtime,jdbcType=TIMESTAMP},
+      WorkOrderId = #{tripEventRecord.workorderid,jdbcType=VARCHAR},
+      IsSendWorkOrder = #{tripEventRecord.issendworkorder,jdbcType=INTEGER}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="main.com.handu.scada.db.bean.DeviceRcdTrialswitchlog">
+    update device_rcd_trialswitchlog
+    <set>
+      <if test="rcdid != null">
+        RcdId = #{rcdid,jdbcType=VARCHAR},
+      </if>
+      <if test="trialtime != null">
+        TrialTime = #{trialtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="result != null">
+        Result = #{result,jdbcType=INTEGER},
+      </if>
+      <if test="operator != null">
+        Operator = #{operator,jdbcType=VARCHAR},
+      </if>
+      <if test="resulttext != null">
+        ResultText = #{resulttext,jdbcType=VARCHAR},
+      </if>
+      <if test="ontime != null">
+        OnTime = #{ontime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="downtime != null">
+        DownTime = #{downtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="workorderid != null">
+        WorkOrderId = #{workorderid,jdbcType=VARCHAR},
+      </if>
+      <if test="issendworkorder != null">
+        IsSendWorkOrder = #{issendworkorder,jdbcType=INTEGER},
+      </if>
+    </set>
+    where Oid = #{oid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="main.com.handu.scada.db.bean.DeviceRcdTrialswitchlog">
+    update device_rcd_trialswitchlog
+    set RcdId = #{rcdid,jdbcType=VARCHAR},
+      TrialTime = #{trialtime,jdbcType=TIMESTAMP},
+      Result = #{result,jdbcType=INTEGER},
+      Operator = #{operator,jdbcType=VARCHAR},
+      ResultText = #{resulttext,jdbcType=VARCHAR},
+      OnTime = #{ontime,jdbcType=TIMESTAMP},
+      DownTime = #{downtime,jdbcType=TIMESTAMP},
+      WorkOrderId = #{workorderid,jdbcType=VARCHAR},
+      IsSendWorkOrder = #{issendworkorder,jdbcType=INTEGER}
+    where Oid = #{oid,jdbcType=VARCHAR}
+  </update>
+</mapper>

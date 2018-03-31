@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="main.com.handu.scada.db.mapper.DeviceInfochangesMapper">
+  <resultMap id="BaseResultMap" type="main.com.handu.scada.db.bean.DeviceInfochanges">
+    <id column="Oid" jdbcType="VARCHAR" property="oid" />
+    <result column="TabName" jdbcType="VARCHAR" property="tabname" />
+    <result column="KeyId" jdbcType="VARCHAR" property="keyid" />
+    <result column="OpType" jdbcType="VARCHAR" property="optype" />
+    <result column="RecordTime" jdbcType="TIMESTAMP" property="recordtime" />
+    <result column="Status" jdbcType="INTEGER" property="status" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    Oid, TabName, KeyId, OpType, RecordTime, Status
+  </sql>
+  <select id="selectByExample" parameterType="main.com.handu.scada.db.bean.DeviceInfochangesExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from device_infochanges
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from device_infochanges
+    where Oid = #{oid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from device_infochanges
+    where Oid = #{oid,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="main.com.handu.scada.db.bean.DeviceInfochangesExample">
+    delete from device_infochanges
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="main.com.handu.scada.db.bean.DeviceInfochanges">
+    insert into device_infochanges (Oid, TabName, KeyId, 
+      OpType, RecordTime, Status
+      )
+    values (#{oid,jdbcType=VARCHAR}, #{tabname,jdbcType=VARCHAR}, #{keyid,jdbcType=VARCHAR}, 
+      #{optype,jdbcType=VARCHAR}, #{recordtime,jdbcType=TIMESTAMP}, #{status,jdbcType=INTEGER}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="main.com.handu.scada.db.bean.DeviceInfochanges">
+    insert into device_infochanges
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="oid != null">
+        Oid,
+      </if>
+      <if test="tabname != null">
+        TabName,
+      </if>
+      <if test="keyid != null">
+        KeyId,
+      </if>
+      <if test="optype != null">
+        OpType,
+      </if>
+      <if test="recordtime != null">
+        RecordTime,
+      </if>
+      <if test="status != null">
+        Status,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="oid != null">
+        #{oid,jdbcType=VARCHAR},
+      </if>
+      <if test="tabname != null">
+        #{tabname,jdbcType=VARCHAR},
+      </if>
+      <if test="keyid != null">
+        #{keyid,jdbcType=VARCHAR},
+      </if>
+      <if test="optype != null">
+        #{optype,jdbcType=VARCHAR},
+      </if>
+      <if test="recordtime != null">
+        #{recordtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="main.com.handu.scada.db.bean.DeviceInfochangesExample" resultType="java.lang.Long">
+    select count(*) from device_infochanges
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update device_infochanges
+    <set>
+      <if test="tripEventRecord.oid != null">
+        Oid = #{tripEventRecord.oid,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.tabname != null">
+        TabName = #{tripEventRecord.tabname,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.keyid != null">
+        KeyId = #{tripEventRecord.keyid,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.optype != null">
+        OpType = #{tripEventRecord.optype,jdbcType=VARCHAR},
+      </if>
+      <if test="tripEventRecord.recordtime != null">
+        RecordTime = #{tripEventRecord.recordtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="tripEventRecord.status != null">
+        Status = #{tripEventRecord.status,jdbcType=INTEGER},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update device_infochanges
+    set Oid = #{tripEventRecord.oid,jdbcType=VARCHAR},
+      TabName = #{tripEventRecord.tabname,jdbcType=VARCHAR},
+      KeyId = #{tripEventRecord.keyid,jdbcType=VARCHAR},
+      OpType = #{tripEventRecord.optype,jdbcType=VARCHAR},
+      RecordTime = #{tripEventRecord.recordtime,jdbcType=TIMESTAMP},
+      Status = #{tripEventRecord.status,jdbcType=INTEGER}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="main.com.handu.scada.db.bean.DeviceInfochanges">
+    update device_infochanges
+    <set>
+      <if test="tabname != null">
+        TabName = #{tabname,jdbcType=VARCHAR},
+      </if>
+      <if test="keyid != null">
+        KeyId = #{keyid,jdbcType=VARCHAR},
+      </if>
+      <if test="optype != null">
+        OpType = #{optype,jdbcType=VARCHAR},
+      </if>
+      <if test="recordtime != null">
+        RecordTime = #{recordtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="status != null">
+        Status = #{status,jdbcType=INTEGER},
+      </if>
+    </set>
+    where Oid = #{oid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="main.com.handu.scada.db.bean.DeviceInfochanges">
+    update device_infochanges
+    set TabName = #{tabname,jdbcType=VARCHAR},
+      KeyId = #{keyid,jdbcType=VARCHAR},
+      OpType = #{optype,jdbcType=VARCHAR},
+      RecordTime = #{recordtime,jdbcType=TIMESTAMP},
+      Status = #{status,jdbcType=INTEGER}
+    where Oid = #{oid,jdbcType=VARCHAR}
+  </update>
+</mapper>

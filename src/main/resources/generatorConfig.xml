@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<!-- 该配置文件说明插件需要如何生成，以及生成对应的包名，路径等信息。还有重要的就是我们要生成的实体类所对应的的表或者试图 -->
+<generatorConfiguration>
+    <properties resource="mybatis.generator.properties"/>
+    <context id="MBG" targetRuntime="MyBatis3" defaultModelType="flat">
+        <!-- 注意以下标签的顺序:property*,plugin*,commentGenerator?,jdbcConnection,
+                javaTypeResolver?,javaModelGenerator,sqlMapGenerator?,
+                javaClientGenerator?,table+ -->
+        <!--默认实现序列化-->
+        <plugin type="org.mybatis.generator.plugins.SerializablePlugin"/>
+        <!-- 这个插件给由MBG生成的Java模型对象增加了equals和hashCode方法 -->
+        <plugin type="org.mybatis.generator.plugins.EqualsHashCodePlugin"/>
+        <commentGenerator>
+            <!-- 是否去除自动生成的注释 true：是 ： false:否 -->
+            <property name="suppressAllComments" value="true"/>
+            <!-- 不希望生成的注释中包含时间戳 -->
+            <property name="suppressDate" value="true"/>
+            <!-- 是否自动为每一个生成的类创建一个构造方法-->
+            <property name="constructorBased" value="false"/>
+        </commentGenerator>
+        <!-- 数据库连接 -->
+        <jdbcConnection
+                driverClass="${jdbc.driver}"
+                connectionURL="${jdbc.url}"
+                userId="${jdbc.username}"
+                password="${jdbc.password}">
+        </jdbcConnection>
+        <!-- 指定生成的类型为java类型，避免数据库中number等类型字段 -->
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value="false"/>
+        </javaTypeResolver>
+        <!-- 生成model模型，对应的包，存放位置可以指定具体的路径,如/ProjectName/src，也可以使用MAVEN来自动生成 -->
+        <javaModelGenerator targetPackage="${modelPackage}" targetProject="${targetProject}">
+            <!-- 在targetPackage的基础上，根据数据库的schema再生成一层package，最终生成的类放在这个package下，默认为false -->
+            <property name="enableSubPackages" value="true"/>
+            <!-- 设置是否在getter方法中，对String类型字段调用trim()方法 -->
+            <property name="trimStrings" value="true"/>
+            <!--<property name="useActualColumnNames" value="true"/>-->
+            <!-- 设置一个根对象，
+           如果设置了这个根对象，那么生成的keyClass或者recordClass会继承这个类；在Table的rootClass属性中可以覆盖该选项
+           注意：如果在key class或者record class中有root class相同的属性，MBG就不会重新生成这些属性了，包括：
+               1，属性名相同，类型相同，有相同的getter/setter方法-->
+            <!--<property name="rootClass" value="db.bean.BaseEntity"/>-->
+        </javaModelGenerator>
+        <!--对应的xml mapper文件  -->
+        <sqlMapGenerator targetPackage="${daoMapperPackage}" targetProject="${targetProject}">
+            <property name="enableSubPackages" value="true"/>
+        </sqlMapGenerator>
+        <!-- 对应的dao接口
+            1，ANNOTATEDMAPPER：会生成使用Mapper接口+Annotation的方式创建（SQL生成在annotation中），不会生成对应的XML；
+            2，MIXEDMAPPER：使用混合配置，会生成Mapper接口，并适当添加合适的Annotation，但是XML会生成在XML中；
+            3，XMLMAPPER：会生成Mapper接口，接口完全依赖XML；
+         -->
+        <javaClientGenerator type="XMLMAPPER" targetPackage="${daoMapperPackage}" targetProject="${targetProject}">
+            <property name="enableSubPackages" value="true"/>
+            <property name="rootInterface" value="main.com.handu.scada.db.mapper.common.CommonMapper"/>
+        </javaClientGenerator>
+
+        <!-- 表名对应生成的实体 -->
+        <!--<table tableName="qrtz_job_details">-->
+        <!--&lt;!&ndash;设置为true则按照数据库字段命名&ndash;&gt;-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--</table>-->
+        <!--<table tableName="qrtz_cron_triggers">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--</table>-->
+        <!--<table tableName="qrtz_triggers">-->
+        <!--<property name="useActualColumnNames" value="true"/>-->
+        <!--</table>-->
+        <!--<table tableName="base_alarmcache"/>-->
+        <!--<table tableName="base_user"/>-->
+        <!--<table tableName="base_department"/>-->
+        <!--<table tableName="base_dataitemdetail"/>-->
+        <!--<table tableName="base_smssend"/>-->
+        <!--<table tableName="base_requestdata"/>-->
+        <!--<table tableName="base_organize"/>-->
+        <!--<table tableName="device_lowvoltage"/>-->
+        <!--<table tableName="device_history_staterecord"/>-->
+        <!--<table tableName="device_alarm"/>-->
+        <!--<table tableName="device_organuptccount"/>-->
+        <!--<table tableName="device_organtrippingcount"/>-->
+        <!--<table tableName="device_organtrailswitchcount"/>-->
+        <!--<table tableName="device_organrcdcount"/>-->
+        <!--<table tableName="device_organlowvoltagecount"/>-->
+        <!--<table tableName="device_organhourcollection"/>-->
+        <!--<table tableName="device_organdacount"/>-->
+        <!--<table tableName="device_organcoverrate"/>-->
+        <!--<table tableName="device_organclockcount"/>-->
+        <!--<table tableName="device_organchangecount"/>-->
+        <!--<table tableName="device_manufactortrippingcount"/>-->
+        <!--<table tableName="device_manufactortrailswitchcount"/>-->
+        <!--<table tableName="device_manufactorrcdcount"/>-->
+        <!--<table tableName="device_manufactorclockcount"/>-->
+        <!--<table tableName="device_manufactorchangecount"/>-->
+        <!--<table tableName="device_uploadlog"/>-->
+        <!--<table tableName="device_terminal"/>-->
+        <!--<table tableName="device_telesignal"/>-->
+        <!--<table tableName="device_telemetering"/>-->
+        <!--<table tableName="device_rcdutpc"/>-->
+        <!--<table tableName="device_rcd_trialswitchlog"/>-->
+        <!--<table tableName="base_dataitem"/>-->
+        <!--<table tableName="device_line"/>-->
+        <!--<table tableName="device_dtu"/>-->
+        <!--<table tableName="device_da"/>-->
+        <!--<table tableName="device_staterecord"/>-->
+        <!--<table tableName="device_history_staterecord"/>-->
+        <!--<table tableName="device_controlword"/>-->
+        <!--<table tableName="DEVICE_REAL_REMOTE_TELEMETRY"/>-->
+        <!--<table tableName="DEVICE_REAL_REMOTE_SIGNALLING"/>-->
+        <!--<table tableName="device_rcd"/>-->
+        <!--<table tableName="device_graphicsrelation"/>-->
+        <!--<table tableName="device_remoteindexs"/>-->
+        <!--<table tableName="device_History_remotetelemetry"/>-->
+        <!--<table tableName="device_history_remotesignalling"/>-->
+        <!--<table tableName="device_change_remotetelemetry"/>-->
+        <!--<table tableName="device_change_remotesignalling"/>-->
+        <table tableName="device_communicationgroup"/>
+        <!--<table tableName="device_hm"/>-->
+        <!--<table tableName="device_intelligentswitch"/>-->
+        <!--<table tableName="device_temperatureprobe"/>-->
+        <!--<table tableName="device_temperature"/>-->
+        <!--<table tableName="relation_dtu_device"/>-->
+        <!--<table tableName="device_infochanges"/>-->
+
+    </context>
+</generatorConfiguration>

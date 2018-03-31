@@ -1,0 +1,362 @@
+[
+  {
+    "Key": {
+      "x": 0,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16385,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "A相负荷电流",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 0,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 1,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16387,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "A相电场",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 1,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "V",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 2,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16391,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "A相电池电压",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 2,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "V",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 3,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16392,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "A相温度",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 3,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "C",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 4,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16393,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "B相版本号",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 4,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 5,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16395,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "B相负荷电流",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 5,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 6,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16397,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "B相电场",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 6,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 7,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16401,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "B相电池电压",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 7,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "V",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 8,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16402,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "B相温度",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 8,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "C",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 9,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16403,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "B相版本号",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 9,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 10,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16405,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "C相负荷电流",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 10,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 11,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16407,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "C相电场",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 11,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "V",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 12,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16411,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "C相电池电压",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 12,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "V",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 13,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16412,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "C相温度",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 13,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 14,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16413,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "C相版本号",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 14,
+      "ItemShowType": 0,
+      "ItemSize": 2,
+      "ItemType": 9,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  }
+]
