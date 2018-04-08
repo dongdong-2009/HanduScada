@@ -1,5 +1,10 @@
 package main.com.handu.scada.business;
 
+import main.com.handu.scada.business.device.DataType;
+import main.com.handu.scada.business.device.DeviceData;
+import main.com.handu.scada.business.dtu.DtuDBService;
+import main.com.handu.scada.business.dtu.DtuState;
+import main.com.handu.scada.business.dtu.DtuStateResult;
 import main.com.handu.scada.business.message.Msg;
 import main.com.handu.scada.business.message.MsgManager;
 import main.com.handu.scada.business.utpc.UTPCModel;
@@ -7,7 +12,6 @@ import main.com.handu.scada.cache.MyCacheManager;
 import main.com.handu.scada.db.bean.*;
 import main.com.handu.scada.db.bean.common.DeviceDtuCacheResult;
 import main.com.handu.scada.db.mapper.*;
-import main.com.handu.scada.db.mapper.common.CommonMapper;
 import main.com.handu.scada.db.utils.MyBatisUtil;
 import main.com.handu.scada.enums.TableEnum;
 import main.com.handu.scada.event.Subscriber;
@@ -42,6 +46,10 @@ import static main.com.handu.scada.protocol.enums.TrialResultType.on;
 
 @Subscriber
 public class DBService implements ISubscriber {
+    /**
+     * 记录三项不平衡和低电压
+     */
+    private Map<String, UTPCModel> utpcMap = new ConcurrentHashMap<>();
 
     private DBService() {
     }
@@ -78,20 +86,15 @@ public class DBService implements ISubscriber {
      * DTU入库的任务
      */
     private class DtuTask implements Runnable {
-        /**
-         * 记录三项不平衡和低电压
-         */
-        private Map<String, UTPCModel> utpcMap = new ConcurrentHashMap<>();
+
         private SqlSession sqlSession;
         private ProtocolLayerData protocolLayerData;
-
-        private DeviceRealRemotetelemetry deviceRealRemotetelemetry;
-        private DeviceRealRemotesignalling deviceRealRemotesignalling;
-
-        private List<DeviceRemoteindexs> remoteindexses;
-        private List<DeviceRealRemotetelemetry> realRemotetelemetries;
-        private List<DeviceRealRemotesignalling> realRemotesignallings;
-
+        private List<DeviceRemoteindexs> remoteindexses = new ArrayList<>();
+        private List<DeviceRealRemotetelemetry> realRemotetelemetries = new ArrayList<>();
+        private List<DeviceRealRemotesignalling> realRemotesignallings = new ArrayList<>();
+        private List<DeviceHistoryRemotetelemetry> historyRemotetelemetries = new ArrayList<>();
+        private List<DeviceHistoryRemotesignalling> historyRemotesignallings = new ArrayList<>();
+        private List<DeviceDtuCacheResult> cacheResults = new ArrayList<>();
 
         DtuTask(ProtocolLayerData protocolLayerData) {
             sqlSession = MyBatisUtil.getSqlSession(false);
@@ -102,7 +105,6 @@ public class DBService implements ISubscriber {
 
         @Override
         public void run() {
-            LogUtils.info("DBService.DtuTask.run");
             if (protocolLayerData != null && sqlSession != null) {
                 try {
                     if (protocolLayerData.deviceTypeEnum != null && protocolLayerData.CmdType != null) {
@@ -117,6 +119,7 @@ public class DBService implements ISubscriber {
                     }
                     //如果是二级漏保档案上报
                     else if (protocolLayerData.CmdType == DeviceCmdTypeEnum.SecondLpRecord) {
+                        cacheResults.clear();
                         saveSecondLpRecord(new SecondLpRealData() {{
                             setDtuAddress(protocolLayerData.DTUString);
                             setSecondLpRecords(protocolLayerData.secondLpRecords);
@@ -128,9 +131,7 @@ public class DBService implements ISubscriber {
                     }
                     //其他遥测值上报
                     else {
-                        remoteindexses = new ArrayList<>();
-                        realRemotetelemetries = new ArrayList<>();
-                        realRemotesignallings = new ArrayList<>();
+                        clearAll();
                         saveDeviceTelemetering(new RealDataItem() {{
                             this.address = protocolLayerData.DTUString;
                             this.list = protocolLayerData.attrList;
@@ -142,24 +143,64 @@ public class DBService implements ISubscriber {
                     if (sqlSession != null) sqlSession.commit(true);
                 } catch (Exception e) {
                     if (sqlSession != null) sqlSession.rollback(true);
-                    LogUtils.error("rollback...");
+                    clearAll();
+                    LogUtils.error("dtuTask rollback...");
                     ExceptionHandler.handle(e);
                 } finally {
                     if (sqlSession != null) {
                         sqlSession.close();
-                        Vector<DeviceRemoteindexs> deviceRemoteindexsVector = MyCacheManager.getInstance().getDataByKey(MyCacheManager.DEVICE_REMOTE_INDEXES);
-                        if (remoteindexses != null && remoteindexses.size() != 0)
-                            deviceRemoteindexsVector.addAll(remoteindexses);
-                        Vector<DeviceRealRemotesignalling> deviceRealRemotesignallingVector = MyCacheManager.getInstance().getDataByKey(MyCacheManager.DEVICE_REAL_REMOTE_SIGNALLING);
-                        if (realRemotesignallings != null && realRemotesignallings.size() != 0)
-                            deviceRealRemotesignallingVector.addAll(realRemotesignallings);
-                        Vector<DeviceRealRemotetelemetry> realRemotetelemetryVector = MyCacheManager.getInstance().getDataByKey(MyCacheManager.DEVICE_REAL_REMOTE_TELEMETRY);
-                        if (realRemotetelemetries != null && realRemotetelemetries.size() != 0)
-                            realRemotetelemetryVector.addAll(realRemotetelemetries);
+                        //如果没有报错则丢进入库队列
+                        insertIntoQueue();
                     }
                 }
-            } else {
-                LogUtils.error("sqlSession or protocolLayerData is null!");
+            }
+        }
+
+        /**
+         * 清空所有列表
+         */
+        private void clearAll() {
+            remoteindexses.clear();
+            realRemotesignallings.clear();
+            realRemotetelemetries.clear();
+            historyRemotesignallings.clear();
+            historyRemotetelemetries.clear();
+        }
+
+        /**
+         * 丢进入库队列
+         */
+        private void insertIntoQueue() {
+            if (remoteindexses.size() != 0) {
+                for (DeviceRemoteindexs remoteindexs : remoteindexses) {
+                    MyCacheManager.getInstance().putDeviceRemoteindexes(remoteindexs.getDeviceid(), remoteindexs.getDevicetablename().toLowerCase(), remoteindexs.getDataitem(), remoteindexs);
+                }
+            }
+            if (realRemotesignallings.size() != 0) {
+                for (DeviceRealRemotesignalling remotesignalling : realRemotesignallings) {
+                    MyCacheManager.getInstance().putDeviceRealRemotesignalling(remotesignalling.getRemoteindexsid(), remotesignalling);
+                    DtuDBService.getInstance().push(new DeviceData(DataType.YX_REAL, remotesignalling));
+                }
+            }
+            if (realRemotetelemetries.size() != 0) {
+                for (DeviceRealRemotetelemetry remotetelemetry : realRemotetelemetries) {
+                    MyCacheManager.getInstance().putDeviceRealRemotetelemetry(remotetelemetry.getRemoteindexsid(), remotetelemetry);
+                    DtuDBService.getInstance().push(new DeviceData(DataType.YC_REAL, remotetelemetry));
+                }
+            }
+            if (historyRemotesignallings.size() != 0) {
+                for (DeviceHistoryRemotesignalling historyRemotesignalling : historyRemotesignallings) {
+                    DtuDBService.getInstance().push(new DeviceData(DataType.YX_HISTORY, historyRemotesignalling));
+                }
+            }
+            if (historyRemotetelemetries.size() != 0) {
+                for (DeviceHistoryRemotetelemetry historyRemotetelemetry : historyRemotetelemetries) {
+                    DtuDBService.getInstance().push(new DeviceData(DataType.YC_HISTORY, historyRemotetelemetry));
+                }
+            }
+            //二级漏保最后更新缓存
+            if (cacheResults.size() != 0) {
+                MyCacheManager.getInstance().putDeviceDtuCacheResult(cacheResults);
             }
         }
 
@@ -241,14 +282,9 @@ public class DBService implements ISubscriber {
             LogUtils.error("----1--data----" + data.toString());
             if (!StringsUtils.isEmpty(data.postalAddress) && !StringsUtils.isEmpty(data.deviceTableName)) {
                 LogUtils.error("----2--postalAddress----" + data.postalAddress + "---deviceTableName---" + data.deviceTableName);
-                Vector<DeviceDtuCacheResult> results = MyCacheManager.getInstance().getDataByKey(MyCacheManager.DEVICE_DTU_INFO);
-                results.forEach(result -> {
-                    if (Objects.equals(result.getDeviceAddress(), data.getPostalAddress())
-                            && Objects.equals(result.getDeviceTableName().toLowerCase(), data.deviceTableName.toLowerCase())
-                            && Objects.equals(result.getDtuAddress(), data.dtuAddress)) {
-                        data.deviceId = result.getDeviceId();
-                    }
-                });
+                //找到设备的id
+                DeviceDtuCacheResult result = MyCacheManager.getInstance().getDeviceDtuCacheResult(data.dtuAddress, data.deviceTableName.toLowerCase(), data.getPostalAddress());
+                if (result != null) data.deviceId = result.getDeviceId();
             }
             if (!StringsUtils.isEmpty(data.deviceId)) {
                 LogUtils.error("----3--deviceId----" + data.deviceId);
@@ -260,42 +296,20 @@ public class DBService implements ISubscriber {
                 List<DataAttr> dataAttrs = data.list;
                 if (dataAttrs == null) return;
 
-                //1.先从索引缓存中找到当前数据的索引
-                Vector<DeviceRemoteindexs> deviceRemoteindexsVector = MyCacheManager.getInstance().getDataByKey(MyCacheManager.DEVICE_REMOTE_INDEXES);
-                //保证线程安全forEach
-                List<DeviceRemoteindexs> currentDeviceRemoteindexsList = new ArrayList<>();
-                deviceRemoteindexsVector.forEach(item -> {
-                    if (data.deviceId.equals(item.getDeviceid()) && data.deviceTableName.equals(item.getDevicetablename())) {
-                        currentDeviceRemoteindexsList.add(item);
-                    }
-                });
-
-                Vector<DeviceRealRemotesignalling> deviceRealRemotesignallingVector = MyCacheManager.getInstance().getDataByKey(MyCacheManager.DEVICE_REAL_REMOTE_SIGNALLING);
-                Vector<DeviceRealRemotetelemetry> realRemotetelemetryVector = MyCacheManager.getInstance().getDataByKey(MyCacheManager.DEVICE_REAL_REMOTE_TELEMETRY);
-
+                //DeviceRealRemotesignallingMapper deviceRealRemotesignallingMapper = sqlSession.getMapper(DeviceRealRemotesignallingMapper.class);
+                //DeviceRealRemotetelemetryMapper deviceRealRemotetelemetryMapper = sqlSession.getMapper(DeviceRealRemotetelemetryMapper.class);
                 DeviceRemoteindexsMapper deviceRemoteindexsMapper = sqlSession.getMapper(DeviceRemoteindexsMapper.class);
-                DeviceRealRemotesignallingMapper deviceRealRemotesignallingMapper = sqlSession.getMapper(DeviceRealRemotesignallingMapper.class);
-                DeviceHistoryRemotesignallingMapper deviceHistoryRemotesignallingMapper = sqlSession.getMapper(DeviceHistoryRemotesignallingMapper.class);
-                DeviceRealRemotetelemetryMapper deviceRealRemotetelemetryMapper = sqlSession.getMapper(DeviceRealRemotetelemetryMapper.class);
-                DeviceHistoryRemotetelemetryMapper deviceHistoryRemotetelemetryMapper = sqlSession.getMapper(DeviceHistoryRemotetelemetryMapper.class);
-                DeviceRcdutpcMapper deviceRcdutpcMapper = sqlSession.getMapper(DeviceRcdutpcMapper.class);
-                DeviceLowvoltageMapper deviceLowvoltageMapper = sqlSession.getMapper(DeviceLowvoltageMapper.class);
 
                 //记录电流三项不平衡时发生在第几项
                 int index = 0;
                 double max = 0;
-
                 for (int i = 0; i < dataAttrs.size(); i++) {
                     DataAttr dataAttr = dataAttrs.get(i);
+                    //判断索引缓存中有没有当前数据项，有则直接拿来用，没有则同时更新索引缓存和数据库缓存
+                    DeviceRemoteindexs deviceRemoteindexsCache = MyCacheManager.getInstance().getDeviceRemoteindexes(data.deviceId, data.deviceTableName.toLowerCase(), dataAttr.getName());
                     DeviceRemoteindexs deviceRemoteindexs = new DeviceRemoteindexs();
-
-                    //2.判断索引缓存中有没有当前数据项，有则直接拿来用，没有则同时更新索引缓存和数据库缓存
-                    Optional<DeviceRemoteindexs> optional = currentDeviceRemoteindexsList
-                            .stream()
-                            .filter(item -> dataAttr.getName().equals(item.getDataitem()))
-                            .findFirst();
-                    if (optional.isPresent()) {
-                        deviceRemoteindexs.setRemoteindexsid(optional.get().getRemoteindexsid());
+                    if (deviceRemoteindexsCache != null) {
+                        deviceRemoteindexs.setRemoteindexsid(deviceRemoteindexsCache.getRemoteindexsid());
                     } else {
                         deviceRemoteindexs.setDeviceid(data.deviceId);
                         deviceRemoteindexs.setDevicetablename(data.deviceTableName);
@@ -304,39 +318,31 @@ public class DBService implements ISubscriber {
                         deviceRemoteindexs.setDataitemname(dataAttr.getCnname());
                         deviceRemoteindexs.setGroupname(dataAttr.getGroup());
                         deviceRemoteindexs.setRemoteindexsid(UUIDUtils.getUUId());
-                        currentDeviceRemoteindexsList.add(deviceRemoteindexs);
-                        remoteindexses.add(deviceRemoteindexs);
-                        deviceRemoteindexsMapper.insert(deviceRemoteindexs);
+                        int result = deviceRemoteindexsMapper.insert(deviceRemoteindexs);
+                        if (result > 0) remoteindexses.add(deviceRemoteindexs);
                     }
 
                     //遥信
                     if (dataAttr.getDateType() == RemoteType.YX) {
+                        DeviceRealRemotesignalling deviceRealRemotesignalling = new DeviceRealRemotesignalling();
+                        DeviceRealRemotesignalling deviceRealRemotesignallingCache = MyCacheManager.getInstance().getDeviceRealRemotesignalling(deviceRemoteindexs.getRemoteindexsid());
                         //3.1 遥信存入实时库和数据更改记录库
-                        deviceRealRemotesignalling = null;
-                        deviceRealRemotesignallingVector.forEach(item -> {
-                            if (deviceRealRemotesignalling == null) {
-                                if (item.getRemoteindexsid().equals(deviceRemoteindexs.getRemoteindexsid())) {
-                                    item.setRecordtime(dataAttr.getDtime());
-                                    item.setValue((Integer) dataAttr.getValue());
-                                    deviceRealRemotesignalling = item;
-                                }
-                            }
-                        });
-                        if (deviceRealRemotesignalling == null) {
+                        if (deviceRealRemotesignallingCache != null) {
                             //实时表
-                            deviceRealRemotesignalling = new DeviceRealRemotesignalling();
+                            deviceRealRemotesignalling.setRemoteindexsid(deviceRealRemotesignallingCache.getRemoteindexsid());
+                            deviceRealRemotesignalling.setRemotesignallingid(deviceRealRemotesignallingCache.getRemotesignallingid());
+                            deviceRealRemotesignalling.setRecordtime(dataAttr.getDtime());
+                            deviceRealRemotesignalling.setValue((Integer) dataAttr.getValue());
+                            deviceRealRemotesignalling.setDescription(deviceRealRemotesignallingCache.getDescription());
+                        } else {
+                            //实时表
                             deviceRealRemotesignalling.setRecordtime(dataAttr.getDtime());
                             deviceRealRemotesignalling.setValue((Integer) dataAttr.getValue());
                             deviceRealRemotesignalling.setRemoteindexsid(deviceRemoteindexs.getRemoteindexsid());
                             deviceRealRemotesignalling.setRemotesignallingid(UUIDUtils.getUUId());
-                            realRemotesignallings.add(deviceRealRemotesignalling);
-                            deviceRealRemotesignallingMapper.insert(deviceRealRemotesignalling);
-                            LogUtils.error("----4----deviceRealRemotesignalling real insert...");
-                        } else {
-                            //实时表
-                            deviceRealRemotesignallingMapper.updateByPrimaryKey(deviceRealRemotesignalling);
-                            LogUtils.error("----5----deviceRealRemotesignalling real update...");
                         }
+                        realRemotesignallings.add(deviceRealRemotesignalling);
+
                         if (dataAttr.isInsertHistory()) {
                             //3.2插入历史库
                             DeviceHistoryRemotesignalling deviceHistoryRemotesignalling = new DeviceHistoryRemotesignalling();
@@ -344,37 +350,29 @@ public class DBService implements ISubscriber {
                             deviceHistoryRemotesignalling.setValue((Integer) dataAttr.getValue());
                             deviceHistoryRemotesignalling.setRemoteindexsid(deviceRemoteindexs.getRemoteindexsid());
                             deviceHistoryRemotesignalling.setRemotesignallingid(UUIDUtils.getUUId());
-                            deviceHistoryRemotesignallingMapper.insert(deviceHistoryRemotesignalling);
+                            historyRemotesignallings.add(deviceHistoryRemotesignalling);
                         }
                     }
                     //遥测
                     else if (dataAttr.getDateType() == RemoteType.YC) {
+                        DeviceRealRemotetelemetry deviceRealRemotetelemetry = new DeviceRealRemotetelemetry();
                         //3.3 遥测存入实时库和数据更改记录库
-                        deviceRealRemotetelemetry = null;
-                        realRemotetelemetryVector.forEach(item -> {
-                            if (deviceRealRemotetelemetry == null) {
-                                if (item.getRemoteindexsid().equals(deviceRemoteindexs.getRemoteindexsid())) {
-                                    item.setRecordtime(dataAttr.getDtime());
-                                    item.setValue(String.valueOf(dataAttr.getValue()));
-                                    deviceRealRemotetelemetry = item;
-                                }
-                            }
-                        });
-                        if (deviceRealRemotetelemetry == null) {
+                        DeviceRealRemotetelemetry deviceRealRemotetelemetryCache = MyCacheManager.getInstance().getDeviceRealRemotetelemetry(deviceRemoteindexs.getRemoteindexsid());
+                        if (deviceRealRemotetelemetryCache != null) {
+                            deviceRealRemotetelemetry.setRemoteindexsid(deviceRealRemotetelemetryCache.getRemoteindexsid());
+                            deviceRealRemotetelemetry.setRemotetelemetryid(deviceRealRemotetelemetryCache.getRemotetelemetryid());
+                            deviceRealRemotetelemetry.setRecordtime(dataAttr.getDtime());
+                            deviceRealRemotetelemetry.setValue(String.valueOf(dataAttr.getValue()));
+                            deviceRealRemotetelemetry.setDescription(deviceRealRemotetelemetryCache.getDescription());
+                        } else {
                             //实时表
                             deviceRealRemotetelemetry = new DeviceRealRemotetelemetry();
                             deviceRealRemotetelemetry.setRecordtime(dataAttr.getDtime());
                             deviceRealRemotetelemetry.setValue(String.valueOf(dataAttr.getValue()));
                             deviceRealRemotetelemetry.setRemoteindexsid(deviceRemoteindexs.getRemoteindexsid());
                             deviceRealRemotetelemetry.setRemotetelemetryid(UUIDUtils.getUUId());
-                            realRemotetelemetries.add(deviceRealRemotetelemetry);
-                            deviceRealRemotetelemetryMapper.insert(deviceRealRemotetelemetry);
-                            LogUtils.error("----4----deviceRealRemotetelemetry real insert...");
-                        } else {
-                            //实时表
-                            deviceRealRemotetelemetryMapper.updateByPrimaryKey(deviceRealRemotetelemetry);
-                            LogUtils.error("----5----deviceRealRemotetelemetry real update...");
                         }
+                        realRemotetelemetries.add(deviceRealRemotetelemetry);
                         if (dataAttr.isInsertHistory()) {
                             //3.4 插入历史库
                             DeviceHistoryRemotetelemetry historyRemotetelemetry = new DeviceHistoryRemotetelemetry();
@@ -382,8 +380,9 @@ public class DBService implements ISubscriber {
                             historyRemotetelemetry.setValue(String.valueOf(dataAttr.getValue()));
                             historyRemotetelemetry.setRemoteindexsid(deviceRemoteindexs.getRemoteindexsid());
                             historyRemotetelemetry.setRemotetelemetryid(UUIDUtils.getUUId());
-                            deviceHistoryRemotetelemetryMapper.insert(historyRemotetelemetry);
+                            historyRemotetelemetries.add(historyRemotetelemetry);
                         }
+
                         //3.5 三项不平衡
                         //3.5.1 先获取电流三项的最大值位置,并存储三项不平衡持续时间
                         if (dataAttr.getName().equals("Ia") || dataAttr.getName().equals("Ib") || dataAttr.getName().equals("Ic")) {
@@ -395,6 +394,7 @@ public class DBService implements ISubscriber {
                             if (value <= UTPC) {
                                 String key = dataAttr.getName() + data.getDeviceId();
                                 if (utpcMap.containsKey(key)) {
+                                    DeviceRcdutpcMapper deviceRcdutpcMapper = sqlSession.getMapper(DeviceRcdutpcMapper.class);
                                     UTPCModel utpcModel = utpcMap.get(key);
                                     utpcModel.setEndTime(dataAttr.getDtime());
                                     int m = (int) DateUtils.getDiffMinutes(utpcModel.getBeginTime(), utpcModel.getEndTime());
@@ -413,6 +413,7 @@ public class DBService implements ISubscriber {
                                 }
                             }
                         }
+
                         //3.5.2 判断是否是三项不平衡
                         if (dataAttr.getName().equals("UTPC")) {
                             double val = Double.parseDouble(dataAttr.getValue() + "");
@@ -460,6 +461,7 @@ public class DBService implements ISubscriber {
                                     utpcModel.setDuration(m);
                                     utpcMap.remove(key);
 
+                                    DeviceLowvoltageMapper deviceLowvoltageMapper = sqlSession.getMapper(DeviceLowvoltageMapper.class);
                                     DeviceLowvoltage deviceLowvoltage = new DeviceLowvoltage();
                                     deviceLowvoltage.setLowuid(UUIDUtils.getUUId());
                                     deviceLowvoltage.setMinu(utpcModel.getMinU());
@@ -688,7 +690,6 @@ public class DBService implements ISubscriber {
          * @param data
          */
         private void saveSecondLpRecord(SecondLpRealData data) {
-
             List<SecondLpRecord> records = data.getSecondLpRecords();
             if (records != null && records.size() > 0) {
                 LogUtils.info(records.toString(), true);
@@ -735,7 +736,6 @@ public class DBService implements ISubscriber {
                     deviceRcdMapper.selectByExample(example).stream().findFirst().ifPresent(data::setDeviceRcd);
                     //如果不存在就添加
                     DeviceRcd rcd = data.getDeviceRcd();
-                    List<DeviceDtuCacheResult> cacheResults = new ArrayList<>();
                     if (rcd == null) {
                         rcd = new DeviceRcd();
                         String deviceId = UUIDUtils.getUUId();
@@ -830,11 +830,6 @@ public class DBService implements ISubscriber {
                             }
                         }
                     }
-                    //最后更新缓存
-                    if (cacheResults.size() > 0) {
-                        Vector<DeviceDtuCacheResult> vector = MyCacheManager.getInstance().getDataByKey(MyCacheManager.DEVICE_DTU_INFO);
-                        vector.addAll(cacheResults);
-                    }
                 }
             }
         }
@@ -843,70 +838,14 @@ public class DBService implements ISubscriber {
          * dtu上线
          */
         private void online(ProtocolLayerData protocolLayerData) {
-            String dtuId = getDeviceIdByDtuAddress(protocolLayerData.dtuAddress);
-            if (dtuId == null) return;
-            DeviceStaterecordMapper deviceStaterecordMapper = sqlSession.getMapper(DeviceStaterecordMapper.class);
-            DeviceStaterecord record = deviceStaterecordMapper.selectByPrimaryKey(dtuId);
-            if (record != null) {
-                record.setOnlinetime(DateUtils.getNowSqlDateTime());
-                record.setState(1);
-                record.setDescription("在线");
-                deviceStaterecordMapper.updateByPrimaryKeySelective(record);
-            } else {
-                record = new DeviceStaterecord();
-                record.setRecordid(dtuId);
-                record.setDeviceid(dtuId);
-                record.setDevicetablename("device_dtu");
-                record.setState(1);
-                record.setDescription("在线");
-                record.setOnlinetime(DateUtils.getNowSqlDateTime());
-                deviceStaterecordMapper.insert(record);
-            }
+            DtuDBService.getInstance().push(new DtuStateResult(DtuState.ONLINE, protocolLayerData.dtuAddress, DateUtils.getNowSqlDateTime()));
         }
 
         /**
          * dtu下线
          */
         private void offline(ProtocolLayerData protocolLayerData) {
-            String dtuId = getDeviceIdByDtuAddress(protocolLayerData.dtuAddress);
-            if (dtuId == null) return;
-            DeviceStaterecordMapper deviceStaterecordMapper = sqlSession.getMapper(DeviceStaterecordMapper.class);
-            DeviceHistoryStaterecordMapper historyStaterecordMapper = sqlSession.getMapper(DeviceHistoryStaterecordMapper.class);
-            DeviceStaterecord record = deviceStaterecordMapper.selectByPrimaryKey(dtuId);
-            if (record != null) {
-                record.setState(2);
-                record.setDescription("离线");
-                record.setUnlinetime(DateUtils.getNowSqlDateTime());
-                record.setDuration(String.valueOf(DateUtils.getDiffSeconds(record.getOnlinetime(), record.getUnlinetime())));
-                deviceStaterecordMapper.updateByPrimaryKeySelective(record);
-
-                DeviceHistoryStaterecord historyStaterecord = new DeviceHistoryStaterecord();
-                historyStaterecord.setRecordid(UUIDUtils.getUUId());
-                historyStaterecord.setDeviceid(record.getDeviceid());
-                historyStaterecord.setState(2);
-                historyStaterecord.setDevicetablename("device_dtu");
-                historyStaterecord.setDescription("离线");
-                historyStaterecord.setOnlinetime(record.getOnlinetime());
-                historyStaterecord.setUnlinetime(record.getUnlinetime());
-                historyStaterecord.setDuration(String.valueOf(DateUtils.getDiffSeconds(record.getUnlinetime(), new Date())));
-                historyStaterecordMapper.insert(historyStaterecord);
-            }
-        }
-
-        /**
-         * 根据dtuId获取deviceId
-         *
-         * @param dtuAddress
-         * @return
-         */
-        private String getDeviceIdByDtuAddress(String dtuAddress) {
-            if (StringsUtils.isEmpty(dtuAddress)) return null;
-            CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
-            Optional<DeviceDtu> optional = commonMapper.selectDeviceDtuIdByDtuAddress(dtuAddress).stream().findFirst();
-            if (optional.isPresent()) {
-                return optional.get().getOid();
-            }
-            return null;
+            DtuDBService.getInstance().push(new DtuStateResult(DtuState.OFFLINE, protocolLayerData.dtuAddress, DateUtils.getNowSqlDateTime()));
         }
     }
 

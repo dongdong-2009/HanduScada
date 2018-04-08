@@ -27,7 +27,7 @@ public class ControlWorldJob extends CommonJob implements BaseJob {
 
     @Override
     public String cronExpression() {
-        return "30 30 * * * ?";
+        return "0 30 * * * ?";
     }
 
     @Override

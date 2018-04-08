@@ -62,11 +62,11 @@ public class EveryDayOnceJob extends CommonJob implements BaseJob {
             /// <summary>
             /// 读剩余电流超限报警整定值
             /// </summary>
-            DeviceCmdTypeEnum.ReadResidualCurrentAlarmSettingValue,//----无解析
+            //DeviceCmdTypeEnum.ReadResidualCurrentAlarmSettingValue,//----无解析
             /// <summary>
             /// 剩余电流整定参数块Residual current setting parameter block
             /// </summary>
-            DeviceCmdTypeEnum.ResidualCurrentSettingParameterBlock,//----无解析
+            DeviceCmdTypeEnum.ResidualCurrentSettingParameterBlock,
             /// <summary>
             /// 电压整定参数块
             /// </summary>
@@ -92,7 +92,7 @@ public class EveryDayOnceJob extends CommonJob implements BaseJob {
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         if (enable) {
             LogUtils.error(DateUtils.dateToStr(DateUtils.getNowSqlDateTime()) + "-->" + jobName());
-            send(DeviceTypeEnum.LP,cmdTypes);
+            send(DeviceTypeEnum.LP, cmdTypes);
         }
     }
 

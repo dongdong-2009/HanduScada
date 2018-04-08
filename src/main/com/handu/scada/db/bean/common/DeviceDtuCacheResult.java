@@ -8,6 +8,7 @@ import java.io.Serializable;
 public class DeviceDtuCacheResult implements Serializable {
 
     private String dtuId;
+    private int port;
     private String deviceId;
     private String deviceTableName;
     private String name;
@@ -31,6 +32,14 @@ public class DeviceDtuCacheResult implements Serializable {
         } catch (NumberFormatException e) {
             return 1;
         }
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 
     public void setLevel(String level) {

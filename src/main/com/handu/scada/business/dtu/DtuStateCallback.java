@@ -18,12 +18,12 @@ public class DtuStateCallback implements DtuStateCallbackListener {
     @Override
     public void online(String clientId, String dtuAddress, MsgType type) {
         if (type == MsgType.LOGIN) {
-            LogUtils.info("dtu login:clientId----" + clientId + "---dtuId " + dtuAddress + "---dtuNum=" + DtuChannelManager.getDtuMapCount(), true);
+            LogUtils.info("dtu login:clientId----" + clientId + "---dtuAddress " + dtuAddress + "---dtuNum=" + DtuChannelManager.getDtuMapCount(), true);
         } else if (type == MsgType.HEARTBEAT) {
-            LogUtils.info("dtu heartbeat:clientId----" + clientId + "---dtuId " + dtuAddress);
+            LogUtils.info("dtu heartbeat:clientId----" + clientId + "---dtuAddress " + dtuAddress);
             return;
         } else if (type == MsgType.ONLINE) {
-            LogUtils.info("dtu online:clientId----" + clientId, true);
+            LogUtils.info("dtu online:clientId----" + clientId);
             return;
         }
         if (MainServer.START_TYPE == MainServer.START_NO_SQL) return;
@@ -37,9 +37,9 @@ public class DtuStateCallback implements DtuStateCallbackListener {
 
     @Override
     public void offline(String clientId, String dtuAddress) {
-        LogUtils.error("dtu offline:clientId----" + clientId + "---dtuId " + dtuAddress, true);
-        if (MainServer.START_TYPE == MainServer.START_NO_SQL) return;
         if (dtuAddress == null) return;
+        LogUtils.error("dtu offline:clientId----" + clientId + "---dtuAddress " + dtuAddress, true);
+        if (MainServer.START_TYPE == MainServer.START_NO_SQL) return;
         ProtocolLayerData protocolLayerData = new ProtocolLayerData();
         protocolLayerData.clientId = clientId;
         protocolLayerData.dtuAddress = dtuAddress;

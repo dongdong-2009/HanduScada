@@ -21,7 +21,7 @@ public class TripEventJob extends CommonJob implements BaseJob {
 
     @Override
     public String cronExpression() {
-        return "0 0/5 * * * ?";
+        return "45 2/5 * * * ?";
     }
 
     @Override

@@ -11,7 +11,7 @@ import main.com.handu.scada.protocol.enums.DeviceCmdTypeEnum;
 import main.com.handu.scada.protocol.enums.DeviceTypeEnum;
 
 import java.util.Objects;
-import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by 柳梦 on 2018/01/17.
@@ -82,15 +82,18 @@ public class CommonJob {
      * @param typeEnums
      */
     protected void send(MsgPriority type, DeviceTypeEnum deviceTypeEnum, DeviceCmdTypeEnum... typeEnums) {
-        Vector<DeviceDtuCacheResult> cacheResults = MyCacheManager.getInstance().getDataByKey(MyCacheManager.DEVICE_DTU_INFO);
+        ConcurrentHashMap<String, DeviceDtuCacheResult> cacheResults = MyCacheManager.getInstance().getDeviceDtuCache();
         if (cacheResults != null) {
-            cacheResults.forEach(c -> {
-                if (Objects.equals(c.getDeviceTableName().toLowerCase(), deviceTypeEnum.getTableName())) {
-                    for (DeviceCmdTypeEnum typeEnum : typeEnums) {
-                        send(type, c, typeEnum, deviceTypeEnum);
+            synchronized (cacheResults) {
+                cacheResults.entrySet().forEach(c -> {
+                    DeviceDtuCacheResult result = c.getValue();
+                    if (Objects.equals(result.getDeviceTableName().toLowerCase(), deviceTypeEnum.getTableName())) {
+                        for (DeviceCmdTypeEnum typeEnum : typeEnums) {
+                            send(type, result, typeEnum, deviceTypeEnum);
+                        }
                     }
-                }
-            });
+                });
+            }
         }
     }
 

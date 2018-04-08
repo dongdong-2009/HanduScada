@@ -368,6 +368,7 @@ public class DataAnalyze extends BaseDataAnalyze {
                         dataAttr.setCnname("设备型号");
                         dataAttr.setGroup(item.cmdtype.name());
                         dataAttr.setDateType(RemoteType.YC);
+                        dataAttr.setInsertHistory(false);
                         list.add(dataAttr);
                     }
                     return list;
@@ -380,6 +381,7 @@ public class DataAnalyze extends BaseDataAnalyze {
                     dataAttr.setUnit("");
                     dataAttr.setDtime(DateUtils.getNowSqlDateTime());
                     dataAttr.setCnname("读通讯地址");
+                    dataAttr.setInsertHistory(false);
                     dataAttr.setGroup(item.cmdtype.name());
                     dataAttr.setName(item.cmdtype.name());
                     list.add(dataAttr);
@@ -435,6 +437,69 @@ public class DataAnalyze extends BaseDataAnalyze {
                     dataAttr.setGroup(item.cmdtype.name());
                     dataAttr.setName(itemNames[0]);
                     list.add(dataAttr);
+
+                    dataAttr = new DataAttr();
+                    dataAttr.setDateType(RemoteType.YC);
+                    dataAttr.setUnit(item.unit.split(",")[1]);
+                    dataAttr.setName(itemNames[1]);
+                    dataAttr.setCnname(itemCnNames[1]);
+                    dataAttr.setDtime(item.dtime);
+                    dataAttr.setGroup(item.cmdtype.name());
+                    dataAttr.setInsertHistory(false);
+                    dataAttr.setValue(HexUtils.bcdByteToInt(item.data[3]));
+                    list.add(dataAttr);
+
+                    return list;
+
+                //"剩余电流超限报警整定值", "剩余电流记录变化差值整定值", "剩余电流记录间隔时间整定值"
+                case ResidualCurrentSettingParameterBlock:
+                    itemCnNames = new String[]{"剩余电流超限报警整定值", "剩余电流记录变化差值整定值", "剩余电流记录间隔时间整定值"};
+                    itemNames = new String[]{"Residualcurrentalarmsettingvalue", "Residualcurrentrecord", "Residualcurrentrecordingintervalsettingvalue"};
+                    BCD1 = HexUtils.bcdByteToInt(item.data[0]);
+                    BCD2 = HexUtils.bcdByteToInt(item.data[1]);
+                    objVal = BCD2 * 100 + BCD1;
+
+                    Object finalObjVal = objVal;
+                    list.add(new DataAttr() {{
+                        setDateType(RemoteType.YC);
+                        setUnit(item.unit.split(",")[0]);
+                        setName(itemNames[0]);
+                        setCnname(itemCnNames[0]);
+                        setDtime(item.dtime);
+                        setGroup(item.cmdtype.name());
+                        setValue(finalObjVal);
+                        setInsertHistory(false);
+                        setRecordchange(true);
+                    }});
+
+                    objVal = HexUtils.bcdByteToInt(item.data[2]);
+                    Object finalObjVal1 = objVal;
+                    list.add(new DataAttr() {{
+                        setDateType(RemoteType.YC);
+                        setUnit(item.unit.split(",")[1]);
+                        setName(itemNames[1]);
+                        setCnname(itemCnNames[1]);
+                        setDtime(item.dtime);
+                        setGroup(item.cmdtype.name());
+                        setValue(finalObjVal1);
+                        setInsertHistory(false);
+                        setRecordchange(true);
+                    }});
+
+                    objVal = HexUtils.bcdByteToInt(item.data[3]);
+                    Object finalObjVal2 = objVal;
+                    list.add(new DataAttr() {{
+                        setDateType(RemoteType.YC);
+                        setUnit(item.unit.split(",")[2]);
+                        setName(itemNames[2]);
+                        setCnname(itemCnNames[2]);
+                        setDtime(item.dtime);
+                        setGroup(item.cmdtype.name());
+                        setValue(finalObjVal2);
+                        setInsertHistory(false);
+                        setRecordchange(true);
+                    }});
+
                     return list;
 
                 // "过电压整定值", "欠电压整定值", "断相电压整定值"
@@ -535,6 +600,7 @@ public class DataAnalyze extends BaseDataAnalyze {
                     dataAttr.setDtime(DateUtils.getNowSqlDateTime());
                     dataAttr.setDateType(RemoteType.YC);
                     dataAttr.setCnname("设备号");
+                    dataAttr.setInsertHistory(false);
                     dataAttr.setGroup(item.cmdtype.name());
                     dataAttr.setName(item.cmdtype.name());
                     list.add(dataAttr);

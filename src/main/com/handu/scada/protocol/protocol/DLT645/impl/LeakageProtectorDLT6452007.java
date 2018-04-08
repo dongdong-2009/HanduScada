@@ -23,10 +23,10 @@ public class LeakageProtectorDLT6452007 extends BaseDLT645 {
     }
 
     @Override
-    public void getAddress(byte[] tempBuff) {
-        if (tempBuff != null) {
-            byte[] buff = HexUtils.cleanFE(tempBuff);
-            if (buff != null && buff.length >= 7) {
+    public void getAddress(byte[] buff) {
+        if (buff != null) {
+            //byte[] buff = HexUtils.cleanFE(tempBuff);
+            if (buff.length >= 7) {
                 ///报文结构解析
                 this.AddressCode = new byte[6];
                 System.arraycopy(buff, 1, this.AddressCode, 0, this.AddressCode.length);
@@ -76,8 +76,8 @@ public class LeakageProtectorDLT6452007 extends BaseDLT645 {
             byte[] buff = mediaData.CommandData;
             if (buff == null) return null;
             //漏报保温以0xFE开头0x16结束
-            if (buff[0] == (byte) 0xFE && buff[buff.length - 1] == 0x16) {
-                buff = HexUtils.cleanFE(buff);
+            buff = HexUtils.cleanFE(buff);
+            if (buff[0] == (byte) 0x68 && buff[buff.length - 1] == 0x16) {
                 if (valid(buff)) {
                     dtuAddress = mediaData.DTUString;
                     getAddress(buff);

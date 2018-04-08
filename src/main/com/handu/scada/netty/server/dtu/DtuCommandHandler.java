@@ -25,11 +25,7 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         if (ctx.channel() != null && !ctx.channel().isActive()) {
-            String clientId = ctx.channel().id().asShortText();
-            String dtuAddress = DtuChannelManager.getDtuAddress(clientId);
-            callback.offline(clientId, dtuAddress);
-            DtuChannelManager.removeClient(clientId, dtuAddress);
-            ctx.close();
+            offline(ctx);
         }
     }
 
@@ -83,6 +79,8 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
         } catch (InterruptedException e) {
             ExceptionHandler.handle(e);
         } finally {
+            // 释放资源，这行很关键
+            result.release();
             //更改最后一次接收时间
             DtuNetworkConnection state = DtuChannelManager.getNetworkState(ctx.channel().id().asShortText());
             if (state != null) {
@@ -92,8 +90,6 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
                 String resultStr = HexUtils.byteArrayToHexStr(byteResult);
                 LogUtils.info("dtu channel read " + "data=" + resultStr);
             }
-            // 释放资源，这行很关键
-            result.release();
         }
     }
 
@@ -103,12 +99,26 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable e) {
-        if (Config.isDebug) ExceptionHandler.handle(e);
-//        DtuNetworkConnection connection = DtuChannelManager.getNetworkState(ctx.channel().id().asShortText());
-//        if (connection != null) {
-//            DtuChannelManager.removeClient(ctx.channel().id().asShortText(), connection.getDtuAddress());
-//        }
-        //ctx.close();
+        if (Config.isDebug) ExceptionHandler.print(e);
+        offline(ctx);
+    }
+
+    /**
+     * 设备下线，异常断开
+     *
+     * @param ctx
+     */
+    private void offline(ChannelHandlerContext ctx) {
+        try {
+            String clientId = ctx.channel().id().asShortText();
+            String dtuAddress = DtuChannelManager.getDtuAddress(clientId);
+            callback.offline(clientId, dtuAddress);
+            DtuChannelManager.removeClient(clientId, dtuAddress);
+        } catch (Exception e1) {
+            ExceptionHandler.print(e1);
+        } finally {
+            ctx.close();
+        }
     }
 
     @Override

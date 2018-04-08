@@ -124,7 +124,7 @@ public class DtuCommand extends CommonJob {
             case 1007:
                 readPostalAddress();
             default:
-                LogUtils.error("not find DeviceCmdTypeEnum by value " + value, true);
+                LogUtils.error("not find cmd by value " + value, true);
                 break;
         }
     }

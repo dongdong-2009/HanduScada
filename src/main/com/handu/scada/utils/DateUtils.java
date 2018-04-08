@@ -1,5 +1,7 @@
 package main.com.handu.scada.utils;
 
+import main.com.handu.scada.exception.ExceptionHandler;
+
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -163,7 +165,8 @@ public class DateUtils {
         Date strToDate = null;
         try {
             strToDate = formatter.parse(strDate);
-        } catch (ParseException ignored) {
+        } catch (ParseException e) {
+            ExceptionHandler.print(e);
         }
         return strToDate;
     }

@@ -13,7 +13,7 @@ public class DataAttr {
     private Object value;
     private String unit;
     private Date dtime;
-    private boolean recordchange;
+    private boolean recordchange = false;
     //是否入历史库
     private boolean isInsertHistory = true;
 

@@ -4,7 +4,7 @@
 
     <!--mybatis ehcache缓存配置 -->
     <!-- 以下两个<cache>标签二选一,第一个可以输出日志,第二个不输出日志 -->
-    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>
+    <!--<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>-->
     <!--<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>-->
 
     <insert id="insertBySql">
@@ -31,9 +31,10 @@
     </resultMap>
 
     <select id="selectDeviceDtuCacheResult" parameterType="java.lang.String"
-            resultMap="DeviceDtuCacheResultMap" useCache="true">
+            resultMap="DeviceDtuCacheResultMap">
         SELECT
         c.oid AS dtuId,
+        c.Port as port,
         a.oid AS deviceId,
         b.deviceTableName,
         a. NAME,
@@ -64,6 +65,7 @@
 
         SELECT
         c.oid AS dtuId,
+        c.Port as port,
         a.oid AS deviceId,
         b.deviceTableName,
         a. NAME,
@@ -87,6 +89,7 @@
 
         SELECT
         c.oid AS dtuId,
+        c.Port as port,
         a.oid AS deviceId,
         b.deviceTableName,
         a. NAME,

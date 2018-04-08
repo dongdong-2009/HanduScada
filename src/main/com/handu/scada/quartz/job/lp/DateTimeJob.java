@@ -34,6 +34,7 @@ public class DateTimeJob extends CommonJob implements BaseJob {
 
     @Override
     public String cronExpression() {
+        //整点采集
         return "0 0 * * * ?";
     }
 

@@ -63,6 +63,10 @@ public class OnlyOnceJob extends CommonJob implements BaseJob {
             ///剩余电流动作特性（ A型或 AC 型）
             /// </summary>
             DeviceCmdTypeEnum.AAC,
+            /// <summary>
+            /// 读设备型号
+            /// </summary>
+            DeviceCmdTypeEnum.ReadDeviceModel,
     };
 
     @Override

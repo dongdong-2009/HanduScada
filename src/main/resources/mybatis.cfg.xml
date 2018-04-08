@@ -9,7 +9,12 @@
         <!--一级缓存-->
         <setting name="localCacheScope" value="STATEMENT"/>
         <!--二级缓存-->
-        <setting name="cacheEnabled" value="true"/>
+        <setting name="cacheEnabled" value="false"/>
+        <!--全局性设置懒加载。如果设为‘false’，则所有相关联的都会被初始化加载。-->
+        <setting name="lazyLoadingEnabled" value="true"/>
+        <!--设置一个时限，以决定让驱动器等待数据库回应的多长时间为超时秒-->
+        <setting name="defaultStatementTimeout" value="50"/>
+        <setting name="defaultFetchSize" value="100"/>
     </settings>
 
 
