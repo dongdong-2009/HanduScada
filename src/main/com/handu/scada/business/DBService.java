@@ -9,6 +9,7 @@ import main.com.handu.scada.business.message.Msg;
 import main.com.handu.scada.business.message.MsgManager;
 import main.com.handu.scada.business.utpc.UTPCModel;
 import main.com.handu.scada.cache.MyCacheManager;
+import main.com.handu.scada.config.Config;
 import main.com.handu.scada.db.bean.*;
 import main.com.handu.scada.db.bean.common.DeviceDtuCacheResult;
 import main.com.handu.scada.db.mapper.*;
@@ -571,7 +572,7 @@ public class DBService implements ISubscriber {
                         String content = record.toString();
                         String alarmTime1 = DateUtils.dateToStr(record.AlarmTime);
                         String deviceId = rcd.getOid();
-                        String msgContent = String.format("%s,于时间%s,%s", name, alarmTime1, content);
+                        String msgContent = String.format("%s,于时间%s,%s,%s", name, alarmTime1, content, Config.getSystemName());
                         MsgManager.getInstance().putMsg(new Msg(deviceId, alarm.getAlarmtype(), msgContent));
                     });
                 }
@@ -604,7 +605,7 @@ public class DBService implements ISubscriber {
                             String content = "合闸成功";
                             String alarmTime = DateUtils.dateToStr(DateUtils.getNowSqlDateTime());
                             String deviceId = rcd.getOid();
-                            String msgContent = String.format("%s,于时间%s,%s", name, alarmTime, content);
+                            String msgContent = String.format("%s,于时间%s,%s[%s]", name, alarmTime, content, Config.getSystemName());
                             MsgManager.getInstance().putMsg(new Msg(deviceId, alarm.getAlarmtype(), msgContent));
                         }
                     }
@@ -862,7 +863,6 @@ public class DBService implements ISubscriber {
 
         @Override
         public void run() {
-            LogUtils.info("DBService.SwitchTask.run");
         }
     }
 }

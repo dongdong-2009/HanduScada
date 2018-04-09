@@ -158,7 +158,9 @@ public class MainServer {
                 } else if (entry.getKey().equals("switch.port")) {
                     Config.setSwitchPorts(AesUtils.decrypt(String.valueOf(entry.getValue())));
                 } else if (entry.getKey().equals("dtu.heartbeat")) {
-                    Config.setHeartBeat(Integer.valueOf((String) entry.getValue()));
+                    Config.setHeartBeat(Integer.valueOf(String.valueOf(entry.getValue())));
+                } else if (entry.getKey().equals("system.name")) {
+                    Config.setSystemName(String.valueOf(entry.getValue()));
                 }
             }
         } catch (IOException e) {

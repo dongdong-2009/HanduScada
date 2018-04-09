@@ -76,10 +76,11 @@ public class DtuTcpClient implements ISubscriber, IClient {
                                 mediaData.isWaitReceive = protocolLayerData.isWaitReceive;
                                 mediaData.cmdTypeEnum = protocolLayerData.CmdType;
                                 mediaData.deviceTypeEnum = protocolLayerData.deviceTypeEnum;
-                                //如果上一次发送时间大于15分钟并且队列数量不为0，清空队列避免发送重复命令
-                                if (state.getQueueSize() > 0 && System.currentTimeMillis() - state.getLastSendTime() > 900 * 1000) {
+                                //如果上一次发送时间大于3倍心跳并且队列数量不为0，清空队列避免发送重复命令
+                                if (state.getQueueSize() > 0 && System.currentTimeMillis() - state.getLastSendTime() > Config.getHeartBeat() * 3) {
                                     state.clearQueue();
                                 }
+                                //如果不忙或者上一次发送时间已过去1分钟设备还未回复则继续发送
                                 if (!state.isBusy() || System.currentTimeMillis() - state.getLastSendTime() > 60 * 1000) {
                                     printCommand(mediaData, false);
                                     ByteBuf byteBuf = context.alloc().buffer(mediaData.CommandData.length);

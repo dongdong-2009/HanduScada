@@ -227,7 +227,7 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
                 state.setBusy(data.isWaitReceive);
                 state.setLastSendTime(System.currentTimeMillis());
                 sendCommand(context, byteBuf);
-                printCommand(data);
+                printCommand(data, type);
             }
         } else if (lowQueue.size() > 0) {
             data = lowQueue.poll();
@@ -237,7 +237,7 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
                 state.setLastSendTime(System.currentTimeMillis());
                 state.setBusy(data.isWaitReceive);
                 sendCommand(context, byteBuf);
-                printCommand(data);
+                printCommand(data, type);
             }
         } else {
             state.setBusy(false);
@@ -249,10 +249,10 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
      *
      * @param data
      */
-    private void printCommand(MediaData data) {
+    private void printCommand(MediaData data, MsgType type) {
         if (Config.isDebug) {
             String resultStr = HexUtils.byteArrayToHexStr(data.CommandData);
-            LogUtils.info("sendCommand-->deviceType=" + data.deviceTypeEnum.name() + ",cmdType=" + data.cmdTypeEnum.name() + ",data=" + resultStr);
+            LogUtils.info(type.name() + " next send-->deviceType=" + data.deviceTypeEnum.name() + ",cmdType=" + data.cmdTypeEnum.name() + ",data=" + resultStr);
         }
     }
 

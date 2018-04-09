@@ -2,6 +2,8 @@ package main.com.handu.scada.config;
 
 public class Config {
 
+    private static String SystemName = "总漏保在线管理系统";
+
     /**
      * 心跳
      */
@@ -63,5 +65,13 @@ public class Config {
 
     public static void setHeartBeat(int heartBeat) {
         Config.heartBeat = heartBeat;
+    }
+
+    public static String getSystemName() {
+        return SystemName;
+    }
+
+    public static void setSystemName(String systemName) {
+        SystemName = systemName;
     }
 }

@@ -62,7 +62,7 @@ public class EveryDayOnceJob extends CommonJob implements BaseJob {
             /// <summary>
             /// 读剩余电流超限报警整定值
             /// </summary>
-            //DeviceCmdTypeEnum.ReadResidualCurrentAlarmSettingValue,//----无解析
+            //DeviceCmdTypeEnum.ReadResidualCurrentAlarmSettingValue,
             /// <summary>
             /// 剩余电流整定参数块Residual current setting parameter block
             /// </summary>
