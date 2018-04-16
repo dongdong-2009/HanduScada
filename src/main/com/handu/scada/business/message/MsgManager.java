@@ -4,7 +4,10 @@ import main.com.handu.scada.business.message.client.rpt.Scdl_sms_rpt_wsLocator;
 import main.com.handu.scada.business.message.client.rpt.Scdl_sms_rpt_wsSoap_BindingStub;
 import main.com.handu.scada.business.message.client.send.Scdl_sms_send_wsLocator;
 import main.com.handu.scada.business.message.client.send.Scdl_sms_send_wsSoap_BindingStub;
-import main.com.handu.scada.db.bean.*;
+import main.com.handu.scada.db.bean.BaseSmssend;
+import main.com.handu.scada.db.bean.BaseSmssendExample;
+import main.com.handu.scada.db.bean.BaseUser;
+import main.com.handu.scada.db.bean.DeviceCommunicationgroupExample;
 import main.com.handu.scada.db.mapper.BaseSmssendMapper;
 import main.com.handu.scada.db.mapper.BaseUserMapper;
 import main.com.handu.scada.db.mapper.DeviceCommunicationgroupMapper;
@@ -127,6 +130,7 @@ public class MsgManager {
 
     public void putMsg(Msg message) {
         try {
+            LogUtils.info(message.toString());
             queue.put(message);
         } catch (InterruptedException e) {
             ExceptionHandler.handle(e);

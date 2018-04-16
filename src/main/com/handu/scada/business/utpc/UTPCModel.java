@@ -7,9 +7,9 @@ import java.util.Date;
  */
 public class UTPCModel {
 
-    public static final double UTPC = 0.25;
-    public static final double VOLTAGE = 220;
-    public static final double VOLTAGE_RATE = 0.1;
+    public static double UTPC_RATE = 0.25;
+    public static double NORMAL_VOLTAGE = 220;
+    public static double LOW_VOLTAGE_RATE = 0.1;
 
     private String deviceId;
     private double maxUtpc;
@@ -17,6 +17,7 @@ public class UTPCModel {
     private Date endTime;
     private int duration;
     private String phase;
+    private int minU;
 
     public String getDeviceId() {
         return deviceId;
@@ -73,7 +74,4 @@ public class UTPCModel {
     public void setMinU(int minU) {
         this.minU = minU;
     }
-
-    private int minU;
-
 }

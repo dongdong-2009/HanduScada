@@ -48,4 +48,14 @@ public class Msg {
     public void setMsgContent(String msgContent) {
         this.msgContent = msgContent;
     }
+
+    @Override
+    public String toString() {
+        return "Msg{" +
+                "DeviceId='" + DeviceId + '\'' +
+                ", DeviceAlarms=" + DeviceAlarms +
+                ", msgContent='" + msgContent + '\'' +
+                ", priority=" + priority +
+                '}';
+    }
 }

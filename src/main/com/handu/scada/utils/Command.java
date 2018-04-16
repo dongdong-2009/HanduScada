@@ -25,6 +25,7 @@ public class Command {
         add("10." + NUMBER);
         add("11." + BROAD_CAST_TIME);
         add("12." + SQL);
+        add("13." + SIGNAL);
     }};
     private static final ArrayList<String> cmdList = new ArrayList<String>() {{
         add("cmd-1000(baseData)");
@@ -37,49 +38,49 @@ public class Command {
         add("cmd-1007(readPostalAddress)");
     }};
 
+    private static final String SIGNAL = "signal strength --> c(ollect)ss-dtuAddress r(ead)ss-dtuAddress)";
+    private static final String SIGNAL_R = "rss-*";
+    private static final String SIGNAL_C = "css-*";
+
     private static final String MENU = "menu";
 
     private static final String CMD = "cmd";
     private static final String CMD_Y = "cmd-*";
 
-    private static final String DEBUG = "log";
+    private static final String DEBUG = "log --> l-o(pen),l-(c)lose";
     private static final String DEBUG_Y = "l-o";
     private static final String DEBUG_N = "l-c";
-    private static final String DEBUG_A = "l-a";
 
-    private static final String QUARTZ = "quartz";
+    private static final String QUARTZ = "quartz --> q-(o)pen,q-(c)lose,q-(r)estart";
     private static final String QUARTZ_Y = "q-o";
     private static final String QUARTZ_N = "q-c";
     private static final String QUARTZ_R = "q-r";
 
-    private static final String UPDATE = "update";
+    private static final String UPDATE = "update --> update-(s)top,update-(500~10000) start";
     private static final String UPDATE_N = "update-s";
     private static final String UPDATE_Y = "update-*";
 
-    private static final String DECRYPT = "dec";
+    private static final String DECRYPT = "dec --> dec-str";
     private static final String DECRYPT_Y = "dec-*";
 
-    private static final String ENCRYPT = "enc";
+    private static final String ENCRYPT = "enc --> enc-str";
     private static final String ENCRYPT_Y = "enc-*";
 
     public static final String START_SQL = "s";
     public static final String START_NOSQL = "n";
 
+    private static final String RESTART = "restart --> rs-dtuAddress";
     private static final String DTU_RESTART_Y = "rs-*";
 
-    private static final String DTU_INFO = "info";
+    private static final String DTU_INFO = "info --> if-dtuAddress";
     private static final String DTU_INFO_Y = "if-*";
 
     private static final String NUMBER = "num";
 
-    private static final String INFO = "info";
-    private static final String RESTART = "restart";
-
     private static final String SQL = "sql";
-
     private static final String SQL_Y = "sql-*";
 
-    private static final String BROAD_CAST_TIME = "broadcastTime(bt-address)";
+    private static final String BROAD_CAST_TIME = "broadcastTime --> bt-dtuAddress";
     private static final String TIME = "bt-*";
 
     public static void command(String command) {
@@ -109,9 +110,6 @@ public class Command {
             case DEBUG:
                 LogUtils.info("log has " + (Config.isDebug ? "opened" : "closed") + ",l-(o)pen,l-(c)losesss", true);
                 return;
-            case DEBUG_A:
-                LogUtils.filterAddress = null;
-                return;
             case DEBUG_N:
                 Config.isDebug = false;
                 LogUtils.info("log has " + (Config.isDebug ? "opened" : "closed"), true);
@@ -136,24 +134,6 @@ public class Command {
                 return;
             case UPDATE_N:
                 DtuUpdateUtil.stop();
-                return;
-            case UPDATE:
-                LogUtils.info("input update-(500-10000) to update,(s)top to stop", true);
-                return;
-            case ENCRYPT:
-                LogUtils.info("input enc-str", true);
-                return;
-            case DECRYPT:
-                LogUtils.info("input dec-str", true);
-                return;
-            case INFO:
-                LogUtils.info("input if-address", true);
-                return;
-            case RESTART:
-                LogUtils.info("input rs-address", true);
-                return;
-            case SQL:
-                LogUtils.info("input sql-sql", true);
                 return;
         }
 
@@ -238,6 +218,26 @@ public class Command {
                     DtuCommand.getInstance().executeSql(command);
                 } else {
                     LogUtils.error("sql input error!", true);
+                }
+            }
+            return;
+        }
+
+        if (isMatch(command, SIGNAL_R)) {
+            command = command.substring(command.indexOf("-") + 1, command.length());
+            if (!StringsUtils.isEmpty(command)) {
+                if (command.length() > 0) {
+                    DtuCommand.getInstance().readSignalStrength(command);
+                }
+            }
+            return;
+        }
+
+        if (isMatch(command, SIGNAL_C)) {
+            command = command.substring(command.indexOf("-") + 1, command.length());
+            if (!StringsUtils.isEmpty(command)) {
+                if (command.length() > 0) {
+                    DtuCommand.getInstance().collectSignalStrength(command);
                 }
             }
             return;

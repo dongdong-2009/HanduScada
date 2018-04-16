@@ -5,6 +5,8 @@
     <id column="AlarmId" jdbcType="VARCHAR" property="alarmid" />
     <result column="DeviceTableName" jdbcType="VARCHAR" property="devicetablename" />
     <result column="DeviceId" jdbcType="VARCHAR" property="deviceid" />
+    <result column="State" jdbcType="INTEGER" property="state" />
+    <result column="AlarmContent" jdbcType="VARCHAR" property="alarmcontent" />
     <result column="Ua" jdbcType="DOUBLE" property="ua" />
     <result column="Ub" jdbcType="DOUBLE" property="ub" />
     <result column="Uc" jdbcType="DOUBLE" property="uc" />
@@ -34,9 +36,6 @@
     <result column="ModifyDate" jdbcType="TIMESTAMP" property="modifydate" />
     <result column="ModifyUserId" jdbcType="VARCHAR" property="modifyuserid" />
     <result column="ModifyUserName" jdbcType="VARCHAR" property="modifyusername" />
-  </resultMap>
-  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="main.com.handu.scada.db.bean.DeviceAlarm">
-    <result column="AlarmContent" jdbcType="LONGVARCHAR" property="alarmcontent" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -97,30 +96,12 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    AlarmId, DeviceTableName, DeviceId, Ua, Ub, Uc, Ia, Ib, Ic, Io, AlarmType, AlarmPhase, 
-    AlarmLevel, DurationTime, OutageTime, PowerOnTime, AlarmTime, WorkOrderId, IsDeal, 
-    DealTime, IsSendWorkOrder, SendTime, SortCode, DeleteMark, EnabledMark, Description, 
-    CreateDate, CreateUserId, CreateUserName, ModifyDate, ModifyUserId, ModifyUserName
+    AlarmId, DeviceTableName, DeviceId, State, AlarmContent, Ua, Ub, Uc, Ia, Ib, Ic, 
+    Io, AlarmType, AlarmPhase, AlarmLevel, DurationTime, OutageTime, PowerOnTime, AlarmTime, 
+    WorkOrderId, IsDeal, DealTime, IsSendWorkOrder, SendTime, SortCode, DeleteMark, EnabledMark, 
+    Description, CreateDate, CreateUserId, CreateUserName, ModifyDate, ModifyUserId, 
+    ModifyUserName
   </sql>
-  <sql id="Blob_Column_List">
-    AlarmContent
-  </sql>
-  <select id="selectByExampleWithBLOBs" parameterType="main.com.handu.scada.db.bean.DeviceAlarmExample" resultMap="ResultMapWithBLOBs">
-    select
-    <if test="distinct">
-      distinct
-    </if>
-    <include refid="Base_Column_List" />
-    ,
-    <include refid="Blob_Column_List" />
-    from device_alarm
-    <if test="_parameter != null">
-      <include refid="Example_Where_Clause" />
-    </if>
-    <if test="orderByClause != null">
-      order by ${orderByClause}
-    </if>
-  </select>
   <select id="selectByExample" parameterType="main.com.handu.scada.db.bean.DeviceAlarmExample" resultMap="BaseResultMap">
     select
     <if test="distinct">
@@ -135,11 +116,9 @@
       order by ${orderByClause}
     </if>
   </select>
-  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
     select 
     <include refid="Base_Column_List" />
-    ,
-    <include refid="Blob_Column_List" />
     from device_alarm
     where AlarmId = #{alarmid,jdbcType=VARCHAR}
   </select>
@@ -155,27 +134,27 @@
   </delete>
   <insert id="insert" parameterType="main.com.handu.scada.db.bean.DeviceAlarm">
     insert into device_alarm (AlarmId, DeviceTableName, DeviceId, 
-      Ua, Ub, Uc, Ia, 
-      Ib, Ic, Io, AlarmType, 
-      AlarmPhase, AlarmLevel, DurationTime, 
-      OutageTime, PowerOnTime, AlarmTime, 
-      WorkOrderId, IsDeal, DealTime, 
-      IsSendWorkOrder, SendTime, SortCode, 
-      DeleteMark, EnabledMark, Description, 
-      CreateDate, CreateUserId, CreateUserName, 
-      ModifyDate, ModifyUserId, ModifyUserName, 
-      AlarmContent)
+      State, AlarmContent, Ua, 
+      Ub, Uc, Ia, Ib, 
+      Ic, Io, AlarmType, AlarmPhase, 
+      AlarmLevel, DurationTime, OutageTime, 
+      PowerOnTime, AlarmTime, WorkOrderId, 
+      IsDeal, DealTime, IsSendWorkOrder, 
+      SendTime, SortCode, DeleteMark, 
+      EnabledMark, Description, CreateDate, 
+      CreateUserId, CreateUserName, ModifyDate, 
+      ModifyUserId, ModifyUserName)
     values (#{alarmid,jdbcType=VARCHAR}, #{devicetablename,jdbcType=VARCHAR}, #{deviceid,jdbcType=VARCHAR}, 
-      #{ua,jdbcType=DOUBLE}, #{ub,jdbcType=DOUBLE}, #{uc,jdbcType=DOUBLE}, #{ia,jdbcType=DOUBLE}, 
-      #{ib,jdbcType=DOUBLE}, #{ic,jdbcType=DOUBLE}, #{io,jdbcType=DOUBLE}, #{alarmtype,jdbcType=INTEGER}, 
-      #{alarmphase,jdbcType=VARCHAR}, #{alarmlevel,jdbcType=INTEGER}, #{durationtime,jdbcType=DOUBLE}, 
-      #{outagetime,jdbcType=TIMESTAMP}, #{powerontime,jdbcType=TIMESTAMP}, #{alarmtime,jdbcType=TIMESTAMP}, 
-      #{workorderid,jdbcType=VARCHAR}, #{isdeal,jdbcType=INTEGER}, #{dealtime,jdbcType=TIMESTAMP}, 
-      #{issendworkorder,jdbcType=INTEGER}, #{sendtime,jdbcType=TIMESTAMP}, #{sortcode,jdbcType=INTEGER}, 
-      #{deletemark,jdbcType=INTEGER}, #{enabledmark,jdbcType=INTEGER}, #{description,jdbcType=VARCHAR}, 
-      #{createdate,jdbcType=TIMESTAMP}, #{createuserid,jdbcType=VARCHAR}, #{createusername,jdbcType=VARCHAR}, 
-      #{modifydate,jdbcType=TIMESTAMP}, #{modifyuserid,jdbcType=VARCHAR}, #{modifyusername,jdbcType=VARCHAR}, 
-      #{alarmcontent,jdbcType=LONGVARCHAR})
+      #{state,jdbcType=INTEGER}, #{alarmcontent,jdbcType=VARCHAR}, #{ua,jdbcType=DOUBLE}, 
+      #{ub,jdbcType=DOUBLE}, #{uc,jdbcType=DOUBLE}, #{ia,jdbcType=DOUBLE}, #{ib,jdbcType=DOUBLE}, 
+      #{ic,jdbcType=DOUBLE}, #{io,jdbcType=DOUBLE}, #{alarmtype,jdbcType=INTEGER}, #{alarmphase,jdbcType=VARCHAR}, 
+      #{alarmlevel,jdbcType=INTEGER}, #{durationtime,jdbcType=DOUBLE}, #{outagetime,jdbcType=TIMESTAMP}, 
+      #{powerontime,jdbcType=TIMESTAMP}, #{alarmtime,jdbcType=TIMESTAMP}, #{workorderid,jdbcType=VARCHAR}, 
+      #{isdeal,jdbcType=INTEGER}, #{dealtime,jdbcType=TIMESTAMP}, #{issendworkorder,jdbcType=INTEGER}, 
+      #{sendtime,jdbcType=TIMESTAMP}, #{sortcode,jdbcType=INTEGER}, #{deletemark,jdbcType=INTEGER}, 
+      #{enabledmark,jdbcType=INTEGER}, #{description,jdbcType=VARCHAR}, #{createdate,jdbcType=TIMESTAMP}, 
+      #{createuserid,jdbcType=VARCHAR}, #{createusername,jdbcType=VARCHAR}, #{modifydate,jdbcType=TIMESTAMP}, 
+      #{modifyuserid,jdbcType=VARCHAR}, #{modifyusername,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="main.com.handu.scada.db.bean.DeviceAlarm">
     insert into device_alarm
@@ -188,6 +167,12 @@
       </if>
       <if test="deviceid != null">
         DeviceId,
+      </if>
+      <if test="state != null">
+        State,
+      </if>
+      <if test="alarmcontent != null">
+        AlarmContent,
       </if>
       <if test="ua != null">
         Ua,
@@ -276,9 +261,6 @@
       <if test="modifyusername != null">
         ModifyUserName,
       </if>
-      <if test="alarmcontent != null">
-        AlarmContent,
-      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="alarmid != null">
@@ -289,6 +271,12 @@
       </if>
       <if test="deviceid != null">
         #{deviceid,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null">
+        #{state,jdbcType=INTEGER},
+      </if>
+      <if test="alarmcontent != null">
+        #{alarmcontent,jdbcType=VARCHAR},
       </if>
       <if test="ua != null">
         #{ua,jdbcType=DOUBLE},
@@ -377,9 +365,6 @@
       <if test="modifyusername != null">
         #{modifyusername,jdbcType=VARCHAR},
       </if>
-      <if test="alarmcontent != null">
-        #{alarmcontent,jdbcType=LONGVARCHAR},
-      </if>
     </trim>
   </insert>
   <select id="countByExample" parameterType="main.com.handu.scada.db.bean.DeviceAlarmExample" resultType="java.lang.Long">
@@ -391,183 +376,149 @@
   <update id="updateByExampleSelective" parameterType="map">
     update device_alarm
     <set>
-      <if test="tripEventRecord.alarmid != null">
-        AlarmId = #{tripEventRecord.alarmid,jdbcType=VARCHAR},
+      <if test="record.alarmid != null">
+        AlarmId = #{record.alarmid,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.devicetablename != null">
-        DeviceTableName = #{tripEventRecord.devicetablename,jdbcType=VARCHAR},
+      <if test="record.devicetablename != null">
+        DeviceTableName = #{record.devicetablename,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.deviceid != null">
-        DeviceId = #{tripEventRecord.deviceid,jdbcType=VARCHAR},
+      <if test="record.deviceid != null">
+        DeviceId = #{record.deviceid,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.ua != null">
-        Ua = #{tripEventRecord.ua,jdbcType=DOUBLE},
+      <if test="record.state != null">
+        State = #{record.state,jdbcType=INTEGER},
       </if>
-      <if test="tripEventRecord.ub != null">
-        Ub = #{tripEventRecord.ub,jdbcType=DOUBLE},
+      <if test="record.alarmcontent != null">
+        AlarmContent = #{record.alarmcontent,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.uc != null">
-        Uc = #{tripEventRecord.uc,jdbcType=DOUBLE},
+      <if test="record.ua != null">
+        Ua = #{record.ua,jdbcType=DOUBLE},
       </if>
-      <if test="tripEventRecord.ia != null">
-        Ia = #{tripEventRecord.ia,jdbcType=DOUBLE},
+      <if test="record.ub != null">
+        Ub = #{record.ub,jdbcType=DOUBLE},
       </if>
-      <if test="tripEventRecord.ib != null">
-        Ib = #{tripEventRecord.ib,jdbcType=DOUBLE},
+      <if test="record.uc != null">
+        Uc = #{record.uc,jdbcType=DOUBLE},
       </if>
-      <if test="tripEventRecord.ic != null">
-        Ic = #{tripEventRecord.ic,jdbcType=DOUBLE},
+      <if test="record.ia != null">
+        Ia = #{record.ia,jdbcType=DOUBLE},
       </if>
-      <if test="tripEventRecord.io != null">
-        Io = #{tripEventRecord.io,jdbcType=DOUBLE},
+      <if test="record.ib != null">
+        Ib = #{record.ib,jdbcType=DOUBLE},
       </if>
-      <if test="tripEventRecord.alarmtype != null">
-        AlarmType = #{tripEventRecord.alarmtype,jdbcType=INTEGER},
+      <if test="record.ic != null">
+        Ic = #{record.ic,jdbcType=DOUBLE},
       </if>
-      <if test="tripEventRecord.alarmphase != null">
-        AlarmPhase = #{tripEventRecord.alarmphase,jdbcType=VARCHAR},
+      <if test="record.io != null">
+        Io = #{record.io,jdbcType=DOUBLE},
       </if>
-      <if test="tripEventRecord.alarmlevel != null">
-        AlarmLevel = #{tripEventRecord.alarmlevel,jdbcType=INTEGER},
+      <if test="record.alarmtype != null">
+        AlarmType = #{record.alarmtype,jdbcType=INTEGER},
       </if>
-      <if test="tripEventRecord.durationtime != null">
-        DurationTime = #{tripEventRecord.durationtime,jdbcType=DOUBLE},
+      <if test="record.alarmphase != null">
+        AlarmPhase = #{record.alarmphase,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.outagetime != null">
-        OutageTime = #{tripEventRecord.outagetime,jdbcType=TIMESTAMP},
+      <if test="record.alarmlevel != null">
+        AlarmLevel = #{record.alarmlevel,jdbcType=INTEGER},
       </if>
-      <if test="tripEventRecord.powerontime != null">
-        PowerOnTime = #{tripEventRecord.powerontime,jdbcType=TIMESTAMP},
+      <if test="record.durationtime != null">
+        DurationTime = #{record.durationtime,jdbcType=DOUBLE},
       </if>
-      <if test="tripEventRecord.alarmtime != null">
-        AlarmTime = #{tripEventRecord.alarmtime,jdbcType=TIMESTAMP},
+      <if test="record.outagetime != null">
+        OutageTime = #{record.outagetime,jdbcType=TIMESTAMP},
       </if>
-      <if test="tripEventRecord.workorderid != null">
-        WorkOrderId = #{tripEventRecord.workorderid,jdbcType=VARCHAR},
+      <if test="record.powerontime != null">
+        PowerOnTime = #{record.powerontime,jdbcType=TIMESTAMP},
       </if>
-      <if test="tripEventRecord.isdeal != null">
-        IsDeal = #{tripEventRecord.isdeal,jdbcType=INTEGER},
+      <if test="record.alarmtime != null">
+        AlarmTime = #{record.alarmtime,jdbcType=TIMESTAMP},
       </if>
-      <if test="tripEventRecord.dealtime != null">
-        DealTime = #{tripEventRecord.dealtime,jdbcType=TIMESTAMP},
+      <if test="record.workorderid != null">
+        WorkOrderId = #{record.workorderid,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.issendworkorder != null">
-        IsSendWorkOrder = #{tripEventRecord.issendworkorder,jdbcType=INTEGER},
+      <if test="record.isdeal != null">
+        IsDeal = #{record.isdeal,jdbcType=INTEGER},
       </if>
-      <if test="tripEventRecord.sendtime != null">
-        SendTime = #{tripEventRecord.sendtime,jdbcType=TIMESTAMP},
+      <if test="record.dealtime != null">
+        DealTime = #{record.dealtime,jdbcType=TIMESTAMP},
       </if>
-      <if test="tripEventRecord.sortcode != null">
-        SortCode = #{tripEventRecord.sortcode,jdbcType=INTEGER},
+      <if test="record.issendworkorder != null">
+        IsSendWorkOrder = #{record.issendworkorder,jdbcType=INTEGER},
       </if>
-      <if test="tripEventRecord.deletemark != null">
-        DeleteMark = #{tripEventRecord.deletemark,jdbcType=INTEGER},
+      <if test="record.sendtime != null">
+        SendTime = #{record.sendtime,jdbcType=TIMESTAMP},
       </if>
-      <if test="tripEventRecord.enabledmark != null">
-        EnabledMark = #{tripEventRecord.enabledmark,jdbcType=INTEGER},
+      <if test="record.sortcode != null">
+        SortCode = #{record.sortcode,jdbcType=INTEGER},
       </if>
-      <if test="tripEventRecord.description != null">
-        Description = #{tripEventRecord.description,jdbcType=VARCHAR},
+      <if test="record.deletemark != null">
+        DeleteMark = #{record.deletemark,jdbcType=INTEGER},
       </if>
-      <if test="tripEventRecord.createdate != null">
-        CreateDate = #{tripEventRecord.createdate,jdbcType=TIMESTAMP},
+      <if test="record.enabledmark != null">
+        EnabledMark = #{record.enabledmark,jdbcType=INTEGER},
       </if>
-      <if test="tripEventRecord.createuserid != null">
-        CreateUserId = #{tripEventRecord.createuserid,jdbcType=VARCHAR},
+      <if test="record.description != null">
+        Description = #{record.description,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.createusername != null">
-        CreateUserName = #{tripEventRecord.createusername,jdbcType=VARCHAR},
+      <if test="record.createdate != null">
+        CreateDate = #{record.createdate,jdbcType=TIMESTAMP},
       </if>
-      <if test="tripEventRecord.modifydate != null">
-        ModifyDate = #{tripEventRecord.modifydate,jdbcType=TIMESTAMP},
+      <if test="record.createuserid != null">
+        CreateUserId = #{record.createuserid,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.modifyuserid != null">
-        ModifyUserId = #{tripEventRecord.modifyuserid,jdbcType=VARCHAR},
+      <if test="record.createusername != null">
+        CreateUserName = #{record.createusername,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.modifyusername != null">
-        ModifyUserName = #{tripEventRecord.modifyusername,jdbcType=VARCHAR},
+      <if test="record.modifydate != null">
+        ModifyDate = #{record.modifydate,jdbcType=TIMESTAMP},
       </if>
-      <if test="tripEventRecord.alarmcontent != null">
-        AlarmContent = #{tripEventRecord.alarmcontent,jdbcType=LONGVARCHAR},
+      <if test="record.modifyuserid != null">
+        ModifyUserId = #{record.modifyuserid,jdbcType=VARCHAR},
+      </if>
+      <if test="record.modifyusername != null">
+        ModifyUserName = #{record.modifyusername,jdbcType=VARCHAR},
       </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
   </update>
-  <update id="updateByExampleWithBLOBs" parameterType="map">
-    update device_alarm
-    set AlarmId = #{tripEventRecord.alarmid,jdbcType=VARCHAR},
-      DeviceTableName = #{tripEventRecord.devicetablename,jdbcType=VARCHAR},
-      DeviceId = #{tripEventRecord.deviceid,jdbcType=VARCHAR},
-      Ua = #{tripEventRecord.ua,jdbcType=DOUBLE},
-      Ub = #{tripEventRecord.ub,jdbcType=DOUBLE},
-      Uc = #{tripEventRecord.uc,jdbcType=DOUBLE},
-      Ia = #{tripEventRecord.ia,jdbcType=DOUBLE},
-      Ib = #{tripEventRecord.ib,jdbcType=DOUBLE},
-      Ic = #{tripEventRecord.ic,jdbcType=DOUBLE},
-      Io = #{tripEventRecord.io,jdbcType=DOUBLE},
-      AlarmType = #{tripEventRecord.alarmtype,jdbcType=INTEGER},
-      AlarmPhase = #{tripEventRecord.alarmphase,jdbcType=VARCHAR},
-      AlarmLevel = #{tripEventRecord.alarmlevel,jdbcType=INTEGER},
-      DurationTime = #{tripEventRecord.durationtime,jdbcType=DOUBLE},
-      OutageTime = #{tripEventRecord.outagetime,jdbcType=TIMESTAMP},
-      PowerOnTime = #{tripEventRecord.powerontime,jdbcType=TIMESTAMP},
-      AlarmTime = #{tripEventRecord.alarmtime,jdbcType=TIMESTAMP},
-      WorkOrderId = #{tripEventRecord.workorderid,jdbcType=VARCHAR},
-      IsDeal = #{tripEventRecord.isdeal,jdbcType=INTEGER},
-      DealTime = #{tripEventRecord.dealtime,jdbcType=TIMESTAMP},
-      IsSendWorkOrder = #{tripEventRecord.issendworkorder,jdbcType=INTEGER},
-      SendTime = #{tripEventRecord.sendtime,jdbcType=TIMESTAMP},
-      SortCode = #{tripEventRecord.sortcode,jdbcType=INTEGER},
-      DeleteMark = #{tripEventRecord.deletemark,jdbcType=INTEGER},
-      EnabledMark = #{tripEventRecord.enabledmark,jdbcType=INTEGER},
-      Description = #{tripEventRecord.description,jdbcType=VARCHAR},
-      CreateDate = #{tripEventRecord.createdate,jdbcType=TIMESTAMP},
-      CreateUserId = #{tripEventRecord.createuserid,jdbcType=VARCHAR},
-      CreateUserName = #{tripEventRecord.createusername,jdbcType=VARCHAR},
-      ModifyDate = #{tripEventRecord.modifydate,jdbcType=TIMESTAMP},
-      ModifyUserId = #{tripEventRecord.modifyuserid,jdbcType=VARCHAR},
-      ModifyUserName = #{tripEventRecord.modifyusername,jdbcType=VARCHAR},
-      AlarmContent = #{tripEventRecord.alarmcontent,jdbcType=LONGVARCHAR}
-    <if test="_parameter != null">
-      <include refid="Update_By_Example_Where_Clause" />
-    </if>
-  </update>
   <update id="updateByExample" parameterType="map">
     update device_alarm
-    set AlarmId = #{tripEventRecord.alarmid,jdbcType=VARCHAR},
-      DeviceTableName = #{tripEventRecord.devicetablename,jdbcType=VARCHAR},
-      DeviceId = #{tripEventRecord.deviceid,jdbcType=VARCHAR},
-      Ua = #{tripEventRecord.ua,jdbcType=DOUBLE},
-      Ub = #{tripEventRecord.ub,jdbcType=DOUBLE},
-      Uc = #{tripEventRecord.uc,jdbcType=DOUBLE},
-      Ia = #{tripEventRecord.ia,jdbcType=DOUBLE},
-      Ib = #{tripEventRecord.ib,jdbcType=DOUBLE},
-      Ic = #{tripEventRecord.ic,jdbcType=DOUBLE},
-      Io = #{tripEventRecord.io,jdbcType=DOUBLE},
-      AlarmType = #{tripEventRecord.alarmtype,jdbcType=INTEGER},
-      AlarmPhase = #{tripEventRecord.alarmphase,jdbcType=VARCHAR},
-      AlarmLevel = #{tripEventRecord.alarmlevel,jdbcType=INTEGER},
-      DurationTime = #{tripEventRecord.durationtime,jdbcType=DOUBLE},
-      OutageTime = #{tripEventRecord.outagetime,jdbcType=TIMESTAMP},
-      PowerOnTime = #{tripEventRecord.powerontime,jdbcType=TIMESTAMP},
-      AlarmTime = #{tripEventRecord.alarmtime,jdbcType=TIMESTAMP},
-      WorkOrderId = #{tripEventRecord.workorderid,jdbcType=VARCHAR},
-      IsDeal = #{tripEventRecord.isdeal,jdbcType=INTEGER},
-      DealTime = #{tripEventRecord.dealtime,jdbcType=TIMESTAMP},
-      IsSendWorkOrder = #{tripEventRecord.issendworkorder,jdbcType=INTEGER},
-      SendTime = #{tripEventRecord.sendtime,jdbcType=TIMESTAMP},
-      SortCode = #{tripEventRecord.sortcode,jdbcType=INTEGER},
-      DeleteMark = #{tripEventRecord.deletemark,jdbcType=INTEGER},
-      EnabledMark = #{tripEventRecord.enabledmark,jdbcType=INTEGER},
-      Description = #{tripEventRecord.description,jdbcType=VARCHAR},
-      CreateDate = #{tripEventRecord.createdate,jdbcType=TIMESTAMP},
-      CreateUserId = #{tripEventRecord.createuserid,jdbcType=VARCHAR},
-      CreateUserName = #{tripEventRecord.createusername,jdbcType=VARCHAR},
-      ModifyDate = #{tripEventRecord.modifydate,jdbcType=TIMESTAMP},
-      ModifyUserId = #{tripEventRecord.modifyuserid,jdbcType=VARCHAR},
-      ModifyUserName = #{tripEventRecord.modifyusername,jdbcType=VARCHAR}
+    set AlarmId = #{record.alarmid,jdbcType=VARCHAR},
+      DeviceTableName = #{record.devicetablename,jdbcType=VARCHAR},
+      DeviceId = #{record.deviceid,jdbcType=VARCHAR},
+      State = #{record.state,jdbcType=INTEGER},
+      AlarmContent = #{record.alarmcontent,jdbcType=VARCHAR},
+      Ua = #{record.ua,jdbcType=DOUBLE},
+      Ub = #{record.ub,jdbcType=DOUBLE},
+      Uc = #{record.uc,jdbcType=DOUBLE},
+      Ia = #{record.ia,jdbcType=DOUBLE},
+      Ib = #{record.ib,jdbcType=DOUBLE},
+      Ic = #{record.ic,jdbcType=DOUBLE},
+      Io = #{record.io,jdbcType=DOUBLE},
+      AlarmType = #{record.alarmtype,jdbcType=INTEGER},
+      AlarmPhase = #{record.alarmphase,jdbcType=VARCHAR},
+      AlarmLevel = #{record.alarmlevel,jdbcType=INTEGER},
+      DurationTime = #{record.durationtime,jdbcType=DOUBLE},
+      OutageTime = #{record.outagetime,jdbcType=TIMESTAMP},
+      PowerOnTime = #{record.powerontime,jdbcType=TIMESTAMP},
+      AlarmTime = #{record.alarmtime,jdbcType=TIMESTAMP},
+      WorkOrderId = #{record.workorderid,jdbcType=VARCHAR},
+      IsDeal = #{record.isdeal,jdbcType=INTEGER},
+      DealTime = #{record.dealtime,jdbcType=TIMESTAMP},
+      IsSendWorkOrder = #{record.issendworkorder,jdbcType=INTEGER},
+      SendTime = #{record.sendtime,jdbcType=TIMESTAMP},
+      SortCode = #{record.sortcode,jdbcType=INTEGER},
+      DeleteMark = #{record.deletemark,jdbcType=INTEGER},
+      EnabledMark = #{record.enabledmark,jdbcType=INTEGER},
+      Description = #{record.description,jdbcType=VARCHAR},
+      CreateDate = #{record.createdate,jdbcType=TIMESTAMP},
+      CreateUserId = #{record.createuserid,jdbcType=VARCHAR},
+      CreateUserName = #{record.createusername,jdbcType=VARCHAR},
+      ModifyDate = #{record.modifydate,jdbcType=TIMESTAMP},
+      ModifyUserId = #{record.modifyuserid,jdbcType=VARCHAR},
+      ModifyUserName = #{record.modifyusername,jdbcType=VARCHAR}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -580,6 +531,12 @@
       </if>
       <if test="deviceid != null">
         DeviceId = #{deviceid,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null">
+        State = #{state,jdbcType=INTEGER},
+      </if>
+      <if test="alarmcontent != null">
+        AlarmContent = #{alarmcontent,jdbcType=VARCHAR},
       </if>
       <if test="ua != null">
         Ua = #{ua,jdbcType=DOUBLE},
@@ -668,52 +625,15 @@
       <if test="modifyusername != null">
         ModifyUserName = #{modifyusername,jdbcType=VARCHAR},
       </if>
-      <if test="alarmcontent != null">
-        AlarmContent = #{alarmcontent,jdbcType=LONGVARCHAR},
-      </if>
     </set>
-    where AlarmId = #{alarmid,jdbcType=VARCHAR}
-  </update>
-  <update id="updateByPrimaryKeyWithBLOBs" parameterType="main.com.handu.scada.db.bean.DeviceAlarm">
-    update device_alarm
-    set DeviceTableName = #{devicetablename,jdbcType=VARCHAR},
-      DeviceId = #{deviceid,jdbcType=VARCHAR},
-      Ua = #{ua,jdbcType=DOUBLE},
-      Ub = #{ub,jdbcType=DOUBLE},
-      Uc = #{uc,jdbcType=DOUBLE},
-      Ia = #{ia,jdbcType=DOUBLE},
-      Ib = #{ib,jdbcType=DOUBLE},
-      Ic = #{ic,jdbcType=DOUBLE},
-      Io = #{io,jdbcType=DOUBLE},
-      AlarmType = #{alarmtype,jdbcType=INTEGER},
-      AlarmPhase = #{alarmphase,jdbcType=VARCHAR},
-      AlarmLevel = #{alarmlevel,jdbcType=INTEGER},
-      DurationTime = #{durationtime,jdbcType=DOUBLE},
-      OutageTime = #{outagetime,jdbcType=TIMESTAMP},
-      PowerOnTime = #{powerontime,jdbcType=TIMESTAMP},
-      AlarmTime = #{alarmtime,jdbcType=TIMESTAMP},
-      WorkOrderId = #{workorderid,jdbcType=VARCHAR},
-      IsDeal = #{isdeal,jdbcType=INTEGER},
-      DealTime = #{dealtime,jdbcType=TIMESTAMP},
-      IsSendWorkOrder = #{issendworkorder,jdbcType=INTEGER},
-      SendTime = #{sendtime,jdbcType=TIMESTAMP},
-      SortCode = #{sortcode,jdbcType=INTEGER},
-      DeleteMark = #{deletemark,jdbcType=INTEGER},
-      EnabledMark = #{enabledmark,jdbcType=INTEGER},
-      Description = #{description,jdbcType=VARCHAR},
-      CreateDate = #{createdate,jdbcType=TIMESTAMP},
-      CreateUserId = #{createuserid,jdbcType=VARCHAR},
-      CreateUserName = #{createusername,jdbcType=VARCHAR},
-      ModifyDate = #{modifydate,jdbcType=TIMESTAMP},
-      ModifyUserId = #{modifyuserid,jdbcType=VARCHAR},
-      ModifyUserName = #{modifyusername,jdbcType=VARCHAR},
-      AlarmContent = #{alarmcontent,jdbcType=LONGVARCHAR}
     where AlarmId = #{alarmid,jdbcType=VARCHAR}
   </update>
   <update id="updateByPrimaryKey" parameterType="main.com.handu.scada.db.bean.DeviceAlarm">
     update device_alarm
     set DeviceTableName = #{devicetablename,jdbcType=VARCHAR},
       DeviceId = #{deviceid,jdbcType=VARCHAR},
+      State = #{state,jdbcType=INTEGER},
+      AlarmContent = #{alarmcontent,jdbcType=VARCHAR},
       Ua = #{ua,jdbcType=DOUBLE},
       Ub = #{ub,jdbcType=DOUBLE},
       Uc = #{uc,jdbcType=DOUBLE},

@@ -7,6 +7,8 @@ import main.com.handu.scada.netty.client.dtu.MsgPriority;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 
 /**
@@ -19,6 +21,8 @@ public class SubscribePublish {
     private BlockingQueue<Msg> queue = new LinkedBlockingDeque<>();
     //订阅者
     private Set<ISubscriber> subscribers = new LinkedHashSet<>();
+    //线程池
+    private ExecutorService service = Executors.newSingleThreadExecutor();
 
     /**
      * @Description:构造方法
@@ -43,7 +47,7 @@ public class SubscribePublish {
             Msg m = new Msg(publisher, message, priority);
             queue.put(m);
         } catch (Exception e) {
-            ExceptionHandler.handle(e);
+            ExceptionHandler.print(e);
         }
     }
 
@@ -73,9 +77,9 @@ public class SubscribePublish {
      * @Description: 开始循环发送存储队列所有消息
      * @return: void
      */
-    public void loop() {
+    private void loop() {
         //循环拿出找到消费者
-        new LoopThread().start();
+        service.execute(new LoopRunnable());
     }
 
     /**
@@ -94,7 +98,10 @@ public class SubscribePublish {
         }
     }
 
-    private class LoopThread extends Thread {
+    /**
+     * 取出消息发送给订阅者
+     */
+    private class LoopRunnable implements Runnable {
         @Override
         public void run() {
             Msg m;
@@ -105,12 +112,12 @@ public class SubscribePublish {
                             try {
                                 subscriber.onEvent(m.getPublisher(), m.getMsg());
                             } catch (Exception e) {
-                                ExceptionHandler.handle(e);
+                                ExceptionHandler.print(e);
                             }
                         }
                     }
                 } catch (InterruptedException e) {
-                    ExceptionHandler.handle(e);
+                    ExceptionHandler.print(e);
                 }
             }
         }

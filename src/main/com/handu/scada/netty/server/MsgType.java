@@ -9,5 +9,5 @@ public enum MsgType {
     SERIAL_PORT,//报文信息
     HEARTBEAT,//心跳
     LOGIN,//登录
-    CONNECTION//开关链路成功
+    CONNECTION,//开关链路成功
 }

@@ -2,7 +2,7 @@ package main.com.handu.scada.config;
 
 public class Config {
 
-    private static String SystemName = "总漏保在线管理系统";
+    private static String SystemName = "总漏保在线监测系统";
 
     /**
      * 心跳

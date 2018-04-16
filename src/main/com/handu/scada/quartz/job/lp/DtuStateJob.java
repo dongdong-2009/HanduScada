@@ -13,9 +13,10 @@ import main.com.handu.scada.utils.LogUtils;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * Created by 柳梦 on 2018/01/05.
@@ -41,17 +42,14 @@ public class DtuStateJob extends CommonJob implements BaseJob {
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         if (enable) {
             LogUtils.error(DateUtils.dateToStr(DateUtils.getNowSqlDateTime()) + "-->" + jobName());
-            List<DeviceDtuCacheResult> list = new ArrayList<>();
+            List<DeviceDtuCacheResult> list = null;
             ConcurrentHashMap<String, DeviceDtuCacheResult> cacheResults = MyCacheManager.getInstance().getDeviceDtuCache();
             if (cacheResults != null) {
                 synchronized (cacheResults) {
-                    cacheResults.entrySet().forEach(c -> {
-                        DeviceDtuCacheResult result = c.getValue();
-                        list.add(result);
-                    });
+                    list = cacheResults.entrySet().stream().map(Map.Entry::getValue).collect(Collectors.toList());
                 }
             }
-            if (list.size() > 0) {
+            if (list != null) {
                 list.forEach(cacheResult -> {
                     DtuStateResult result = new DtuStateResult(DtuChannelManager.getDeviceChannelIsActive(cacheResult.getDtuAddress()) ? DtuState.ONLINE : DtuState.OFFLINE, cacheResult.getDtuId(), DateUtils.getNowSqlDateTime());
                     DtuDBService.getInstance().push(result);

@@ -138,6 +138,7 @@ public class DtuCommand extends CommonJob {
         for (String dtuAddress : dtuAddresses) {
             ProtocolLayerData data = new ProtocolLayerData();
             data.CmdType = DeviceCmdTypeEnum.DTU_INFO;
+            data.deviceTypeEnum = DeviceTypeEnum.DTU;
             data.DTUString = dtuAddress;
             EventManager.getInstance().publish(new DownProtocolEvent(MsgPriority.HIGH, data), MsgPriority.HIGH);
         }
@@ -152,7 +153,50 @@ public class DtuCommand extends CommonJob {
         for (String dtuAddress : dtuAddresses) {
             ProtocolLayerData data = new ProtocolLayerData();
             data.CmdType = DeviceCmdTypeEnum.DTU_RESTART;
+            data.deviceTypeEnum = DeviceTypeEnum.DTU;
             data.DTUString = dtuAddress;
+            EventManager.getInstance().publish(new DownProtocolEvent(MsgPriority.LOW, data), MsgPriority.HIGH);
+        }
+    }
+
+    public void readConcentratorHeartbeatTime(String... dtuAddresses) {
+        for (String dtuAddress : dtuAddresses) {
+            ProtocolLayerData data = new ProtocolLayerData();
+            data.CmdType = DeviceCmdTypeEnum.ConcentratorHeartbeatTime;
+            data.deviceTypeEnum = DeviceTypeEnum.DTU;
+            data.DTUString = dtuAddress;
+            data.isWaitReceive = false;
+            EventManager.getInstance().publish(new DownProtocolEvent(MsgPriority.LOW, data), MsgPriority.LOW);
+        }
+    }
+
+    /**
+     * 读取模块信号强度
+     *
+     * @param dtuAddresses
+     */
+    public void readSignalStrength(String... dtuAddresses) {
+        for (String dtuAddress : dtuAddresses) {
+            ProtocolLayerData data = new ProtocolLayerData();
+            data.deviceTypeEnum = DeviceTypeEnum.DTU;
+            data.CmdType = DeviceCmdTypeEnum.READ_DTU_SIGNAL_STRENGTH;
+            data.DTUString = dtuAddress;
+            EventManager.getInstance().publish(new DownProtocolEvent(MsgPriority.LOW, data), MsgPriority.HIGH);
+        }
+    }
+
+    /**
+     * 采集信号强度
+     *
+     * @param dtuAddresses
+     */
+    public void collectSignalStrength(String... dtuAddresses) {
+        for (String dtuAddress : dtuAddresses) {
+            ProtocolLayerData data = new ProtocolLayerData();
+            data.CmdType = DeviceCmdTypeEnum.COLLECT_DTU_SIGNAL_STRENGTH;
+            data.DTUString = dtuAddress;
+            data.deviceTypeEnum = DeviceTypeEnum.DTU;
+            data.isWaitReceive = false;
             EventManager.getInstance().publish(new DownProtocolEvent(MsgPriority.LOW, data), MsgPriority.HIGH);
         }
     }

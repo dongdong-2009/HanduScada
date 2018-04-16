@@ -1,6 +1,5 @@
 package main.com.handu.scada.db.mapper.common;
 
-import main.com.handu.scada.db.bean.DeviceDtu;
 import main.com.handu.scada.db.bean.DeviceRealRemotesignalling;
 import main.com.handu.scada.db.bean.DeviceRealRemotetelemetry;
 import main.com.handu.scada.db.bean.DeviceRemoteindexs;
@@ -56,20 +55,4 @@ public interface CommonMapper {
      * @return
      */
     List<DeviceRealRemotesignalling> selectDeviceRealRemoteSignalling(@Param("ports") List<String> ports);
-
-    /**
-     * 更新所有设备在线状态
-     *
-     * @param ports
-     * @return
-     */
-    int updateDeviceStateRecord(@Param("ports") List<String> ports, @Param("state") int state, @Param("description") String description);
-
-    /**
-     * 根据dtuAddress获取dtuId
-     *
-     * @param dtuAddress
-     * @return
-     */
-    List<DeviceDtu> selectDeviceDtuIdByDtuAddress(@Param("dtuAddress") String dtuAddress);
 }

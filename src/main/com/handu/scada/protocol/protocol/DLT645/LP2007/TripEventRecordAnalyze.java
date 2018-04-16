@@ -1,6 +1,5 @@
 package main.com.handu.scada.protocol.protocol.DLT645.LP2007;
 
-import main.com.handu.scada.protocol.enums.LPState;
 import main.com.handu.scada.protocol.enums.TripReasonEnum;
 import main.com.handu.scada.utils.HexUtils;
 
@@ -21,7 +20,6 @@ public class TripEventRecordAnalyze {
 
     public TripEventRecordAnalyze(byte[] data) {
         tripEventRecord = new TripEventRecord();
-        tripEventRecord.setState(LPState.OFF);
         int index = 0;
         byte reason = data[index];
         TripReasonEnum tripReasonEnum = TripReasonEnum.getTripReasonEnumByValue(HexUtils.byteToInt((byte) (reason & 0x1f)));

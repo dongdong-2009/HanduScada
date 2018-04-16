@@ -462,12 +462,16 @@ public enum DeviceCmdTypeEnum {
     SecondLpUploadDateTime(92, "二级漏保整点数据上报时间"),
     SecondLpCollectDateTime(93, "二级漏保整点数据采样时间"),
     SecondLpRecord(94, "二级漏保档案上报"),
+    ConcentratorHeartbeatTime(95, "集中器最后一次心跳时间"),
+    
     DTU_LOGIN(10000001, "DTU上线登录"),
     DTU_OFF_LINE(10000002, "DTU下线"),
     SWITCH_ON_LINE(10000003, "开关上线"),
     SWITCH_OFF_LINE(10000004, "开关下线"),
-    DTU_RESTART(10001, "重启DTU"),
-    DTU_INFO(10000, "查询dtu参数信息");
+    DTU_RESTART(10000005, "重启DTU"),
+    READ_DTU_SIGNAL_STRENGTH(10000006, "读取DTU信号强度"),
+    COLLECT_DTU_SIGNAL_STRENGTH(10000007, "采集DTU信号强度"),
+    DTU_INFO(10000008, "查询dtu参数信息");
 
     private String name = "";
     private int value;

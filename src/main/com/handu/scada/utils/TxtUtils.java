@@ -20,7 +20,7 @@ import static main.com.handu.scada.log.LogType.UPDATE_SUCCESS;
  */
 public class TxtUtils {
 
-    private static ExecutorService service = Executors.newCachedThreadPool();
+    private static ExecutorService service = Executors.newSingleThreadExecutor();
 
     static {
         start();
@@ -64,12 +64,12 @@ public class TxtUtils {
                 writer = new FileWriter(filePath, true);
                 writer.write(log.getContent());
             } catch (IOException e) {
-                ExceptionHandler.handle(e);
+                ExceptionHandler.print(e);
             } finally {
                 try {
                     if (writer != null) writer.close();
                 } catch (IOException e) {
-                    ExceptionHandler.handle(e);
+                    ExceptionHandler.print(e);
                 }
             }
         }

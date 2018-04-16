@@ -17,21 +17,15 @@ public interface DeviceAlarmMapper extends CommonMapper {
 
     int insertSelective(DeviceAlarm record);
 
-    List<DeviceAlarm> selectByExampleWithBLOBs(DeviceAlarmExample example);
-
     List<DeviceAlarm> selectByExample(DeviceAlarmExample example);
 
     DeviceAlarm selectByPrimaryKey(String alarmid);
 
-    int updateByExampleSelective(@Param("tripEventRecord") DeviceAlarm record, @Param("example") DeviceAlarmExample example);
+    int updateByExampleSelective(@Param("record") DeviceAlarm record, @Param("example") DeviceAlarmExample example);
 
-    int updateByExampleWithBLOBs(@Param("tripEventRecord") DeviceAlarm record, @Param("example") DeviceAlarmExample example);
-
-    int updateByExample(@Param("tripEventRecord") DeviceAlarm record, @Param("example") DeviceAlarmExample example);
+    int updateByExample(@Param("record") DeviceAlarm record, @Param("example") DeviceAlarmExample example);
 
     int updateByPrimaryKeySelective(DeviceAlarm record);
-
-    int updateByPrimaryKeyWithBLOBs(DeviceAlarm record);
 
     int updateByPrimaryKey(DeviceAlarm record);
 }

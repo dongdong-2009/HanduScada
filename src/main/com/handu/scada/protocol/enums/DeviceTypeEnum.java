@@ -43,9 +43,6 @@ public enum DeviceTypeEnum {
         this.name = name;
     }
 
-    DeviceTypeEnum() {
-    }
-
     public static DeviceTypeEnum getDeviceTypeByLevel(int level) {
         for (DeviceTypeEnum deviceTypeEnum : DeviceTypeEnum.values()) {
             if (deviceTypeEnum.level == level) {

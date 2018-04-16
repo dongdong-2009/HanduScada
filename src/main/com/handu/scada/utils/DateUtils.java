@@ -12,10 +12,6 @@ import java.util.*;
  */
 public class DateUtils {
 
-    private static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-    private static SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-    private static SimpleDateFormat timeFormatter = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
-
     /**
      * 获取现在通用的数据库时间
      *
@@ -48,7 +44,7 @@ public class DateUtils {
      * @return返回字符串格式 yyyy-MM-dd HH:mm:ss
      */
     public static String getStringDate() {
-        return formatter.format(new Date());
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
     }
 
     /**
@@ -67,8 +63,7 @@ public class DateUtils {
      */
     public static String getStringAllDate() {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmssSSS");
-        String dateString = formatter.format(new Date());
-        return dateString;
+        return formatter.format(new Date());
     }
 
     /**
@@ -77,8 +72,7 @@ public class DateUtils {
      * @return 返回短时间字符串格式yyyy-MM-dd
      */
     public static String getStringDateShort() {
-        String dateString = formatter.format(new Date());
-        return dateString;
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
     }
 
     /**
@@ -88,8 +82,7 @@ public class DateUtils {
      */
     public static String getTimeShort() {
         SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss");
-        String dateString = formatter.format(new Date());
-        return dateString;
+        return formatter.format(new Date());
     }
 
     /**
@@ -116,8 +109,7 @@ public class DateUtils {
      */
     public static String dateToStrLong(java.util.Date dateDate) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String dateString = formatter.format(dateDate);
-        return dateString;
+        return formatter.format(dateDate);
     }
 
     /**
@@ -128,20 +120,28 @@ public class DateUtils {
      * @return
      */
     public static String dateToStr(java.util.Date dateDate) {
-        return formatter.format(dateDate);
+        try {
+            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(dateDate);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static String dateToStr(java.util.Date dateDate, String formatStr) {
-        SimpleDateFormat formatter = new SimpleDateFormat(formatStr);
-        return formatter.format(dateDate);
+        try {
+            SimpleDateFormat formatter = new SimpleDateFormat(formatStr);
+            return formatter.format(dateDate);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static String getDateStr(Date date) {
-        return dateFormatter.format(date);
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date);
     }
 
     public static String getTimeStr(Date date) {
-        return timeFormatter.format(new Date());
+        return new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
     }
 
     /**
@@ -164,7 +164,7 @@ public class DateUtils {
     public static Date strToDate(String strDate) {
         Date strToDate = null;
         try {
-            strToDate = formatter.parse(strDate);
+            strToDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(strDate);
         } catch (ParseException e) {
             ExceptionHandler.print(e);
         }
@@ -180,7 +180,7 @@ public class DateUtils {
      * @return
      */
     public static double getDiffMinutes(Date start, Date end) {
-        long s = (Math.abs(end.getTime() - start.getTime()));
+        long s = end.getTime() - start.getTime();
         return Math.abs(s / (1000 * 60));
     }
 
@@ -192,7 +192,7 @@ public class DateUtils {
      * @return
      */
     public static double getDiffDays(Date start, Date end) {
-        long s = ((end.getTime() - start.getTime()));
+        long s = end.getTime() - start.getTime();
         return Math.abs(s / (1000 * 60 * 60 * 24));
     }
 
@@ -204,7 +204,7 @@ public class DateUtils {
      * @return
      */
     public static double getDiffHours(Date start, Date end) {
-        long s = ((end.getTime() - start.getTime()));
+        long s = end.getTime() - start.getTime();
         return Math.abs(s / (1000 * 60 * 60));
     }
 
@@ -216,7 +216,7 @@ public class DateUtils {
      * @return
      */
     public static double getDiffSeconds(Date start, Date end) {
-        long s = ((end.getTime() - start.getTime()));
+        long s = end.getTime() - start.getTime();
         return Math.abs(s / 1000);
     }
 
@@ -240,8 +240,7 @@ public class DateUtils {
     public static String getStringToday() {
         Date currentTime = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd HHmmss");
-        String dateString = formatter.format(currentTime);
-        return dateString;
+        return formatter.format(currentTime);
     }
 
     /**
@@ -253,8 +252,7 @@ public class DateUtils {
     public static String getTodayShort() {
         Date currentTime = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
-        String dateString = formatter.format(currentTime);
-        return dateString;
+        return formatter.format(currentTime);
     }
 
     /**
@@ -318,16 +316,15 @@ public class DateUtils {
     public static String getUserDate(String sformat) {
         Date currentTime = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat(sformat);
-        String dateString = formatter.format(currentTime);
-        return dateString;
+        return formatter.format(currentTime);
     }
 
     /**
      * 二个小时时间间的差值,必须保证二个时间都是"HH:MM"的格式，返回字符型的分钟
      */
     public static String getTwoHour(String st1, String st2) {
-        String[] kk = null;
-        String[] jj = null;
+        String[] kk;
+        String[] jj;
         kk = st1.split(":");
         jj = st2.split(":");
         if (Integer.parseInt(kk[0]) < Integer.parseInt(jj[0]))
@@ -348,8 +345,8 @@ public class DateUtils {
     public static String getTwoDay(String sj1, String sj2) {
         long day = 0;
         try {
-            java.util.Date date = formatter.parse(sj1);
-            java.util.Date mydate = formatter.parse(sj2);
+            java.util.Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(sj1);
+            java.util.Date mydate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(sj2);
             day = (date.getTime() - mydate.getTime()) / (24 * 60 * 60 * 1000);
         } catch (Exception e) {
             return "";
@@ -378,11 +375,11 @@ public class DateUtils {
      */
     public static String getNextDay(String now, String delay) {
         try {
-            String mdate = "";
+            String mdate;
             Date d = strToDate(now);
             long myTime = (d.getTime() / 1000) + Integer.parseInt(delay) * 24 * 60 * 60;
             d.setTime(myTime * 1000);
-            mdate = formatter.format(d);
+            mdate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(d);
             return mdate;
         } catch (Exception e) {
             return "";
@@ -402,7 +399,7 @@ public class DateUtils {
         Date date = new Date();
         long dateTime = (date.getTime() / 1000) + day * 24 * 60 * 60;
         date.setTime(dateTime * 1000);
-        return formatter.format(date);
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(date);
     }
 
     /**
@@ -439,9 +436,9 @@ public class DateUtils {
      * @return
      */
     public static String getEDate(String str) {
-        Date strtodate = null;
+        Date strtodate;
         try {
-            strtodate = formatter.parse(str);
+            strtodate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(str);
             String j = strtodate.toString();
             String[] k = j.split(" ");
             return k[2] + k[1].toUpperCase() + k[5].substring(2, 4);
@@ -598,12 +595,13 @@ public class DateUtils {
         java.util.Date date = null;
         java.util.Date mydate = null;
         try {
-            date = formatter.parse(date1);
-            mydate = formatter.parse(date2);
+            date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(date1);
+            mydate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(date2);
+            return (date.getTime() - mydate.getTime()) / (24 * 60 * 60 * 1000);
         } catch (Exception e) {
+            ExceptionHandler.handle(e);
         }
-        long day = (date.getTime() - mydate.getTime()) / (24 * 60 * 60 * 1000);
-        return day;
+        return 0;
     }
 
     /**
@@ -622,8 +620,7 @@ public class DateUtils {
         Calendar c = Calendar.getInstance();
         c.setTime(date);
         int u = c.get(Calendar.DAY_OF_WEEK);
-        String newday = DateUtils.getNextDay(sdate, (1 - u) + "");
-        return newday;
+        return DateUtils.getNextDay(sdate, (1 - u) + "");
     }
 
     /**
@@ -656,9 +653,7 @@ public class DateUtils {
     }
 
     public static boolean RightDate(String date) {
-
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        ;
+        SimpleDateFormat sdf;
         if (date == null)
             return false;
         if (date.length() > 10) {
@@ -680,7 +675,7 @@ public class DateUtils {
      **************************************************************************/
     public static String getStringDateMonth(String sdate, String nd, String yf, String rq, String format) {
         Date currentTime = new Date();
-        String dateString = formatter.format(currentTime);
+        String dateString = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(currentTime);
         String s_nd = dateString.substring(0, 4); // 年份
         String s_yf = dateString.substring(5, 7); // 月份
         String s_rq = dateString.substring(8, 10); // 日期
@@ -791,8 +786,8 @@ public class DateUtils {
             sdate = sdate.substring(0, 4) + "-" + sdate.substring(4, 6) + "-" + sdate.substring(6, 8);
         Date strtodate = null;
         try {
-            strtodate = formatter.parse(sdate);
-            return formatter.format(strtodate);
+            strtodate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(sdate);
+            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(strtodate);
         } catch (ParseException ignored) {
         }
         return null;
@@ -810,7 +805,7 @@ public class DateUtils {
         //使用set方法直接进行设置
         // int day = cl.get(Calendar.DATE);
         cl.add(Calendar.DATE, -1);
-        return formatter.format(cl.getTime());
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(cl.getTime());
     }
 
     /**
@@ -825,7 +820,7 @@ public class DateUtils {
         //使用set方法直接设置时间值
         //int day = cl.get(Calendar.DATE);
         cl.add(Calendar.DATE, 1);
-        return formatter.format(cl.getTime());
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(cl.getTime());
     }
 
     private static String getDateAMPM() {

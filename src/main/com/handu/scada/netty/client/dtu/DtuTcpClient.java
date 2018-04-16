@@ -11,15 +11,17 @@ import main.com.handu.scada.event.events.DownProtocolEvent;
 import main.com.handu.scada.event.subscribe.ISubscriber;
 import main.com.handu.scada.event.subscribe.SubscribePublish;
 import main.com.handu.scada.exception.ExceptionHandler;
-import main.com.handu.scada.netty.server.dtu.DtuNetworkConnection;
 import main.com.handu.scada.netty.server.dtu.DtuChannelManager;
+import main.com.handu.scada.netty.server.dtu.DtuNetworkConnection;
 import main.com.handu.scada.protocol.base.MediaData;
 import main.com.handu.scada.protocol.base.ProtocolLayerData;
+import main.com.handu.scada.thread.MyThreadPoolExecutor;
 import main.com.handu.scada.utils.HexUtils;
 import main.com.handu.scada.utils.LogUtils;
 import main.com.handu.scada.utils.StringsUtils;
 
 import java.util.Queue;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Created by 柳梦 on 2017/12/26.
@@ -27,6 +29,9 @@ import java.util.Queue;
 
 @Subscriber
 public class DtuTcpClient implements ISubscriber, IClient {
+
+    //线程池
+    private ExecutorService service = MyThreadPoolExecutor.getInstance();
 
     private DtuTcpClient() {
     }
@@ -46,11 +51,7 @@ public class DtuTcpClient implements ISubscriber, IClient {
         if (event instanceof DownProtocolEvent) {
             ProtocolLayerData protocolLayerData = (ProtocolLayerData) event.data;
             if (protocolLayerData != null) {
-                try {
-                    send(event.priority, protocolLayerData);
-                } catch (Exception e) {
-                    ExceptionHandler.handle(e);
-                }
+                service.execute(() -> send(event.priority, protocolLayerData));
             }
         }
     }
@@ -82,11 +83,11 @@ public class DtuTcpClient implements ISubscriber, IClient {
                                 }
                                 //如果不忙或者上一次发送时间已过去1分钟设备还未回复则继续发送
                                 if (!state.isBusy() || System.currentTimeMillis() - state.getLastSendTime() > 60 * 1000) {
-                                    printCommand(mediaData, false);
                                     ByteBuf byteBuf = context.alloc().buffer(mediaData.CommandData.length);
                                     byteBuf.writeBytes(mediaData.CommandData);
                                     state.setLastSendTime(System.currentTimeMillis());
                                     state.setBusy(mediaData.isWaitReceive);
+                                    printCommand(mediaData, false);
                                     sendCommand(context, byteBuf);
                                 } else {
                                     //主动下发命令
@@ -134,13 +135,12 @@ public class DtuTcpClient implements ISubscriber, IClient {
     @Override
     public void sendCommand(ChannelHandlerContext ctx, ByteBuf data) {
         ChannelFuture f = ctx.writeAndFlush(data);
-        f.addListener(future -> data.release());
+        //f.addListener(future -> data.release());
     }
 
     @Override
     public void sendCommand(Channel channel, byte[] data) {
         ChannelFuture f = channel.writeAndFlush(data);
-        f.addListener(future -> {
-        });
+        //f.addListener(future -> {});
     }
 }

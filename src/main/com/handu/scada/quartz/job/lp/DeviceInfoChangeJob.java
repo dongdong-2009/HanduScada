@@ -2,8 +2,6 @@ package main.com.handu.scada.quartz.job.lp;
 
 import main.com.handu.scada.cache.MyCacheManager;
 import main.com.handu.scada.config.Config;
-import main.com.handu.scada.db.bean.DeviceInfochanges;
-import main.com.handu.scada.db.bean.DeviceInfochangesExample;
 import main.com.handu.scada.db.bean.common.DeviceDtuCacheResult;
 import main.com.handu.scada.db.mapper.DeviceInfochangesMapper;
 import main.com.handu.scada.db.mapper.common.CommonMapper;
@@ -18,7 +16,6 @@ import org.quartz.JobExecutionException;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -35,7 +32,7 @@ public class DeviceInfoChangeJob extends CommonJob implements BaseJob {
 
     @Override
     public String cronExpression() {
-        return "45 * * * * ?";
+        return "0 0 0/2 * * ?";
     }
 
     @Override
@@ -43,25 +40,22 @@ public class DeviceInfoChangeJob extends CommonJob implements BaseJob {
         if (enable) {
             LogUtils.error(DateUtils.dateToStr(DateUtils.getNowSqlDateTime()) + "-->" + jobName());
             try {
-                sqlSession = MyBatisUtil.getSqlSession(false);
+                sqlSession = MyBatisUtil.getSqlSession(true);
                 DeviceInfochangesMapper mapper = sqlSession.getMapper(DeviceInfochangesMapper.class);
-                List<DeviceInfochanges> infochanges = mapper.selectByExample(new DeviceInfochangesExample());
-                if (infochanges != null && infochanges.size() > 0) {
-                    CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
-                    //初始化设备相关
-                    List<DeviceDtuCacheResult> list = commonMapper.selectDeviceDtuCacheResult(Arrays.asList(Config.getDtuPorts().split(",")));
-                    if (list != null) {
-                        ConcurrentHashMap<String, DeviceDtuCacheResult> cacheResults = MyCacheManager.getInstance().getDeviceDtuCache();
-                        if (cacheResults != null) {
-                            MyCacheManager.getInstance().putDeviceDtuCacheResult(list);
-                            LogUtils.info("init device cache result count " + list.size(), true);
-                            infochanges.forEach(deviceInfochanges -> mapper.deleteByPrimaryKey(deviceInfochanges.getOid()));
-                        }
-                    }
+                //List<DeviceInfochanges> infochanges = mapper.selectByExample(new DeviceInfochangesExample());
+                //if (infochanges != null && infochanges.size() > 0) {
+                CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+                //初始化设备相关
+                List<DeviceDtuCacheResult> list = commonMapper.selectDeviceDtuCacheResult(Arrays.asList(Config.getDtuPorts().split(",")));
+                if (list != null) {
+                    MyCacheManager.getInstance().putDeviceDtuCacheResult(list);
+                    LogUtils.info("init device cache result count " + list.size(), true);
+                    //infochanges.forEach(deviceInfochanges -> mapper.deleteByPrimaryKey(deviceInfochanges.getOid()));
                 }
-                if (sqlSession != null) sqlSession.commit(true);
+                //}
+                //if (sqlSession != null) sqlSession.commit(true);
             } catch (Exception e) {
-                if (sqlSession != null) sqlSession.rollback(true);
+                //if (sqlSession != null) sqlSession.rollback(true);
             } finally {
                 if (sqlSession != null) sqlSession.close();
             }

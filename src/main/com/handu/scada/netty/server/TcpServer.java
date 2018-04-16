@@ -74,10 +74,14 @@ public class TcpServer {
             serverBootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .option(ChannelOption.SO_BACKLOG, 1024)
+                    //boss线程内存池配置
+                    //.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                     //通过NoDelay禁用Nagle,使消息立即发出去，不用等待到一定的数据量才发出去
                     .childOption(ChannelOption.TCP_NODELAY, true)
                     //保持长连接状态
                     .childOption(ChannelOption.SO_KEEPALIVE, true)
+                    //worker线程内存池配置
+                    //.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                     .handler(new LoggingHandler())
                     .childHandler(new DtuChannelInitializer());
 

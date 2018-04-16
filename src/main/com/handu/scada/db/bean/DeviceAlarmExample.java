@@ -315,6 +315,136 @@ public class DeviceAlarmExample {
             return (Criteria) this;
         }
 
+        public Criteria andStateIsNull() {
+            addCriterion("State is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andStateIsNotNull() {
+            addCriterion("State is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andStateEqualTo(Integer value) {
+            addCriterion("State =", value, "state");
+            return (Criteria) this;
+        }
+
+        public Criteria andStateNotEqualTo(Integer value) {
+            addCriterion("State <>", value, "state");
+            return (Criteria) this;
+        }
+
+        public Criteria andStateGreaterThan(Integer value) {
+            addCriterion("State >", value, "state");
+            return (Criteria) this;
+        }
+
+        public Criteria andStateGreaterThanOrEqualTo(Integer value) {
+            addCriterion("State >=", value, "state");
+            return (Criteria) this;
+        }
+
+        public Criteria andStateLessThan(Integer value) {
+            addCriterion("State <", value, "state");
+            return (Criteria) this;
+        }
+
+        public Criteria andStateLessThanOrEqualTo(Integer value) {
+            addCriterion("State <=", value, "state");
+            return (Criteria) this;
+        }
+
+        public Criteria andStateIn(List<Integer> values) {
+            addCriterion("State in", values, "state");
+            return (Criteria) this;
+        }
+
+        public Criteria andStateNotIn(List<Integer> values) {
+            addCriterion("State not in", values, "state");
+            return (Criteria) this;
+        }
+
+        public Criteria andStateBetween(Integer value1, Integer value2) {
+            addCriterion("State between", value1, value2, "state");
+            return (Criteria) this;
+        }
+
+        public Criteria andStateNotBetween(Integer value1, Integer value2) {
+            addCriterion("State not between", value1, value2, "state");
+            return (Criteria) this;
+        }
+
+        public Criteria andAlarmcontentIsNull() {
+            addCriterion("AlarmContent is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andAlarmcontentIsNotNull() {
+            addCriterion("AlarmContent is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andAlarmcontentEqualTo(String value) {
+            addCriterion("AlarmContent =", value, "alarmcontent");
+            return (Criteria) this;
+        }
+
+        public Criteria andAlarmcontentNotEqualTo(String value) {
+            addCriterion("AlarmContent <>", value, "alarmcontent");
+            return (Criteria) this;
+        }
+
+        public Criteria andAlarmcontentGreaterThan(String value) {
+            addCriterion("AlarmContent >", value, "alarmcontent");
+            return (Criteria) this;
+        }
+
+        public Criteria andAlarmcontentGreaterThanOrEqualTo(String value) {
+            addCriterion("AlarmContent >=", value, "alarmcontent");
+            return (Criteria) this;
+        }
+
+        public Criteria andAlarmcontentLessThan(String value) {
+            addCriterion("AlarmContent <", value, "alarmcontent");
+            return (Criteria) this;
+        }
+
+        public Criteria andAlarmcontentLessThanOrEqualTo(String value) {
+            addCriterion("AlarmContent <=", value, "alarmcontent");
+            return (Criteria) this;
+        }
+
+        public Criteria andAlarmcontentLike(String value) {
+            addCriterion("AlarmContent like", value, "alarmcontent");
+            return (Criteria) this;
+        }
+
+        public Criteria andAlarmcontentNotLike(String value) {
+            addCriterion("AlarmContent not like", value, "alarmcontent");
+            return (Criteria) this;
+        }
+
+        public Criteria andAlarmcontentIn(List<String> values) {
+            addCriterion("AlarmContent in", values, "alarmcontent");
+            return (Criteria) this;
+        }
+
+        public Criteria andAlarmcontentNotIn(List<String> values) {
+            addCriterion("AlarmContent not in", values, "alarmcontent");
+            return (Criteria) this;
+        }
+
+        public Criteria andAlarmcontentBetween(String value1, String value2) {
+            addCriterion("AlarmContent between", value1, value2, "alarmcontent");
+            return (Criteria) this;
+        }
+
+        public Criteria andAlarmcontentNotBetween(String value1, String value2) {
+            addCriterion("AlarmContent not between", value1, value2, "alarmcontent");
+            return (Criteria) this;
+        }
+
         public Criteria andUaIsNull() {
             addCriterion("Ua is null");
             return (Criteria) this;

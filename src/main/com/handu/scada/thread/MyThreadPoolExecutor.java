@@ -13,6 +13,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class MyThreadPoolExecutor extends ThreadPoolExecutor {
 
+
+    private static MyThreadPoolExecutor executor;
+
     /**
      * 核心线程数为CPU数量+1（cpu数量获取方式Runtime.getRuntime().availableProcessors()，
      * 最大线程数为CPU数量×2+1，
@@ -24,7 +27,7 @@ public class MyThreadPoolExecutor extends ThreadPoolExecutor {
     private static final long KEEP_ALIVE = 0;
     private static final AtomicInteger count = new AtomicInteger();
 
-    public MyThreadPoolExecutor() {
+    private MyThreadPoolExecutor() {
         super(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE, TimeUnit.MILLISECONDS,
                 new LinkedBlockingDeque<>(),
                 r -> {
@@ -41,5 +44,12 @@ public class MyThreadPoolExecutor extends ThreadPoolExecutor {
                         ExceptionHandler.handle(e);
                     }
                 });
+    }
+
+    public static MyThreadPoolExecutor getInstance() {
+        if (executor == null) {
+            executor = new MyThreadPoolExecutor();
+        }
+        return executor;
     }
 }

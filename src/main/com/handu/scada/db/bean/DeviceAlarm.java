@@ -10,6 +10,10 @@ public class DeviceAlarm implements Serializable {
 
     private String deviceid;
 
+    private Integer state;
+
+    private String alarmcontent;
+
     private Double ua;
 
     private Double ub;
@@ -68,8 +72,6 @@ public class DeviceAlarm implements Serializable {
 
     private String modifyusername;
 
-    private String alarmcontent;
-
     private static final long serialVersionUID = 1L;
 
     public String getAlarmid() {
@@ -94,6 +96,22 @@ public class DeviceAlarm implements Serializable {
 
     public void setDeviceid(String deviceid) {
         this.deviceid = deviceid == null ? null : deviceid.trim();
+    }
+
+    public Integer getState() {
+        return state;
+    }
+
+    public void setState(Integer state) {
+        this.state = state;
+    }
+
+    public String getAlarmcontent() {
+        return alarmcontent;
+    }
+
+    public void setAlarmcontent(String alarmcontent) {
+        this.alarmcontent = alarmcontent == null ? null : alarmcontent.trim();
     }
 
     public Double getUa() {
@@ -328,14 +346,6 @@ public class DeviceAlarm implements Serializable {
         this.modifyusername = modifyusername == null ? null : modifyusername.trim();
     }
 
-    public String getAlarmcontent() {
-        return alarmcontent;
-    }
-
-    public void setAlarmcontent(String alarmcontent) {
-        this.alarmcontent = alarmcontent == null ? null : alarmcontent.trim();
-    }
-
     @Override
     public boolean equals(Object that) {
         if (this == that) {
@@ -351,6 +361,8 @@ public class DeviceAlarm implements Serializable {
         return (this.getAlarmid() == null ? other.getAlarmid() == null : this.getAlarmid().equals(other.getAlarmid()))
             && (this.getDevicetablename() == null ? other.getDevicetablename() == null : this.getDevicetablename().equals(other.getDevicetablename()))
             && (this.getDeviceid() == null ? other.getDeviceid() == null : this.getDeviceid().equals(other.getDeviceid()))
+            && (this.getState() == null ? other.getState() == null : this.getState().equals(other.getState()))
+            && (this.getAlarmcontent() == null ? other.getAlarmcontent() == null : this.getAlarmcontent().equals(other.getAlarmcontent()))
             && (this.getUa() == null ? other.getUa() == null : this.getUa().equals(other.getUa()))
             && (this.getUb() == null ? other.getUb() == null : this.getUb().equals(other.getUb()))
             && (this.getUc() == null ? other.getUc() == null : this.getUc().equals(other.getUc()))
@@ -379,8 +391,7 @@ public class DeviceAlarm implements Serializable {
             && (this.getCreateusername() == null ? other.getCreateusername() == null : this.getCreateusername().equals(other.getCreateusername()))
             && (this.getModifydate() == null ? other.getModifydate() == null : this.getModifydate().equals(other.getModifydate()))
             && (this.getModifyuserid() == null ? other.getModifyuserid() == null : this.getModifyuserid().equals(other.getModifyuserid()))
-            && (this.getModifyusername() == null ? other.getModifyusername() == null : this.getModifyusername().equals(other.getModifyusername()))
-            && (this.getAlarmcontent() == null ? other.getAlarmcontent() == null : this.getAlarmcontent().equals(other.getAlarmcontent()));
+            && (this.getModifyusername() == null ? other.getModifyusername() == null : this.getModifyusername().equals(other.getModifyusername()));
     }
 
     @Override
@@ -390,6 +401,8 @@ public class DeviceAlarm implements Serializable {
         result = prime * result + ((getAlarmid() == null) ? 0 : getAlarmid().hashCode());
         result = prime * result + ((getDevicetablename() == null) ? 0 : getDevicetablename().hashCode());
         result = prime * result + ((getDeviceid() == null) ? 0 : getDeviceid().hashCode());
+        result = prime * result + ((getState() == null) ? 0 : getState().hashCode());
+        result = prime * result + ((getAlarmcontent() == null) ? 0 : getAlarmcontent().hashCode());
         result = prime * result + ((getUa() == null) ? 0 : getUa().hashCode());
         result = prime * result + ((getUb() == null) ? 0 : getUb().hashCode());
         result = prime * result + ((getUc() == null) ? 0 : getUc().hashCode());
@@ -419,7 +432,6 @@ public class DeviceAlarm implements Serializable {
         result = prime * result + ((getModifydate() == null) ? 0 : getModifydate().hashCode());
         result = prime * result + ((getModifyuserid() == null) ? 0 : getModifyuserid().hashCode());
         result = prime * result + ((getModifyusername() == null) ? 0 : getModifyusername().hashCode());
-        result = prime * result + ((getAlarmcontent() == null) ? 0 : getAlarmcontent().hashCode());
         return result;
     }
 }

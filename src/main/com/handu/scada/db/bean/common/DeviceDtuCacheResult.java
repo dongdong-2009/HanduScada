@@ -7,17 +7,20 @@ import java.io.Serializable;
  */
 public class DeviceDtuCacheResult implements Serializable {
 
-    private String dtuId;
-    private int port;
     private String deviceId;
-    private String deviceTableName;
-    private String name;
-    private String deviceAddress;
-    private String terminalId;
-    private int protocolType;
+    private String dtuId;
+
     private String dtuAddress;
-    private String daId;
+    private int port;
+    private String deviceAddress;
+
+    private String name;
     private String level;
+
+    private String deviceTableName;
+    private String daId;
+
+
     private double ua;
     private double ub;
     private double uc;
@@ -32,6 +35,14 @@ public class DeviceDtuCacheResult implements Serializable {
         } catch (NumberFormatException e) {
             return 1;
         }
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public int getPort() {
@@ -70,36 +81,12 @@ public class DeviceDtuCacheResult implements Serializable {
         this.deviceTableName = deviceTableName;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getDeviceAddress() {
         return deviceAddress;
     }
 
     public void setDeviceAddress(String deviceAddress) {
         this.deviceAddress = deviceAddress;
-    }
-
-    public String getTerminalId() {
-        return terminalId;
-    }
-
-    public void setTerminalId(String terminalId) {
-        this.terminalId = terminalId;
-    }
-
-    public int getProtocolType() {
-        return protocolType;
-    }
-
-    public void setProtocolType(int protocolType) {
-        this.protocolType = protocolType;
     }
 
     public String getDtuAddress() {

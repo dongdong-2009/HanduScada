@@ -197,7 +197,7 @@ public class MyCacheManager implements ICacheManager {
             updateDtuState(sqlSession);
             initDeviceRemoteIndexes(sqlSession);
             initDeviceRealData(sqlSession);
-            initDeviceRcdTrialSwitchLog();
+            //initDeviceRcdTrialSwitchLog();
             return true;
         } catch (Exception e) {
             ExceptionHandler.handle(e);

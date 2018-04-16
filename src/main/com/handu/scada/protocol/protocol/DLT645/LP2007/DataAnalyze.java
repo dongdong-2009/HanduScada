@@ -4,6 +4,7 @@ import main.com.handu.scada.protocol.base.BaseDataAnalyze;
 import main.com.handu.scada.protocol.base.BaseIdentifyCodeDesc;
 import main.com.handu.scada.protocol.enums.LPState;
 import main.com.handu.scada.protocol.enums.RemoteType;
+import main.com.handu.scada.protocol.enums.TripReasonEnum;
 import main.com.handu.scada.protocol.protocol.Data.DataAttr;
 import main.com.handu.scada.utils.DateUtils;
 import main.com.handu.scada.utils.HexUtils;
@@ -15,15 +16,6 @@ import java.util.List;
 
 public class DataAnalyze extends BaseDataAnalyze {
 
-    private LPState state;
-
-    public LPState getState() {
-        return state;
-    }
-
-    public void setState(LPState state) {
-        this.state = state;
-    }
 
     @Override
     public List<DataAttr> getData(BaseIdentifyCodeDesc item) {
@@ -240,8 +232,8 @@ public class DataAnalyze extends BaseDataAnalyze {
                 {
                     itemName = item.cmdtype.name();
                     if (item.length == 1) {
-                        byte stateWord1 = item.data[0];
-                        if ((stateWord1 & 0x60) == 0x60 || (stateWord1 & 0x60) == 0x20) {
+                        byte stateWord = item.data[0];
+                        if ((stateWord & 0x60) == 0x60 || (stateWord & 0x60) == 0x20) {
                             dataAttr = new DataAttr();
                             dataAttr.setName(itemName);
                             dataAttr.setValue(LPState.OFF.getValue());
@@ -251,7 +243,6 @@ public class DataAnalyze extends BaseDataAnalyze {
                             dataAttr.setGroup(item.cmdtype.name());
                             dataAttr.setDateType(RemoteType.YX);
                             list.add(dataAttr);
-                            state = LPState.OFF;
                         } else {
                             dataAttr = new DataAttr();
                             dataAttr.setName(itemName);
@@ -262,11 +253,11 @@ public class DataAnalyze extends BaseDataAnalyze {
                             dataAttr.setGroup(item.cmdtype.name());
                             dataAttr.setDateType(RemoteType.YX);
                             list.add(dataAttr);
-                            state = LPState.ON;
+                            tripEventRecord = new TripEventRecord();
+                            tripEventRecord.setState(LPState.ON);
+                            tripEventRecord.setTripReason(TripReasonEnum.Normal);
+                            tripEventRecord.setAddress(getAddress());
                         }
-                        tripEventRecord = new TripEventRecord();
-                        tripEventRecord.setState(state);
-                        tripEventRecord.setAddress(getAddress());
                     }
                     return list;
                 }
@@ -337,8 +328,9 @@ public class DataAnalyze extends BaseDataAnalyze {
                 case ProtectorTripEventRecord://region 保护器跳闸事件记录
                 {
                     TripEventRecordAnalyze record = new TripEventRecordAnalyze(item.data);
-                    this.tripEventRecord = record.getTripEventRecord();
-                    this.tripEventRecord.setAddress(getAddress());
+                    tripEventRecord = record.getTripEventRecord();
+                    tripEventRecord.setState(LPState.OFF);
+                    tripEventRecord.setAddress(getAddress());
                     return null;
                 }
 

@@ -1,5 +1,9 @@
 package main.com.handu.scada.protocol.protocol.DLT645.LP2007;
 
+import main.com.handu.scada.utils.DateUtils;
+
+import java.util.Date;
+
 public class DltControlWord {
 
     public boolean flagAllAlarm;//数据总告警开关
@@ -42,6 +46,8 @@ public class DltControlWord {
 
     public int ResidualAlarmTimeLevel;//剩余电流报警时间
 
+    public Date recordTime;
+
     public DltControlWord(byte[] word) {
 
         byte controlWord;
@@ -73,6 +79,8 @@ public class DltControlWord {
         ResidualThresholdLevel = (controlWord & 0xf0) >> 4;
         DelayTimeLevel = (controlWord & 0x0c) >> 2;
         ResidualAlarmTimeLevel = controlWord & 0x03;
+
+        recordTime = DateUtils.getNowSqlDateTime();
 
     }
 }

@@ -25,8 +25,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-import static main.com.handu.scada.protocol.enums.DeviceCmdTypeEnum.DTU_INFO;
-import static main.com.handu.scada.protocol.enums.DeviceCmdTypeEnum.DTU_RESTART;
+import static main.com.handu.scada.protocol.enums.DeviceCmdTypeEnum.*;
 
 public class DtuNetworkConnection {
 
@@ -53,7 +52,6 @@ public class DtuNetworkConnection {
     private boolean isUpdating = false;
     private float progress;
     private List<byte[]> updateBuffList;
-
 
     //最近一次发送时间
     private long lastSendTime;
@@ -169,6 +167,10 @@ public class DtuNetworkConnection {
         this.context = context;
         this.callback = callback;
         this.setLastSendTime(System.currentTimeMillis());
+        init(IProtocol.class);
+    }
+
+    public DtuNetworkConnection() {
         init(IProtocol.class);
     }
 
@@ -298,6 +300,35 @@ public class DtuNetworkConnection {
      * 通知下行解析
      */
     public MediaData notifyDownParse(ProtocolLayerData protocolLayerData) {
+        MediaData mediaData = special(protocolLayerData);
+        if (mediaData == null) {
+            for (IProtocol protocol : iDownParseProtocols) {
+                try {
+                    MediaData data = protocol.sendCommand(protocolLayerData);
+                    if (data != null) {
+                        if (data.CommandData != null) {
+                            byte[] bytes = new byte[data.CommandData.length + 1];
+                            bytes[0] = 0x5A;
+                            System.arraycopy(data.CommandData, 0, bytes, 1, data.CommandData.length);
+                            data.CommandData = bytes;
+                            return data;
+                        }
+                    }
+                } catch (Exception e) {
+                    ExceptionHandler.print(e);
+                }
+            }
+        }
+        return mediaData;
+    }
+
+    /**
+     * 特殊情况的处理
+     *
+     * @param protocolLayerData
+     * @return
+     */
+    private MediaData special(ProtocolLayerData protocolLayerData) {
         if (protocolLayerData.CmdType == DTU_INFO) {
             LogUtils.info("dtu " + protocolLayerData.DTUString + " read info ...", true);
             return new MediaData() {{
@@ -314,21 +345,30 @@ public class DtuNetworkConnection {
                 DTUString = protocolLayerData.DTUString;
             }};
         }
-        for (IProtocol protocol : iDownParseProtocols) {
-            try {
-                MediaData data = protocol.sendCommand(protocolLayerData);
-                if (data != null) {
-                    if (data.CommandData != null) {
-                        byte[] bytes = new byte[data.CommandData.length + 1];
-                        bytes[0] = 0x5A;
-                        System.arraycopy(data.CommandData, 0, bytes, 1, data.CommandData.length);
-                        data.CommandData = bytes;
-                        return data;
-                    }
-                }
-            } catch (Exception e) {
-                ExceptionHandler.print(e);
-            }
+        if (protocolLayerData.CmdType == ConcentratorHeartbeatTime) {
+            return new MediaData() {{
+                CommandData = new byte[]{(byte) 0x6B};
+                deviceTypeEnum = DeviceTypeEnum.DTU;
+                DTUString = protocolLayerData.DTUString;
+            }};
+        }
+
+        if (protocolLayerData.CmdType == COLLECT_DTU_SIGNAL_STRENGTH) {
+            LogUtils.info("dtu " + protocolLayerData.DTUString + " collect signal strength ...", true);
+            return new MediaData() {{
+                CommandData = new byte[]{(byte) 0x7A};
+                deviceTypeEnum = DeviceTypeEnum.DTU;
+                DTUString = protocolLayerData.DTUString;
+            }};
+        }
+
+        if (protocolLayerData.CmdType == READ_DTU_SIGNAL_STRENGTH) {
+            LogUtils.info("dtu " + protocolLayerData.DTUString + " read signal strength ...", true);
+            return new MediaData() {{
+                CommandData = new byte[]{(byte) 0x7B};
+                deviceTypeEnum = DeviceTypeEnum.DTU;
+                DTUString = protocolLayerData.DTUString;
+            }};
         }
         return null;
     }
@@ -363,7 +403,7 @@ public class DtuNetworkConnection {
                     isUpdating = true;
                     handShake();
                 } else {
-                    LogUtils.error(dtuAddress + "is updating,please wait...", true);
+                    LogUtils.error(dtuAddress + " is updating,please wait...", true);
                 }
             }
         } catch (Exception e) {
@@ -423,7 +463,7 @@ public class DtuNetworkConnection {
         byte[] buff = getHandShakeBuffer(getUpdateBuffList());
         if (buff != null) {
             sendUpdateCommand(buff);
-            LogUtils.info(dtuAddress + "update command  has send,please wait...", true);
+            LogUtils.info(dtuAddress + " update command  has send,please wait...", true);
         }
     }
 
@@ -446,71 +486,69 @@ public class DtuNetworkConnection {
      */
     public void update() {
         progress = 0;
-        LogUtils.info(dtuAddress + "start update...", true);
-        new Thread(() -> {
-            try {
-                int frameNo = 0;
-                byte[] bytes;
-                int count = getUpdateBuffList().size();
-                List<byte[]> firstList = new ArrayList<>();
-                List<byte[]> secondList = new ArrayList<>();
+        LogUtils.info(dtuAddress + " start update...", true);
+        try {
+            int frameNo = 0;
+            byte[] bytes;
+            int count = getUpdateBuffList().size();
+            List<byte[]> firstList = new ArrayList<>();
+            List<byte[]> secondList = new ArrayList<>();
 
-                while (isUpdating) {
-                    if (frameNo < count) {
-                        //等于64K时,暂停3秒,等待DTU写入
-                        if (frameNo == 0x40) {
-                            try {
-                                Thread.sleep(3000);
-                            } catch (InterruptedException ignored) {
-                            }
+            while (isUpdating) {
+                if (frameNo < count) {
+                    //等于64K时,暂停3秒,等待DTU写入
+                    if (frameNo == 0x40) {
+                        try {
+                            Thread.sleep(3000);
+                        } catch (InterruptedException ignored) {
                         }
-                        if (frameNo < 0x40) {
-                            firstList.add(getUpdateBuffList().get(frameNo));
-                        } else {
-                            secondList.add(getUpdateBuffList().get(frameNo));
-                        }
-                        bytes = getSendCmd(getUpdateBuffList().get(frameNo), (byte) 0x5e, (byte) 0x02, frameNo);
-                        sendUpdateCommand(bytes);
-                        frameNo++;
-                        progress = frameNo * 1f / (count + 1);
-                        Thread.sleep(DtuUpdateUtil.interval);
                     }
-                    //已发送完毕,暂停2秒等待写入,发送校验位
-                    else {
-                        Thread.sleep(2000);
-                        byte[] cs = new byte[4];
-                        cs[0] = 0x00;
-                        cs[1] = 0x00;
-                        cs[2] = 0x00;
-                        cs[3] = 0x00;
-                        byte[] allBytes1 = getAllBytes(firstList);
-                        int crc = Crc16Utils.calcCrc16(allBytes1, 0, 65535);
-                        cs[1] = (byte) (crc & 0xFF);
-                        cs[0] = (byte) (crc >> 0x08);
-                        if (secondList.size() > 0) {
-                            byte[] allBytes2 = getAllBytes(secondList);
-                            crc = Crc16Utils.calcCrc16(allBytes2, 0, 65535);
-                            cs[3] = (byte) (crc & 0xFF);
-                            cs[2] = (byte) (crc >> 0x08);
-                        } else {
-                            cs[3] = 0x00;
-                            cs[2] = (byte) 0xFF;
-                        }
-                        bytes = getSendCmd(cs, (byte) 0x5e, (byte) 0x02, frameNo);
-                        sendUpdateCommand(bytes);
-                        frameNo++;
-                        progress = 1f;
-                        isUpdating = false;
+                    if (frameNo < 0x40) {
+                        firstList.add(getUpdateBuffList().get(frameNo));
+                    } else {
+                        secondList.add(getUpdateBuffList().get(frameNo));
                     }
-                    if ((progress * 100) % 20 == 0) {
-                        String p = String.format("%.2f", progress * 100) + "%";
-                        LogUtils.info(dtuAddress + "update progress--" + p, true);
-                    }
+                    bytes = getSendCmd(getUpdateBuffList().get(frameNo), (byte) 0x5e, (byte) 0x02, frameNo);
+                    sendUpdateCommand(bytes);
+                    frameNo++;
+                    progress = frameNo * 1f / (count + 1);
+                    Thread.sleep(DtuUpdateUtil.interval);
                 }
-            } catch (Exception e) {
-                ExceptionHandler.handle(e);
+                //已发送完毕,暂停2秒等待写入,发送校验位
+                else {
+                    Thread.sleep(2000);
+                    byte[] cs = new byte[4];
+                    cs[0] = 0x00;
+                    cs[1] = 0x00;
+                    cs[2] = 0x00;
+                    cs[3] = 0x00;
+                    byte[] allBytes1 = getAllBytes(firstList);
+                    int crc = Crc16Utils.calcCrc16(allBytes1, 0, 65535);
+                    cs[1] = (byte) (crc & 0xFF);
+                    cs[0] = (byte) (crc >> 0x08);
+                    if (secondList.size() > 0) {
+                        byte[] allBytes2 = getAllBytes(secondList);
+                        crc = Crc16Utils.calcCrc16(allBytes2, 0, 65535);
+                        cs[3] = (byte) (crc & 0xFF);
+                        cs[2] = (byte) (crc >> 0x08);
+                    } else {
+                        cs[3] = 0x00;
+                        cs[2] = (byte) 0xFF;
+                    }
+                    bytes = getSendCmd(cs, (byte) 0x5e, (byte) 0x02, frameNo);
+                    sendUpdateCommand(bytes);
+                    frameNo++;
+                    progress = 1f;
+                    isUpdating = false;
+                }
+                if ((progress * 100) % 20 == 0) {
+                    String p = String.format("%.2f", progress * 100) + "%";
+                    LogUtils.info(dtuAddress + "  update progress--" + p, true);
+                }
             }
-        }).start();
+        } catch (Exception e) {
+            ExceptionHandler.handle(e);
+        }
     }
 
     /**

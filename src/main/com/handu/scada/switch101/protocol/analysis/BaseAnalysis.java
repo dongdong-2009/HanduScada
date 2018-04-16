@@ -137,7 +137,7 @@ public abstract class BaseAnalysis implements IAnalysis {
                         }.getType());
                     }
                 } catch (Exception e) {
-                    ExceptionHandler.handle(e);
+                    ExceptionHandler.print(e);
                 }
             } else {
                 LogUtils.error("not find " + path + "!", true);

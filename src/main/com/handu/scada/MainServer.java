@@ -1,6 +1,7 @@
 package main.com.handu.scada;
 
 import main.com.handu.scada.business.dtu.DtuUpdateUtil;
+import main.com.handu.scada.business.utpc.UTPCModel;
 import main.com.handu.scada.cache.MyCacheManager;
 import main.com.handu.scada.config.Config;
 import main.com.handu.scada.event.EventManager;
@@ -18,7 +19,11 @@ import org.apache.ibatis.io.Resources;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.*;
+
+import static main.com.handu.scada.business.utpc.UTPCModel.UTPC_RATE;
 
 /**
  * Created by 柳梦 on 2017/12/15.
@@ -85,7 +90,7 @@ public class MainServer {
             endTime = System.currentTimeMillis();
             timer.cancel();
             timer = null;
-            LogUtils.info((endTime - startTime) % 1000 == 0 ? ((endTime - startTime) / 1000) + "seconds" : ((endTime - startTime) / 1000) + "seconds" + (endTime - startTime) % 1000 + "millSeconds", true);
+            LogUtils.info((endTime - startTime) % 1000 == 0 ? ((endTime - startTime) / 1000) + "s" : ((endTime - startTime) / 1000) + "s" + (endTime - startTime) % 1000 + "ms", true);
             initSubscriber();
             initJob();
             initInput();
@@ -147,9 +152,12 @@ public class MainServer {
                     .forEach(entry ->
                             Config.isDebug = Boolean.parseBoolean(String.valueOf(entry.getValue()))
                     );
+            Resources.setCharset(Charset.forName("UTF-8"));
             inputStream = Resources.getResourceAsStream("configure.properties");
+            //中文乱码
+            InputStreamReader reader = new InputStreamReader(inputStream, "gbk");
             properties = new Properties();
-            properties.load(inputStream);
+            properties.load(reader);
             for (Map.Entry<Object, Object> entry : properties.entrySet()) {
                 if (entry.getKey().equals("dtu.port")) {
                     Config.setDtuPorts(AesUtils.decrypt(String.valueOf(entry.getValue())));
@@ -161,6 +169,12 @@ public class MainServer {
                     Config.setHeartBeat(Integer.valueOf(String.valueOf(entry.getValue())));
                 } else if (entry.getKey().equals("system.name")) {
                     Config.setSystemName(String.valueOf(entry.getValue()));
+                } else if (entry.getKey().equals("utpc.rate")) {
+                    UTPC_RATE = Double.parseDouble((String.valueOf(entry.getValue())));
+                } else if (entry.getKey().equals("normal.voltage")) {
+                    UTPCModel.NORMAL_VOLTAGE = Double.parseDouble((String.valueOf(entry.getValue())));
+                } else if (entry.getKey().equals("lowVoltage.rate")) {
+                    UTPCModel.LOW_VOLTAGE_RATE = Double.parseDouble((String.valueOf(entry.getValue())));
                 }
             }
         } catch (IOException e) {
@@ -179,7 +193,7 @@ public class MainServer {
             @Override
             public void run() {
                 endTime = System.currentTimeMillis();
-                LogUtils.info((endTime - startTime) % 1000 == 0 ? ((endTime - startTime) / 1000) + "seconds" : ((endTime - startTime) / 1000) + "seconds" + (endTime - startTime) % 1000 + "millSeconds", true);
+                LogUtils.info((endTime - startTime) % 1000 == 0 ? ((endTime - startTime) / 1000) + "s" : ((endTime - startTime) / 1000) + "s" + (endTime - startTime) % 1000 + "ms", true);
             }
         }, 0, 1000);
         return MyCacheManager.getInstance().init();

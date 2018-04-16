@@ -63,7 +63,7 @@ public class Crc16Utils {
             }
             return (((ucCRCHi & 0x00ff) << 8) | (ucCRCLo & 0x00ff) & 0xffff);
         } catch (Exception e) {
-            ExceptionHandler.handle(e);
+            ExceptionHandler.print(e);
         }
         return 0;
     }

@@ -13,9 +13,9 @@ public class TripEventRecord {
     ///[Description("跳闸原因")]
     public TripReasonEnum TripReason;//状态
     ///[Description("")]
-    public String AlarmReason;//故障原因
+    public String AlarmReason = "";//故障原因
     ///[Description("")]
-    public String AlarmPhase;//故障相别
+    public String AlarmPhase = "";//故障相别
     ///[Description("")]
     public Date AlarmTime;//跳闸发生时刻（6个字节）
     ///[Description("mA")]
@@ -155,6 +155,10 @@ public class TripEventRecord {
 
     @Override
     public String toString() {
+        return AlarmReason + "," + AlarmPhase;
+    }
+
+    public String toString1() {
         return AlarmReason +
                 "," + AlarmPhase +
                 ",跳闸前 Ua=" + APhaseVoltage + "V" +
