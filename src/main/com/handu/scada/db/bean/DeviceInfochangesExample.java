@@ -504,6 +504,66 @@ public class DeviceInfochangesExample {
             addCriterion("Status not between", value1, value2, "status");
             return (Criteria) this;
         }
+
+        public Criteria andPortIsNull() {
+            addCriterion("Port is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andPortIsNotNull() {
+            addCriterion("Port is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andPortEqualTo(Integer value) {
+            addCriterion("Port =", value, "port");
+            return (Criteria) this;
+        }
+
+        public Criteria andPortNotEqualTo(Integer value) {
+            addCriterion("Port <>", value, "port");
+            return (Criteria) this;
+        }
+
+        public Criteria andPortGreaterThan(Integer value) {
+            addCriterion("Port >", value, "port");
+            return (Criteria) this;
+        }
+
+        public Criteria andPortGreaterThanOrEqualTo(Integer value) {
+            addCriterion("Port >=", value, "port");
+            return (Criteria) this;
+        }
+
+        public Criteria andPortLessThan(Integer value) {
+            addCriterion("Port <", value, "port");
+            return (Criteria) this;
+        }
+
+        public Criteria andPortLessThanOrEqualTo(Integer value) {
+            addCriterion("Port <=", value, "port");
+            return (Criteria) this;
+        }
+
+        public Criteria andPortIn(List<Integer> values) {
+            addCriterion("Port in", values, "port");
+            return (Criteria) this;
+        }
+
+        public Criteria andPortNotIn(List<Integer> values) {
+            addCriterion("Port not in", values, "port");
+            return (Criteria) this;
+        }
+
+        public Criteria andPortBetween(Integer value1, Integer value2) {
+            addCriterion("Port between", value1, value2, "port");
+            return (Criteria) this;
+        }
+
+        public Criteria andPortNotBetween(Integer value1, Integer value2) {
+            addCriterion("Port not between", value1, value2, "port");
+            return (Criteria) this;
+        }
     }
 
     public static class Criteria extends GeneratedCriteria {

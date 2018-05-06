@@ -20,15 +20,32 @@ public class DBCPDataSourceFactory implements DataSourceFactory {
 
     @Override
     public void setProperties(Properties ps) {
+
         dataSource.setDriverClassName(ps.getProperty("driver"));
         dataSource.setUsername(ps.getProperty("username"));
         dataSource.setUrl(ps.getProperty("url"));
         dataSource.setPassword(ps.getProperty("password"));
-        dataSource.setDefaultAutoCommit(ps.getProperty("autoCommit", "0").equals("1"));
-        dataSource.setInitialSize(Integer.parseInt(ps.getProperty("initialSize", "2")));
-        dataSource.setMaxActive(Integer.parseInt(ps.getProperty("poolMaximumActiveConnections", "30")));
-        dataSource.setMaxIdle(Integer.parseInt(ps.getProperty("poolMaximumIdleConnections", "0")));
-        dataSource.setMaxWait(Long.parseLong(ps.getProperty("maxWait", "0")));
+
+        dataSource.setDefaultAutoCommit(Boolean.parseBoolean(ps.getProperty("autoCommit", "false")));
+
+        dataSource.setInitialSize(Integer.parseInt(ps.getProperty("initialSize", "5")));
+        dataSource.setMaxActive(Integer.parseInt(ps.getProperty("maxActive", "30")));
+        dataSource.setMaxIdle(Integer.parseInt(ps.getProperty("maxIdle", "20")));
+        dataSource.setMinIdle(Integer.parseInt(ps.getProperty("minIdle", "5")));
+        dataSource.setMaxWait(Long.parseLong(ps.getProperty("maxWait", "60000")));
+
+        dataSource.setRemoveAbandoned(Boolean.parseBoolean(ps.getProperty("removeAbandoned", "true")));
+        dataSource.setRemoveAbandonedTimeout(Integer.parseInt(ps.getProperty("removeAbandonedTimeout", "60")));
+
+        dataSource.setTestWhileIdle(Boolean.parseBoolean(ps.getProperty("testWhileIdle", "true")));
+        dataSource.setTestOnBorrow(Boolean.parseBoolean(ps.getProperty("testOnBorrow", "false")));
+        dataSource.setTestOnReturn(Boolean.parseBoolean(ps.getProperty("testOnReturn", "false")));
+
+        dataSource.setTimeBetweenEvictionRunsMillis(Integer.parseInt(ps.getProperty("timeBetweenEvictionRunsMillis", "30000")));
+        dataSource.setMinEvictableIdleTimeMillis(Integer.parseInt(ps.getProperty("minEvictableIdleTimeMillis", "1800000")));
+        dataSource.setNumTestsPerEvictionRun(Integer.parseInt(ps.getProperty("numTestsPerEvictionRun", "10")));
+
+        dataSource.setValidationQuery(ps.getProperty("validationQuery", " SELECT 1 "));
     }
 
     @Override

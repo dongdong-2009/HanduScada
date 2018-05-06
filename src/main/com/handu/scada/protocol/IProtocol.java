@@ -9,26 +9,41 @@ import main.com.handu.scada.protocol.base.ProtocolLayerData;
  */
 public interface IProtocol {
 
-    /// <summary>
-    /// 解析数据
-    /// </summary>
-    ProtocolLayerData parse(MediaData mediaData);
+    /**
+     * 校验
+     *
+     * @param bytes
+     * @return
+     */
+    default boolean valid(byte[] bytes) {
+        return false;
+    }
 
-    /// <summary>
-    /// 解析设备地址
-    /// </summary>
-    /// <param name="buff"></param>
-    void getAddress(byte[] buff);
+    /**
+     * 解析设备地址
+     *
+     * @param buff
+     */
+    default void getAddress(byte[] buff) {
+    }
 
-    /// <summary>
-    /// 校验
-    /// </summary>
-    /// <param name="buff"></param>
-    /// <returns></returns>
-    boolean valid(byte[] bytes);
+    /**
+     * 解析数据
+     *
+     * @param mediaData
+     * @return
+     */
+    default ProtocolLayerData parse(MediaData mediaData) {
+        return null;
+    }
 
     /**
      * 下发命令
+     *
+     * @param protocolLayerData
+     * @return
      */
-    MediaData sendCommand(ProtocolLayerData protocolLayerData);
+    default MediaData sendCommand(ProtocolLayerData protocolLayerData) {
+        return null;
+    }
 }

@@ -37,6 +37,7 @@
     <result column="Ib" jdbcType="DOUBLE" property="ib" />
     <result column="Ic" jdbcType="DOUBLE" property="ic" />
     <result column="Io" jdbcType="DOUBLE" property="io" />
+    <result column="DtuId" jdbcType="VARCHAR" property="dtuid" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -100,7 +101,7 @@
     Oid, DaId, Name, Address, BaudRate, Checkdigit, TerminalId, RcdModel, Mfrs, MeasureValue, 
     Code, Level, Pwd, Size, Cycle, WorkDateTime, Validate, IsAppSave, SortCode, DeleteMark, 
     EnabledMark, Description, CreateDate, CreateUserId, CreateUserName, ModifyDate, ModifyUserId, 
-    ModifyUserName, Ua, Ub, Uc, Ia, Ib, Ic, Io
+    ModifyUserName, Ua, Ub, Uc, Ia, Ib, Ic, Io, DtuId
   </sql>
   <select id="selectByExample" parameterType="main.com.handu.scada.db.bean.DeviceRcdExample" resultMap="BaseResultMap">
     select
@@ -143,7 +144,8 @@
       CreateDate, CreateUserId, CreateUserName, 
       ModifyDate, ModifyUserId, ModifyUserName, 
       Ua, Ub, Uc, Ia, 
-      Ib, Ic, Io)
+      Ib, Ic, Io, DtuId
+      )
     values (#{oid,jdbcType=VARCHAR}, #{daid,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, 
       #{address,jdbcType=VARCHAR}, #{baudrate,jdbcType=VARCHAR}, #{checkdigit,jdbcType=VARCHAR}, 
       #{terminalid,jdbcType=VARCHAR}, #{rcdmodel,jdbcType=VARCHAR}, #{mfrs,jdbcType=VARCHAR}, 
@@ -154,7 +156,8 @@
       #{createdate,jdbcType=TIMESTAMP}, #{createuserid,jdbcType=VARCHAR}, #{createusername,jdbcType=VARCHAR}, 
       #{modifydate,jdbcType=TIMESTAMP}, #{modifyuserid,jdbcType=VARCHAR}, #{modifyusername,jdbcType=VARCHAR}, 
       #{ua,jdbcType=DOUBLE}, #{ub,jdbcType=DOUBLE}, #{uc,jdbcType=DOUBLE}, #{ia,jdbcType=DOUBLE}, 
-      #{ib,jdbcType=DOUBLE}, #{ic,jdbcType=DOUBLE}, #{io,jdbcType=DOUBLE})
+      #{ib,jdbcType=DOUBLE}, #{ic,jdbcType=DOUBLE}, #{io,jdbcType=DOUBLE}, #{dtuid,jdbcType=VARCHAR}
+      )
   </insert>
   <insert id="insertSelective" parameterType="main.com.handu.scada.db.bean.DeviceRcd">
     insert into device_rcd
@@ -264,6 +267,9 @@
       <if test="io != null">
         Io,
       </if>
+      <if test="dtuid != null">
+        DtuId,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="oid != null">
@@ -371,6 +377,9 @@
       <if test="io != null">
         #{io,jdbcType=DOUBLE},
       </if>
+      <if test="dtuid != null">
+        #{dtuid,jdbcType=VARCHAR},
+      </if>
     </trim>
   </insert>
   <select id="countByExample" parameterType="main.com.handu.scada.db.bean.DeviceRcdExample" resultType="java.lang.Long">
@@ -382,110 +391,113 @@
   <update id="updateByExampleSelective" parameterType="map">
     update device_rcd
     <set>
-      <if test="tripEventRecord.oid != null">
-        Oid = #{tripEventRecord.oid,jdbcType=VARCHAR},
+      <if test="record.oid != null">
+        Oid = #{record.oid,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.daid != null">
-        DaId = #{tripEventRecord.daid,jdbcType=VARCHAR},
+      <if test="record.daid != null">
+        DaId = #{record.daid,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.name != null">
-        Name = #{tripEventRecord.name,jdbcType=VARCHAR},
+      <if test="record.name != null">
+        Name = #{record.name,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.address != null">
-        Address = #{tripEventRecord.address,jdbcType=VARCHAR},
+      <if test="record.address != null">
+        Address = #{record.address,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.baudrate != null">
-        BaudRate = #{tripEventRecord.baudrate,jdbcType=VARCHAR},
+      <if test="record.baudrate != null">
+        BaudRate = #{record.baudrate,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.checkdigit != null">
-        Checkdigit = #{tripEventRecord.checkdigit,jdbcType=VARCHAR},
+      <if test="record.checkdigit != null">
+        Checkdigit = #{record.checkdigit,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.terminalid != null">
-        TerminalId = #{tripEventRecord.terminalid,jdbcType=VARCHAR},
+      <if test="record.terminalid != null">
+        TerminalId = #{record.terminalid,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.rcdmodel != null">
-        RcdModel = #{tripEventRecord.rcdmodel,jdbcType=VARCHAR},
+      <if test="record.rcdmodel != null">
+        RcdModel = #{record.rcdmodel,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.mfrs != null">
-        Mfrs = #{tripEventRecord.mfrs,jdbcType=VARCHAR},
+      <if test="record.mfrs != null">
+        Mfrs = #{record.mfrs,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.measurevalue != null">
-        MeasureValue = #{tripEventRecord.measurevalue,jdbcType=INTEGER},
+      <if test="record.measurevalue != null">
+        MeasureValue = #{record.measurevalue,jdbcType=INTEGER},
       </if>
-      <if test="tripEventRecord.code != null">
-        Code = #{tripEventRecord.code,jdbcType=VARCHAR},
+      <if test="record.code != null">
+        Code = #{record.code,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.level != null">
-        Level = #{tripEventRecord.level,jdbcType=VARCHAR},
+      <if test="record.level != null">
+        Level = #{record.level,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.pwd != null">
-        Pwd = #{tripEventRecord.pwd,jdbcType=VARCHAR},
+      <if test="record.pwd != null">
+        Pwd = #{record.pwd,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.size != null">
-        Size = #{tripEventRecord.size,jdbcType=VARCHAR},
+      <if test="record.size != null">
+        Size = #{record.size,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.cycle != null">
-        Cycle = #{tripEventRecord.cycle,jdbcType=VARCHAR},
+      <if test="record.cycle != null">
+        Cycle = #{record.cycle,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.workdatetime != null">
-        WorkDateTime = #{tripEventRecord.workdatetime,jdbcType=TIMESTAMP},
+      <if test="record.workdatetime != null">
+        WorkDateTime = #{record.workdatetime,jdbcType=TIMESTAMP},
       </if>
-      <if test="tripEventRecord.validate != null">
-        Validate = #{tripEventRecord.validate,jdbcType=VARCHAR},
+      <if test="record.validate != null">
+        Validate = #{record.validate,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.isappsave != null">
-        IsAppSave = #{tripEventRecord.isappsave,jdbcType=INTEGER},
+      <if test="record.isappsave != null">
+        IsAppSave = #{record.isappsave,jdbcType=INTEGER},
       </if>
-      <if test="tripEventRecord.sortcode != null">
-        SortCode = #{tripEventRecord.sortcode,jdbcType=INTEGER},
+      <if test="record.sortcode != null">
+        SortCode = #{record.sortcode,jdbcType=INTEGER},
       </if>
-      <if test="tripEventRecord.deletemark != null">
-        DeleteMark = #{tripEventRecord.deletemark,jdbcType=INTEGER},
+      <if test="record.deletemark != null">
+        DeleteMark = #{record.deletemark,jdbcType=INTEGER},
       </if>
-      <if test="tripEventRecord.enabledmark != null">
-        EnabledMark = #{tripEventRecord.enabledmark,jdbcType=INTEGER},
+      <if test="record.enabledmark != null">
+        EnabledMark = #{record.enabledmark,jdbcType=INTEGER},
       </if>
-      <if test="tripEventRecord.description != null">
-        Description = #{tripEventRecord.description,jdbcType=VARCHAR},
+      <if test="record.description != null">
+        Description = #{record.description,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.createdate != null">
-        CreateDate = #{tripEventRecord.createdate,jdbcType=TIMESTAMP},
+      <if test="record.createdate != null">
+        CreateDate = #{record.createdate,jdbcType=TIMESTAMP},
       </if>
-      <if test="tripEventRecord.createuserid != null">
-        CreateUserId = #{tripEventRecord.createuserid,jdbcType=VARCHAR},
+      <if test="record.createuserid != null">
+        CreateUserId = #{record.createuserid,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.createusername != null">
-        CreateUserName = #{tripEventRecord.createusername,jdbcType=VARCHAR},
+      <if test="record.createusername != null">
+        CreateUserName = #{record.createusername,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.modifydate != null">
-        ModifyDate = #{tripEventRecord.modifydate,jdbcType=TIMESTAMP},
+      <if test="record.modifydate != null">
+        ModifyDate = #{record.modifydate,jdbcType=TIMESTAMP},
       </if>
-      <if test="tripEventRecord.modifyuserid != null">
-        ModifyUserId = #{tripEventRecord.modifyuserid,jdbcType=VARCHAR},
+      <if test="record.modifyuserid != null">
+        ModifyUserId = #{record.modifyuserid,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.modifyusername != null">
-        ModifyUserName = #{tripEventRecord.modifyusername,jdbcType=VARCHAR},
+      <if test="record.modifyusername != null">
+        ModifyUserName = #{record.modifyusername,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.ua != null">
-        Ua = #{tripEventRecord.ua,jdbcType=DOUBLE},
+      <if test="record.ua != null">
+        Ua = #{record.ua,jdbcType=DOUBLE},
       </if>
-      <if test="tripEventRecord.ub != null">
-        Ub = #{tripEventRecord.ub,jdbcType=DOUBLE},
+      <if test="record.ub != null">
+        Ub = #{record.ub,jdbcType=DOUBLE},
       </if>
-      <if test="tripEventRecord.uc != null">
-        Uc = #{tripEventRecord.uc,jdbcType=DOUBLE},
+      <if test="record.uc != null">
+        Uc = #{record.uc,jdbcType=DOUBLE},
       </if>
-      <if test="tripEventRecord.ia != null">
-        Ia = #{tripEventRecord.ia,jdbcType=DOUBLE},
+      <if test="record.ia != null">
+        Ia = #{record.ia,jdbcType=DOUBLE},
       </if>
-      <if test="tripEventRecord.ib != null">
-        Ib = #{tripEventRecord.ib,jdbcType=DOUBLE},
+      <if test="record.ib != null">
+        Ib = #{record.ib,jdbcType=DOUBLE},
       </if>
-      <if test="tripEventRecord.ic != null">
-        Ic = #{tripEventRecord.ic,jdbcType=DOUBLE},
+      <if test="record.ic != null">
+        Ic = #{record.ic,jdbcType=DOUBLE},
       </if>
-      <if test="tripEventRecord.io != null">
-        Io = #{tripEventRecord.io,jdbcType=DOUBLE},
+      <if test="record.io != null">
+        Io = #{record.io,jdbcType=DOUBLE},
+      </if>
+      <if test="record.dtuid != null">
+        DtuId = #{record.dtuid,jdbcType=VARCHAR},
       </if>
     </set>
     <if test="_parameter != null">
@@ -494,41 +506,42 @@
   </update>
   <update id="updateByExample" parameterType="map">
     update device_rcd
-    set Oid = #{tripEventRecord.oid,jdbcType=VARCHAR},
-      DaId = #{tripEventRecord.daid,jdbcType=VARCHAR},
-      Name = #{tripEventRecord.name,jdbcType=VARCHAR},
-      Address = #{tripEventRecord.address,jdbcType=VARCHAR},
-      BaudRate = #{tripEventRecord.baudrate,jdbcType=VARCHAR},
-      Checkdigit = #{tripEventRecord.checkdigit,jdbcType=VARCHAR},
-      TerminalId = #{tripEventRecord.terminalid,jdbcType=VARCHAR},
-      RcdModel = #{tripEventRecord.rcdmodel,jdbcType=VARCHAR},
-      Mfrs = #{tripEventRecord.mfrs,jdbcType=VARCHAR},
-      MeasureValue = #{tripEventRecord.measurevalue,jdbcType=INTEGER},
-      Code = #{tripEventRecord.code,jdbcType=VARCHAR},
-      Level = #{tripEventRecord.level,jdbcType=VARCHAR},
-      Pwd = #{tripEventRecord.pwd,jdbcType=VARCHAR},
-      Size = #{tripEventRecord.size,jdbcType=VARCHAR},
-      Cycle = #{tripEventRecord.cycle,jdbcType=VARCHAR},
-      WorkDateTime = #{tripEventRecord.workdatetime,jdbcType=TIMESTAMP},
-      Validate = #{tripEventRecord.validate,jdbcType=VARCHAR},
-      IsAppSave = #{tripEventRecord.isappsave,jdbcType=INTEGER},
-      SortCode = #{tripEventRecord.sortcode,jdbcType=INTEGER},
-      DeleteMark = #{tripEventRecord.deletemark,jdbcType=INTEGER},
-      EnabledMark = #{tripEventRecord.enabledmark,jdbcType=INTEGER},
-      Description = #{tripEventRecord.description,jdbcType=VARCHAR},
-      CreateDate = #{tripEventRecord.createdate,jdbcType=TIMESTAMP},
-      CreateUserId = #{tripEventRecord.createuserid,jdbcType=VARCHAR},
-      CreateUserName = #{tripEventRecord.createusername,jdbcType=VARCHAR},
-      ModifyDate = #{tripEventRecord.modifydate,jdbcType=TIMESTAMP},
-      ModifyUserId = #{tripEventRecord.modifyuserid,jdbcType=VARCHAR},
-      ModifyUserName = #{tripEventRecord.modifyusername,jdbcType=VARCHAR},
-      Ua = #{tripEventRecord.ua,jdbcType=DOUBLE},
-      Ub = #{tripEventRecord.ub,jdbcType=DOUBLE},
-      Uc = #{tripEventRecord.uc,jdbcType=DOUBLE},
-      Ia = #{tripEventRecord.ia,jdbcType=DOUBLE},
-      Ib = #{tripEventRecord.ib,jdbcType=DOUBLE},
-      Ic = #{tripEventRecord.ic,jdbcType=DOUBLE},
-      Io = #{tripEventRecord.io,jdbcType=DOUBLE}
+    set Oid = #{record.oid,jdbcType=VARCHAR},
+      DaId = #{record.daid,jdbcType=VARCHAR},
+      Name = #{record.name,jdbcType=VARCHAR},
+      Address = #{record.address,jdbcType=VARCHAR},
+      BaudRate = #{record.baudrate,jdbcType=VARCHAR},
+      Checkdigit = #{record.checkdigit,jdbcType=VARCHAR},
+      TerminalId = #{record.terminalid,jdbcType=VARCHAR},
+      RcdModel = #{record.rcdmodel,jdbcType=VARCHAR},
+      Mfrs = #{record.mfrs,jdbcType=VARCHAR},
+      MeasureValue = #{record.measurevalue,jdbcType=INTEGER},
+      Code = #{record.code,jdbcType=VARCHAR},
+      Level = #{record.level,jdbcType=VARCHAR},
+      Pwd = #{record.pwd,jdbcType=VARCHAR},
+      Size = #{record.size,jdbcType=VARCHAR},
+      Cycle = #{record.cycle,jdbcType=VARCHAR},
+      WorkDateTime = #{record.workdatetime,jdbcType=TIMESTAMP},
+      Validate = #{record.validate,jdbcType=VARCHAR},
+      IsAppSave = #{record.isappsave,jdbcType=INTEGER},
+      SortCode = #{record.sortcode,jdbcType=INTEGER},
+      DeleteMark = #{record.deletemark,jdbcType=INTEGER},
+      EnabledMark = #{record.enabledmark,jdbcType=INTEGER},
+      Description = #{record.description,jdbcType=VARCHAR},
+      CreateDate = #{record.createdate,jdbcType=TIMESTAMP},
+      CreateUserId = #{record.createuserid,jdbcType=VARCHAR},
+      CreateUserName = #{record.createusername,jdbcType=VARCHAR},
+      ModifyDate = #{record.modifydate,jdbcType=TIMESTAMP},
+      ModifyUserId = #{record.modifyuserid,jdbcType=VARCHAR},
+      ModifyUserName = #{record.modifyusername,jdbcType=VARCHAR},
+      Ua = #{record.ua,jdbcType=DOUBLE},
+      Ub = #{record.ub,jdbcType=DOUBLE},
+      Uc = #{record.uc,jdbcType=DOUBLE},
+      Ia = #{record.ia,jdbcType=DOUBLE},
+      Ib = #{record.ib,jdbcType=DOUBLE},
+      Ic = #{record.ic,jdbcType=DOUBLE},
+      Io = #{record.io,jdbcType=DOUBLE},
+      DtuId = #{record.dtuid,jdbcType=VARCHAR}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -638,6 +651,9 @@
       <if test="io != null">
         Io = #{io,jdbcType=DOUBLE},
       </if>
+      <if test="dtuid != null">
+        DtuId = #{dtuid,jdbcType=VARCHAR},
+      </if>
     </set>
     where Oid = #{oid,jdbcType=VARCHAR}
   </update>
@@ -676,7 +692,8 @@
       Ia = #{ia,jdbcType=DOUBLE},
       Ib = #{ib,jdbcType=DOUBLE},
       Ic = #{ic,jdbcType=DOUBLE},
-      Io = #{io,jdbcType=DOUBLE}
+      Io = #{io,jdbcType=DOUBLE},
+      DtuId = #{dtuid,jdbcType=VARCHAR}
     where Oid = #{oid,jdbcType=VARCHAR}
   </update>
 </mapper>

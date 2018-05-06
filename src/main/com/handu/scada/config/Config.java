@@ -4,6 +4,8 @@ public class Config {
 
     private static String SystemName = "总漏保在线监测系统";
 
+    private static int timeout = 60;
+
     /**
      * 心跳
      */
@@ -73,5 +75,13 @@ public class Config {
 
     public static void setSystemName(String systemName) {
         SystemName = systemName;
+    }
+
+    public static int getTimeout() {
+        return timeout;
+    }
+
+    public static void setTimeout(int timeout) {
+        Config.timeout = timeout;
     }
 }

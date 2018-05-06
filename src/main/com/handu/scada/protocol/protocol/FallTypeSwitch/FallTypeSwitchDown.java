@@ -6,7 +6,7 @@ import main.com.handu.scada.protocol.IProtocol;
 import main.com.handu.scada.protocol.base.MediaData;
 import main.com.handu.scada.protocol.base.ProtocolLayerData;
 import main.com.handu.scada.protocol.enums.DeviceCmdTypeEnum;
-import main.com.handu.scada.protocol.enums.DeviceTypeEnum;
+import main.com.handu.scada.enums.DeviceTypeEnum;
 import main.com.handu.scada.utils.Crc16Utils;
 import main.com.handu.scada.utils.HexUtils;
 
@@ -20,21 +20,6 @@ public class FallTypeSwitchDown implements IProtocol {
     private byte[] allCall = new byte[]{
             0x01, 0x02, 0x00, 0x00, 0x00, 0x04, 0x79, (byte) 0xC9
     };
-
-    @Override
-    public ProtocolLayerData parse(MediaData mediaData) {
-        return null;
-    }
-
-    @Override
-    public void getAddress(byte[] buff) {
-
-    }
-
-    @Override
-    public boolean valid(byte[] bytes) {
-        return false;
-    }
 
     @Override
     public MediaData sendCommand(ProtocolLayerData protocolLayerData) {

@@ -4,11 +4,11 @@
   <resultMap id="BaseResultMap" type="main.com.handu.scada.db.bean.DeviceHistoryRemotetelemetry">
     <id column="RemoteTelemetryId" jdbcType="VARCHAR" property="remotetelemetryid" />
     <id column="RecordTime" jdbcType="TIMESTAMP" property="recordtime" />
-    <result column="RemoteIndexsId" jdbcType="VARCHAR" property="remoteindexsid" />
+    <result column="DeviceId" jdbcType="VARCHAR" property="deviceid" />
+    <result column="DataItem" jdbcType="VARCHAR" property="dataitem" />
     <result column="Value" jdbcType="VARCHAR" property="value" />
-  </resultMap>
-  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="main.com.handu.scada.db.bean.DeviceHistoryRemotetelemetry">
-    <result column="Description" jdbcType="LONGVARCHAR" property="description" />
+    <result column="Unit" jdbcType="VARCHAR" property="unit" />
+    <result column="Description" jdbcType="VARCHAR" property="description" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -69,27 +69,8 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    RemoteTelemetryId, RecordTime, RemoteIndexsId, Value
+    RemoteTelemetryId, RecordTime, DeviceId, DataItem, Value, Unit, Description
   </sql>
-  <sql id="Blob_Column_List">
-    Description
-  </sql>
-  <select id="selectByExampleWithBLOBs" parameterType="main.com.handu.scada.db.bean.DeviceHistoryRemotetelemetryExample" resultMap="ResultMapWithBLOBs">
-    select
-    <if test="distinct">
-      distinct
-    </if>
-    <include refid="Base_Column_List" />
-    ,
-    <include refid="Blob_Column_List" />
-    from device_history_remotetelemetry
-    <if test="_parameter != null">
-      <include refid="Example_Where_Clause" />
-    </if>
-    <if test="orderByClause != null">
-      order by ${orderByClause}
-    </if>
-  </select>
   <select id="selectByExample" parameterType="main.com.handu.scada.db.bean.DeviceHistoryRemotetelemetryExample" resultMap="BaseResultMap">
     select
     <if test="distinct">
@@ -104,11 +85,9 @@
       order by ${orderByClause}
     </if>
   </select>
-  <select id="selectByPrimaryKey" parameterType="map" resultMap="ResultMapWithBLOBs">
+  <select id="selectByPrimaryKey" parameterType="map" resultMap="BaseResultMap">
     select 
     <include refid="Base_Column_List" />
-    ,
-    <include refid="Blob_Column_List" />
     from device_history_remotetelemetry
     where RemoteTelemetryId = #{remotetelemetryid,jdbcType=VARCHAR}
       and RecordTime = #{recordtime,jdbcType=TIMESTAMP}
@@ -126,11 +105,11 @@
   </delete>
   <insert id="insert" parameterType="main.com.handu.scada.db.bean.DeviceHistoryRemotetelemetry">
     insert into device_history_remotetelemetry (RemoteTelemetryId, RecordTime, 
-      RemoteIndexsId, Value, Description
-      )
+      DeviceId, DataItem, Value, 
+      Unit, Description)
     values (#{remotetelemetryid,jdbcType=VARCHAR}, #{recordtime,jdbcType=TIMESTAMP}, 
-      #{remoteindexsid,jdbcType=VARCHAR}, #{value,jdbcType=VARCHAR}, #{description,jdbcType=LONGVARCHAR}
-      )
+      #{deviceid,jdbcType=VARCHAR}, #{dataitem,jdbcType=VARCHAR}, #{value,jdbcType=VARCHAR}, 
+      #{unit,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="main.com.handu.scada.db.bean.DeviceHistoryRemotetelemetry">
     insert into device_history_remotetelemetry
@@ -141,11 +120,17 @@
       <if test="recordtime != null">
         RecordTime,
       </if>
-      <if test="remoteindexsid != null">
-        RemoteIndexsId,
+      <if test="deviceid != null">
+        DeviceId,
+      </if>
+      <if test="dataitem != null">
+        DataItem,
       </if>
       <if test="value != null">
         Value,
+      </if>
+      <if test="unit != null">
+        Unit,
       </if>
       <if test="description != null">
         Description,
@@ -158,14 +143,20 @@
       <if test="recordtime != null">
         #{recordtime,jdbcType=TIMESTAMP},
       </if>
-      <if test="remoteindexsid != null">
-        #{remoteindexsid,jdbcType=VARCHAR},
+      <if test="deviceid != null">
+        #{deviceid,jdbcType=VARCHAR},
+      </if>
+      <if test="dataitem != null">
+        #{dataitem,jdbcType=VARCHAR},
       </if>
       <if test="value != null">
         #{value,jdbcType=VARCHAR},
       </if>
+      <if test="unit != null">
+        #{unit,jdbcType=VARCHAR},
+      </if>
       <if test="description != null">
-        #{description,jdbcType=LONGVARCHAR},
+        #{description,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>
@@ -184,27 +175,22 @@
       <if test="record.recordtime != null">
         RecordTime = #{record.recordtime,jdbcType=TIMESTAMP},
       </if>
-      <if test="record.remoteindexsid != null">
-        RemoteIndexsId = #{record.remoteindexsid,jdbcType=VARCHAR},
+      <if test="record.deviceid != null">
+        DeviceId = #{record.deviceid,jdbcType=VARCHAR},
+      </if>
+      <if test="record.dataitem != null">
+        DataItem = #{record.dataitem,jdbcType=VARCHAR},
       </if>
       <if test="record.value != null">
         Value = #{record.value,jdbcType=VARCHAR},
       </if>
+      <if test="record.unit != null">
+        Unit = #{record.unit,jdbcType=VARCHAR},
+      </if>
       <if test="record.description != null">
-        Description = #{record.description,jdbcType=LONGVARCHAR},
+        Description = #{record.description,jdbcType=VARCHAR},
       </if>
     </set>
-    <if test="_parameter != null">
-      <include refid="Update_By_Example_Where_Clause" />
-    </if>
-  </update>
-  <update id="updateByExampleWithBLOBs" parameterType="map">
-    update device_history_remotetelemetry
-    set RemoteTelemetryId = #{record.remotetelemetryid,jdbcType=VARCHAR},
-      RecordTime = #{record.recordtime,jdbcType=TIMESTAMP},
-      RemoteIndexsId = #{record.remoteindexsid,jdbcType=VARCHAR},
-      Value = #{record.value,jdbcType=VARCHAR},
-      Description = #{record.description,jdbcType=LONGVARCHAR}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -213,8 +199,11 @@
     update device_history_remotetelemetry
     set RemoteTelemetryId = #{record.remotetelemetryid,jdbcType=VARCHAR},
       RecordTime = #{record.recordtime,jdbcType=TIMESTAMP},
-      RemoteIndexsId = #{record.remoteindexsid,jdbcType=VARCHAR},
-      Value = #{record.value,jdbcType=VARCHAR}
+      DeviceId = #{record.deviceid,jdbcType=VARCHAR},
+      DataItem = #{record.dataitem,jdbcType=VARCHAR},
+      Value = #{record.value,jdbcType=VARCHAR},
+      Unit = #{record.unit,jdbcType=VARCHAR},
+      Description = #{record.description,jdbcType=VARCHAR}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -222,31 +211,32 @@
   <update id="updateByPrimaryKeySelective" parameterType="main.com.handu.scada.db.bean.DeviceHistoryRemotetelemetry">
     update device_history_remotetelemetry
     <set>
-      <if test="remoteindexsid != null">
-        RemoteIndexsId = #{remoteindexsid,jdbcType=VARCHAR},
+      <if test="deviceid != null">
+        DeviceId = #{deviceid,jdbcType=VARCHAR},
+      </if>
+      <if test="dataitem != null">
+        DataItem = #{dataitem,jdbcType=VARCHAR},
       </if>
       <if test="value != null">
         Value = #{value,jdbcType=VARCHAR},
       </if>
+      <if test="unit != null">
+        Unit = #{unit,jdbcType=VARCHAR},
+      </if>
       <if test="description != null">
-        Description = #{description,jdbcType=LONGVARCHAR},
+        Description = #{description,jdbcType=VARCHAR},
       </if>
     </set>
     where RemoteTelemetryId = #{remotetelemetryid,jdbcType=VARCHAR}
       and RecordTime = #{recordtime,jdbcType=TIMESTAMP}
   </update>
-  <update id="updateByPrimaryKeyWithBLOBs" parameterType="main.com.handu.scada.db.bean.DeviceHistoryRemotetelemetry">
-    update device_history_remotetelemetry
-    set RemoteIndexsId = #{remoteindexsid,jdbcType=VARCHAR},
-      Value = #{value,jdbcType=VARCHAR},
-      Description = #{description,jdbcType=LONGVARCHAR}
-    where RemoteTelemetryId = #{remotetelemetryid,jdbcType=VARCHAR}
-      and RecordTime = #{recordtime,jdbcType=TIMESTAMP}
-  </update>
   <update id="updateByPrimaryKey" parameterType="main.com.handu.scada.db.bean.DeviceHistoryRemotetelemetry">
     update device_history_remotetelemetry
-    set RemoteIndexsId = #{remoteindexsid,jdbcType=VARCHAR},
-      Value = #{value,jdbcType=VARCHAR}
+    set DeviceId = #{deviceid,jdbcType=VARCHAR},
+      DataItem = #{dataitem,jdbcType=VARCHAR},
+      Value = #{value,jdbcType=VARCHAR},
+      Unit = #{unit,jdbcType=VARCHAR},
+      Description = #{description,jdbcType=VARCHAR}
     where RemoteTelemetryId = #{remotetelemetryid,jdbcType=VARCHAR}
       and RecordTime = #{recordtime,jdbcType=TIMESTAMP}
   </update>

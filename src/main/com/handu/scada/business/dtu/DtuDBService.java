@@ -3,10 +3,11 @@ package main.com.handu.scada.business.dtu;
 import main.com.handu.scada.business.device.DeviceData;
 import main.com.handu.scada.cache.MyCacheManager;
 import main.com.handu.scada.db.bean.*;
-import main.com.handu.scada.db.bean.common.DeviceDtuCacheResult;
+import main.com.handu.scada.db.bean.common.DtuCacheResult;
 import main.com.handu.scada.db.mapper.common.CommonMapper;
+import main.com.handu.scada.db.service.BaseDBService;
 import main.com.handu.scada.db.utils.MyBatisUtil;
-import main.com.handu.scada.enums.TableEnum;
+import main.com.handu.scada.enums.DeviceTableEnum;
 import main.com.handu.scada.exception.ExceptionHandler;
 import main.com.handu.scada.utils.DateUtils;
 import main.com.handu.scada.utils.LogUtils;
@@ -18,7 +19,6 @@ import org.apache.ibatis.session.SqlSession;
 import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.stream.Collectors;
 
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * Created by 柳梦 on 2018/04/03.
  * dtu相关数据入库
  */
-public class DtuDBService {
+public class DtuDBService extends BaseDBService {
 
     /**
      * 每次取数据的数量
@@ -36,7 +36,6 @@ public class DtuDBService {
      * 提交间隔时间
      */
     private int interval = 5000;
-
 
     /**
      * DTU状态更改队列
@@ -142,16 +141,9 @@ public class DtuDBService {
      * @return
      */
     private String getDtuIdByDtuAddress(String dtuAddress) {
-        if (StringsUtils.isEmpty(dtuAddress)) return null;
-        ConcurrentHashMap<String, DeviceDtuCacheResult> map = MyCacheManager.getInstance().getDeviceDtuCache();
-        synchronized (map) {
-            Optional<Map.Entry<String, DeviceDtuCacheResult>> optional = map.entrySet()
-                    .stream()
-                    .filter(entry -> Objects.equals(entry.getValue().getDtuAddress(), dtuAddress))
-                    .findFirst();
-            if (optional.isPresent()) {
-                return optional.get().getValue().getDtuId();
-            }
+        if (StringsUtils.isNotEmpty(dtuAddress)) {
+            DtuCacheResult dtuCacheResult = MyCacheManager.getDtuCacheResult(dtuAddress);
+            if (dtuCacheResult != null) return dtuCacheResult.getDtuId();
         }
         return null;
     }
@@ -176,56 +168,46 @@ public class DtuDBService {
                     StringBuilder sb3 = new StringBuilder();
                     sb3.append(" insert into device_history_staterecord(RecordId,DeviceTableName,DeviceId,State,Description,UnLineTime) values");
                     final int[] i = {0, 0};
-                    results.stream().filter(result -> !StringsUtils.isEmpty(result.getDtuId())).forEach(result -> {
-                        if (result.getState() == DtuState.ONLINE) {
-                            if (i[0] != 0) sb1.append(",");
-                            sb1.append("('")
-                                    .append(result.getDtuId())
-                                    .append("','")
-                                    .append(TableEnum.Device_Dtu.getTableName().toLowerCase())
-                                    .append("','")
-                                    .append(result.getDtuId())
-                                    .append("',1,'在线','")
-                                    .append(result.getTime())
-                                    .append("')");
-                            i[0]++;
-                        } else if (result.getState() == DtuState.OFFLINE) {
-                            if (i[1] != 0) {
-                                sb2.append(",");
-                                sb3.append(",");
-                            }
-                            sb2.append("('")
-                                    .append(result.getDtuId())
-                                    .append("','")
-                                    .append(TableEnum.Device_Dtu.getTableName().toLowerCase())
-                                    .append("','")
-                                    .append(result.getDtuId())
-                                    .append("',2,'离线','")
-                                    .append(result.getTime())
-                                    .append("')");
-                            sb3.append("('")
-                                    .append(UUIDUtils.getUUId())
-                                    .append("','")
-                                    .append(TableEnum.Device_Dtu.getTableName().toLowerCase())
-                                    .append("','")
-                                    .append(result.getDtuId())
-                                    .append("',2,'离线','")
-                                    .append(result.getTime())
-                                    .append("')");
-                            i[1]++;
-                        }
-                    });
+                    results.stream()
+                            .filter(result -> StringsUtils.isNotEmpty(result.getDtuId()))
+                            .forEach(result -> {
+                                if (result.getState() == DtuState.ONLINE) {
+                                    if (i[0] != 0) sb1.append(",");
+                                    sb1.append(getStartColumn(result.getDtuId()))
+                                            .append(getColumn(DeviceTableEnum.Device_Dtu.getTableName().toLowerCase()))
+                                            .append(getColumn(result.getDtuId()))
+                                            .append("'1','在线',")
+                                            .append(getEndColumn(DateUtils.dateToStr(result.getTime())));
+                                    i[0]++;
+                                } else if (result.getState() == DtuState.OFFLINE) {
+                                    if (i[1] != 0) {
+                                        sb2.append(",");
+                                        sb3.append(",");
+                                    }
+                                    sb2.append(getStartColumn(result.getDtuId()))
+                                            .append(getColumn(DeviceTableEnum.Device_Dtu.getTableName().toLowerCase()))
+                                            .append(getColumn(result.getDtuId()))
+                                            .append("'2','离线',")
+                                            .append(getEndColumn(DateUtils.dateToStr(result.getTime())));
+                                    sb3.append(getStartColumn(UUIDUtils.getUUId()))
+                                            .append(getColumn(DeviceTableEnum.Device_Dtu.getTableName().toLowerCase()))
+                                            .append(getColumn(result.getDtuId()))
+                                            .append("'2','离线',")
+                                            .append(getEndColumn(DateUtils.dateToStr(result.getTime())));
+                                    i[1]++;
+                                }
+                            });
 
                     sqlSession = MyBatisUtil.getSqlSession();
                     CommonMapper mapper = sqlSession.getMapper(CommonMapper.class);
                     if (i[0] > 0) {
                         sb1.append(" on duplicate key update RecordId=values(RecordId),DeviceTableName=values(DeviceTableName),DeviceId=values(DeviceId),State=values(State),Description=values(Description),OnlineTime=values(OnlineTime)");
-                        mapper.updateBySql(sb1.toString());
+                        mapper.updateBySql(getSql(sb1));
                     }
                     if (i[1] > 0) {
                         sb2.append(" on duplicate key update RecordId=values(RecordId),DeviceTableName=values(DeviceTableName),DeviceId=values(DeviceId),State=values(State),Description=values(Description),UnLineTime=values(UnLineTime)");
-                        mapper.updateBySql(sb2.toString());
-                        mapper.insertBySql(sb3.toString());
+                        mapper.updateBySql(getSql(sb2));
+                        mapper.insertBySql(getSql(sb3));
                     }
                 }
             } catch (Exception e) {
@@ -248,19 +230,19 @@ public class DtuDBService {
 
                     //遥信历史库
                     StringBuilder sb1 = new StringBuilder();
-                    sb1.append(" insert into device_history_remotesignalling (RemoteSignallingId, RecordTime, RemoteIndexsId, Value, Description ) values ");
+                    sb1.append(" insert into device_history_remotesignalling (RemoteSignallingId, DeviceId, DataItem, Value, Unit, RecordTime, Description ) values ");
 
                     //遥测历史库
                     StringBuilder sb2 = new StringBuilder();
-                    sb2.append(" insert into device_history_remotetelemetry (RemoteTelemetryId, RecordTime, RemoteIndexsId, Value, Description ) values ");
+                    sb2.append(" insert into device_history_remotetelemetry (RemoteTelemetryId, DeviceId, DataItem, Value, Unit, RecordTime, Description ) values ");
 
                     //遥信实时库
                     StringBuilder sb3 = new StringBuilder();
-                    sb3.append(" insert into device_real_remotesignalling (RemoteSignallingId, RemoteIndexsId, Value, RecordTime, Description ) values ");
+                    sb3.append(" insert into device_real_remotesignalling (DeviceId, DataItem, Value, Unit, RecordTime, Description ) values ");
 
                     //遥测实时库
                     StringBuilder sb4 = new StringBuilder();
-                    sb4.append(" insert into device_real_remotetelemetry (RemoteTelemetryId, RemoteIndexsId, Value, RecordTime, Description ) values ");
+                    sb4.append(" insert into device_real_remotetelemetry (DeviceId, DataItem, Value, Unit, RecordTime, Description ) values ");
 
                     //集中器心跳时间
                     StringBuilder sb5 = new StringBuilder();
@@ -289,8 +271,41 @@ public class DtuDBService {
                             " SendTime , SortCode , DeleteMark , EnabledMark , Description , CreateDate , CreateUserId ," +
                             " CreateUserName , ModifyDate , ModifyUserId , ModifyUserName) values ");
 
-                    sb9.append("");
-                    final int[] i = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+                    //二级漏保档案上报
+                    StringBuilder sb10 = new StringBuilder();
+                    sb10.append(" insert into device_rcd (Oid, DaId, Name, Address, BaudRate, Checkdigit," +
+                            " TerminalId, Level, DtuId ,Ua,Ub,Uc,Ia,Ib,Ic,Io) values ");
+
+                    //台区总表afn0c25数据
+                    StringBuilder sb_afn0c25_real = new StringBuilder();
+                    StringBuilder sb_afn0c25_history = new StringBuilder();
+                    sb_afn0c25_real.append(" INSERT INTO device_hm_real_afn0c25( DtuAddress, ReadMeterTime, NowDayTotalActivePower," +
+                            " NowDayAPhaseActivePower, NowDayBPhaseActivePower, NowDayCPhaseActivePower, NowDayTotalReactivePower," +
+                            " NowDayAPhaseReactivePower, NowDayBPhaseReactivePower, NowDayCPhaseReactivePower," +
+                            " NowDayTotalPowerFactor, NowDayAPhasePowerFactor, NowDayBPhasePowerFactor, NowDayCPhasePowerFactor," +
+                            " NowDayAPhaseVoltage, NowDayBPhaseVoltage, NowDayCPhaseVoltage, NowDayAPhaseCurrent, " +
+                            " NowDayBPhaseCurrent, NowDayCPhaseCurrent, NowDayResidualCurrent, NowDayTotalApparentPower," +
+                            " NowDayAPhaseApparentPower, NowDayBPhaseApparentPower, NowDayCPhaseApparentPower, UTPC, Overload, " +
+                            " RecordTime) VALUES ");
+                    sb_afn0c25_history.append(" INSERT INTO device_hm_history_afn0c25( DtuAddress, ReadMeterTime, NowDayTotalActivePower," +
+                            " NowDayAPhaseActivePower, NowDayBPhaseActivePower, NowDayCPhaseActivePower, NowDayTotalReactivePower," +
+                            " NowDayAPhaseReactivePower, NowDayBPhaseReactivePower, NowDayCPhaseReactivePower," +
+                            " NowDayTotalPowerFactor, NowDayAPhasePowerFactor, NowDayBPhasePowerFactor, NowDayCPhasePowerFactor," +
+                            " NowDayAPhaseVoltage, NowDayBPhaseVoltage, NowDayCPhaseVoltage, NowDayAPhaseCurrent, " +
+                            " NowDayBPhaseCurrent, NowDayCPhaseCurrent, NowDayResidualCurrent, NowDayTotalApparentPower," +
+                            " NowDayAPhaseApparentPower, NowDayBPhaseApparentPower, NowDayCPhaseApparentPower, UTPC, Overload, " +
+                            " RecordTime) VALUES ");
+
+
+                    //台区总表三相不平衡、低电压、过载重载
+                    StringBuilder sb_afn0c25_utpc = new StringBuilder();
+                    sb_afn0c25_utpc.append(" insert into device_hm_utpc (dtuAddress, maxUtpc, beginTime, endTime, duration, phase) values ");
+                    StringBuilder sb_afn0c25_low_voltage = new StringBuilder();
+                    sb_afn0c25_low_voltage.append(" insert into device_hm_low_voltage (dtuAddress, minU, phase, beginTime, endTime, duration) values ");
+                    StringBuilder sb_afn0c25_overload = new StringBuilder();
+                    sb_afn0c25_overload.append(" insert into device_hm_overload (dtuAddress, overload, beginTime, endTime, duration) values ");
+
+                    final int[] i = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
                     for (DeviceData result : results) {
                         switch (result.getDataType()) {
                             case YX_HISTORY:
@@ -300,19 +315,19 @@ public class DtuDBService {
                                     sb1.append("(")
                                             .append("'")
                                             .append(deviceHistoryRemotesignalling.getRemotesignallingid())
-                                            .append("',")
-                                            .append("'")
-                                            .append(deviceHistoryRemotesignalling.getRecordtime())
-                                            .append("',")
-                                            .append("'")
-                                            .append(deviceHistoryRemotesignalling.getRemoteindexsid())
+                                            .append("','")
+                                            .append(deviceHistoryRemotesignalling.getDeviceid())
+                                            .append("','")
+                                            .append(deviceHistoryRemotesignalling.getDataitem())
                                             .append("',")
                                             .append(deviceHistoryRemotesignalling.getValue())
-                                            .append(",")
-                                            .append("'")
+                                            .append(",'")
+                                            .append(deviceHistoryRemotesignalling.getUnit())
+                                            .append("','")
+                                            .append(deviceHistoryRemotesignalling.getRecordtime())
+                                            .append("','")
                                             .append(deviceHistoryRemotesignalling.getDescription() == null ? "" : deviceHistoryRemotesignalling.getDescription())
-                                            .append("'")
-                                            .append(")");
+                                            .append("')");
                                     i[0]++;
                                 }
                                 break;
@@ -323,19 +338,19 @@ public class DtuDBService {
                                     sb2.append("(")
                                             .append("'")
                                             .append(deviceHistoryRemotetelemetry.getRemotetelemetryid())
-                                            .append("',")
-                                            .append("'")
-                                            .append(deviceHistoryRemotetelemetry.getRecordtime())
-                                            .append("',")
-                                            .append("'")
-                                            .append(deviceHistoryRemotetelemetry.getRemoteindexsid())
+                                            .append("','")
+                                            .append(deviceHistoryRemotetelemetry.getDeviceid())
+                                            .append("','")
+                                            .append(deviceHistoryRemotetelemetry.getDataitem())
                                             .append("','")
                                             .append(deviceHistoryRemotetelemetry.getValue())
-                                            .append("',")
-                                            .append("'")
+                                            .append("','")
+                                            .append(deviceHistoryRemotetelemetry.getUnit())
+                                            .append("','")
+                                            .append(deviceHistoryRemotetelemetry.getRecordtime())
+                                            .append("','")
                                             .append(deviceHistoryRemotetelemetry.getDescription() == null ? "" : deviceHistoryRemotetelemetry.getDescription())
-                                            .append("'")
-                                            .append(")");
+                                            .append("')");
                                     i[1]++;
                                 }
                                 break;
@@ -344,11 +359,13 @@ public class DtuDBService {
                                 DeviceRealRemotesignalling remotesignalling = (DeviceRealRemotesignalling) result.getData();
                                 if (remotesignalling != null) {
                                     sb3.append("('")
-                                            .append(remotesignalling.getRemotesignallingid())
+                                            .append(remotesignalling.getDeviceid())
                                             .append("','")
-                                            .append(remotesignalling.getRemoteindexsid())
+                                            .append(remotesignalling.getDataitem())
                                             .append("','")
                                             .append(remotesignalling.getValue())
+                                            .append("','")
+                                            .append(remotesignalling.getUnit())
                                             .append("','")
                                             .append(remotesignalling.getRecordtime())
                                             .append("','")
@@ -362,11 +379,13 @@ public class DtuDBService {
                                 DeviceRealRemotetelemetry remotetelemetry = (DeviceRealRemotetelemetry) result.getData();
                                 if (remotetelemetry != null) {
                                     sb4.append("('")
-                                            .append(remotetelemetry.getRemotetelemetryid())
+                                            .append(remotetelemetry.getDeviceid())
                                             .append("','")
-                                            .append(remotetelemetry.getRemoteindexsid())
+                                            .append(remotetelemetry.getDataitem())
                                             .append("','")
                                             .append(remotetelemetry.getValue())
+                                            .append("','")
+                                            .append(remotetelemetry.getUnit())
                                             .append("','")
                                             .append(remotetelemetry.getRecordtime())
                                             .append("','")
@@ -394,7 +413,7 @@ public class DtuDBService {
                                     }
                                 }
                                 break;
-                            case UTPC:
+                            case LP_UTPC:
                                 if (i[5] != 0) sb6.append(",");
                                 DeviceRcdutpc rcdutpc = (DeviceRcdutpc) result.getData();
                                 if (rcdutpc != null) {
@@ -417,7 +436,7 @@ public class DtuDBService {
                                     i[5]++;
                                 }
                                 break;
-                            case LOW_VOLTAGE:
+                            case LP_LOW_VOLTAGE:
                                 if (i[6] != 0) sb7.append(",");
                                 DeviceLowvoltage lowvoltage = (DeviceLowvoltage) result.getData();
                                 if (lowvoltage != null) {
@@ -567,35 +586,177 @@ public class DtuDBService {
                                     i[8]++;
                                 }
                                 break;
+                            case SECOND_LP_RECORD_CREATE:
+                                if (i[9] != 0) sb9.append(",");
+                                DeviceRcd rcd = (DeviceRcd) result.getData();
+                                if (rcd != null) {
+                                    sb10.append("('")
+                                            .append(rcd.getOid())
+                                            .append("','")
+                                            .append(rcd.getDaid())
+                                            .append("','")
+                                            .append(rcd.getName())
+                                            .append("','")
+                                            .append(rcd.getAddress())
+                                            .append("','")
+                                            .append(rcd.getBaudrate())
+                                            .append("','")
+                                            .append(rcd.getCheckdigit())
+                                            .append("','")
+                                            .append(rcd.getTerminalid())
+                                            .append("',")
+                                            .append(Integer.parseInt(rcd.getLevel()))
+                                            .append(",'")
+                                            .append(rcd.getDtuid())
+                                            .append("',")
+                                            .append(rcd.getUa())
+                                            .append(",")
+                                            .append(rcd.getUb())
+                                            .append(",")
+                                            .append(rcd.getUc())
+                                            .append(",")
+                                            .append(rcd.getIa())
+                                            .append(",")
+                                            .append(rcd.getIb())
+                                            .append(",")
+                                            .append(rcd.getIc())
+                                            .append(",")
+                                            .append(rcd.getIo())
+                                            .append(")");
+                                    i[9]++;
+                                }
+                                break;
+                            case HM_AFN0C25:
+                                if (i[10] != 0) {
+                                    sb_afn0c25_real.append(",");
+                                    sb_afn0c25_history.append(",");
+                                }
+                                DeviceHmRealAfn0c25 afn0c25 = (DeviceHmRealAfn0c25) result.getData();
+                                if (afn0c25 != null) {
+                                    sb_afn0c25_real
+                                            .append(getStartColumn(afn0c25.getDtuaddress()))
+                                            .append(getColumn(DateUtils.dateToStr(afn0c25.getReadmetertime())))
+                                            .append(getColumn(afn0c25.getNowdaytotalactivepower()))
+                                            .append(getColumn(afn0c25.getNowdayaphaseactivepower()))
+                                            .append(getColumn(afn0c25.getNowdaybphaseactivepower()))
+                                            .append(getColumn(afn0c25.getNowdaycphaseactivepower()))
+                                            .append(getColumn(afn0c25.getNowdaytotalreactivepower()))
+                                            .append(getColumn(afn0c25.getNowdayaphasereactivepower()))
+                                            .append(getColumn(afn0c25.getNowdaybphasereactivepower()))
+                                            .append(getColumn(afn0c25.getNowdaycphasereactivepower()))
+                                            .append(getColumn(afn0c25.getNowdaytotalpowerfactor()))
+                                            .append(getColumn(afn0c25.getNowdayaphasepowerfactor()))
+                                            .append(getColumn(afn0c25.getNowdaybphasepowerfactor()))
+                                            .append(getColumn(afn0c25.getNowdaycphasepowerfactor()))
+                                            .append(getColumn(afn0c25.getNowdayaphasevoltage()))
+                                            .append(getColumn(afn0c25.getNowdaybphasevoltage()))
+                                            .append(getColumn(afn0c25.getNowdaycphasevoltage()))
+                                            .append(getColumn(afn0c25.getNowdayaphasecurrent()))
+                                            .append(getColumn(afn0c25.getNowdaybphasecurrent()))
+                                            .append(getColumn(afn0c25.getNowdaycphasecurrent()))
+                                            .append(getColumn(afn0c25.getNowdayresidualcurrent()))
+                                            .append(getColumn(afn0c25.getNowdaytotalapparentpower()))
+                                            .append(getColumn(afn0c25.getNowdayaphaseapparentpower()))
+                                            .append(getColumn(afn0c25.getNowdaybphaseapparentpower()))
+                                            .append(getColumn(afn0c25.getNowdaycphaseapparentpower()))
+                                            .append(getColumn(afn0c25.getUtpc()))
+                                            .append(getColumn(afn0c25.getOverload()))
+                                            .append(getEndColumn(DateUtils.dateToStr(afn0c25.getRecordtime())));
+
+                                    sb_afn0c25_history
+                                            .append(getStartColumn(afn0c25.getDtuaddress()))
+                                            .append(getColumn(DateUtils.dateToStr(afn0c25.getReadmetertime())))
+                                            .append(getColumn(afn0c25.getNowdaytotalactivepower()))
+                                            .append(getColumn(afn0c25.getNowdayaphaseactivepower()))
+                                            .append(getColumn(afn0c25.getNowdaybphaseactivepower()))
+                                            .append(getColumn(afn0c25.getNowdaycphaseactivepower()))
+                                            .append(getColumn(afn0c25.getNowdaytotalreactivepower()))
+                                            .append(getColumn(afn0c25.getNowdayaphasereactivepower()))
+                                            .append(getColumn(afn0c25.getNowdaybphasereactivepower()))
+                                            .append(getColumn(afn0c25.getNowdaycphasereactivepower()))
+                                            .append(getColumn(afn0c25.getNowdaytotalpowerfactor()))
+                                            .append(getColumn(afn0c25.getNowdayaphasepowerfactor()))
+                                            .append(getColumn(afn0c25.getNowdaybphasepowerfactor()))
+                                            .append(getColumn(afn0c25.getNowdaycphasepowerfactor()))
+                                            .append(getColumn(afn0c25.getNowdayaphasevoltage()))
+                                            .append(getColumn(afn0c25.getNowdaybphasevoltage()))
+                                            .append(getColumn(afn0c25.getNowdaycphasevoltage()))
+                                            .append(getColumn(afn0c25.getNowdayaphasecurrent()))
+                                            .append(getColumn(afn0c25.getNowdaybphasecurrent()))
+                                            .append(getColumn(afn0c25.getNowdaycphasecurrent()))
+                                            .append(getColumn(afn0c25.getNowdayresidualcurrent()))
+                                            .append(getColumn(afn0c25.getNowdaytotalapparentpower()))
+                                            .append(getColumn(afn0c25.getNowdayaphaseapparentpower()))
+                                            .append(getColumn(afn0c25.getNowdaybphaseapparentpower()))
+                                            .append(getColumn(afn0c25.getNowdaycphaseapparentpower()))
+                                            .append(getColumn(afn0c25.getUtpc()))
+                                            .append(getColumn(afn0c25.getOverload()))
+                                            .append(getEndColumn(DateUtils.dateToStr(afn0c25.getRecordtime())));
+                                    i[10]++;
+                                }
+                                break;
+                            case HM_UTPC:
+                                if (i[11] != 0) sb_afn0c25_utpc.append(",");
+                                DeviceHmUtpc hmUtpc = (DeviceHmUtpc) result.getData();
+                                if (hmUtpc != null) {
+                                    sb_afn0c25_utpc
+                                            .append(getStartColumn(hmUtpc.getDtuaddress()))
+                                            .append(getColumn(hmUtpc.getMaxutpc()))
+                                            .append(getColumn(DateUtils.dateToStr(hmUtpc.getBegintime())))
+                                            .append(getColumn(DateUtils.dateToStr(hmUtpc.getEndtime())))
+                                            .append(getColumn(hmUtpc.getDuration()))
+                                            .append(getEndColumn(hmUtpc.getPhase()));
+                                    i[11]++;
+                                }
+                                break;
+                            case HM_LOW_VOLTAGE:
+                                if (i[12] != 0) sb_afn0c25_low_voltage.append(",");
+                                DeviceHmLowVoltage hmLowVoltage = (DeviceHmLowVoltage) result.getData();
+                                if (hmLowVoltage != null) {
+                                    sb_afn0c25_low_voltage
+                                            .append(getStartColumn(hmLowVoltage.getDtuaddress()))
+                                            .append(getColumn(hmLowVoltage.getMinu()))
+                                            .append(getColumn(hmLowVoltage.getPhase()))
+                                            .append(getColumn(DateUtils.dateToStr(hmLowVoltage.getBegintime())))
+                                            .append(getColumn(DateUtils.dateToStr(hmLowVoltage.getEndtime())))
+                                            .append(getEndColumn(hmLowVoltage.getDuration()));
+                                    i[12]++;
+                                }
+                                break;
+                            case HM_OVERLOAD:
+                                if (i[13] != 0) sb_afn0c25_overload.append(",");
+                                DeviceHmOverload hmOverload = (DeviceHmOverload) result.getData();
+                                if (hmOverload != null) {
+                                    sb_afn0c25_low_voltage
+                                            .append(getStartColumn(hmOverload.getDtuaddress()))
+                                            .append(getColumn(hmOverload.getOverload()))
+                                            .append(getColumn(DateUtils.dateToStr(hmOverload.getBegintime())))
+                                            .append(getColumn(DateUtils.dateToStr(hmOverload.getEndtime())))
+                                            .append(getEndColumn(hmOverload.getDuration()));
+                                    i[13]++;
+                                }
+                                break;
                         }
                     }
-                    if (i[0] > 0) {
-                        mapper.insertBySql(sb1.toString());
-                    }
-                    if (i[1] > 0) {
-                        mapper.insertBySql(sb2.toString());
-                    }
+                    if (i[0] > 0) mapper.insertBySql(sb1.toString());
+                    if (i[1] > 0) mapper.insertBySql(sb2.toString());
                     if (i[2] > 0) {
-                        sb3.append(" on duplicate key update RemoteSignallingId=values(RemoteSignallingId),")
-                                .append("RemoteIndexsId=values(RemoteIndexsId), Value=values(Value), ")
+                        sb3.append(" on duplicate key update DeviceId=values(DeviceId),")
+                                .append("DataItem=values(DataItem), Value=values(Value), ")
+                                .append("Unit=values(Unit), ")
                                 .append("RecordTime=values(RecordTime), Description=values(Description)");
                         mapper.updateBySql(sb3.toString());
                     }
                     if (i[3] > 0) {
-                        sb4.append(" on duplicate key update RemoteTelemetryId=values(RemoteTelemetryId),")
-                                .append("RemoteIndexsId=values(RemoteIndexsId), Value=values(Value),")
+                        sb4.append(" on duplicate key update DeviceId=values(DeviceId),")
+                                .append("DataItem=values(DataItem), Value=values(Value), ")
+                                .append("Unit=values(Unit), ")
                                 .append("RecordTime=values(RecordTime), Description=values(Description)");
                         mapper.updateBySql(sb4.toString());
                     }
-                    if (i[4] > 0) {
-                        mapper.insertBySql(sb5.toString());
-                    }
-                    if (i[5] > 0) {
-                        mapper.insertBySql(sb6.toString());
-                    }
-                    if (i[6] > 0) {
-                        mapper.insertBySql(sb7.toString());
-                    }
+                    if (i[4] > 0) mapper.insertBySql(sb5.toString());
+                    if (i[5] > 0) mapper.insertBySql(sb6.toString());
+                    if (i[6] > 0) mapper.insertBySql(sb7.toString());
                     if (i[7] > 0) {
                         sb8.append(" on duplicate key update deviceId=values(deviceId),flagAllAlarm=values(flagAllAlarm),")
                                 .append("flagLightAlarm=values(flagLightAlarm),flagAudioAlarm=values(flagAudioAlarm),")
@@ -628,7 +789,51 @@ public class DtuDBService {
                                 " ModifyDate = values(ModifyDate ), ModifyUserId = values(ModifyUserId ), " +
                                 "ModifyUserName = values(ModifyUserName )");
                         mapper.updateBySql(sb9.toString());
+                        LogUtils.info("insert or update device_alarm " + i[8], true);
                     }
+                    if (i[9] > 0) {
+                        sb10.append(" on duplicate key update Oid =values(Oid ) , DaId =values(DaId ) , Name =values(Name ) ," +
+                                " Address =values(Address ) ,BaudRate =values(BaudRate), Checkdigit =values (Checkdigit)," +
+                                "TerminalId =values(TerminalId ) , Level =values(Level ) ," +
+                                " DtuId =values(DtuId ),Ua=values(Ua),Ub=values(Ub),Uc=values(Uc)," +
+                                "Ia=values(Ia),Ib=values(Ib),Ic=values(Ic),Io=values(Io) ");
+                        mapper.updateBySql(sb10.toString());
+                        LogUtils.info("insert or update device_rcd " + i[9], true);
+                    }
+                    if (i[10] > 0) {
+                        sb_afn0c25_real.append(" on duplicate key update DtuAddress =values(DtuAddress), " +
+                                "ReadMeterTime =values(ReadMeterTime)," +
+                                " NowDayTotalActivePower =values(NowDayTotalActivePower), " +
+                                "NowDayAPhaseActivePower =values(NowDayAPhaseActivePower), " +
+                                "NowDayBPhaseActivePower =values(NowDayBPhaseActivePower), " +
+                                "NowDayCPhaseActivePower =values(NowDayCPhaseActivePower), " +
+                                "NowDayTotalReactivePower =values(NowDayTotalReactivePower)," +
+                                " NowDayAPhaseReactivePower =values(NowDayAPhaseReactivePower)," +
+                                " NowDayBPhaseReactivePower =values(NowDayBPhaseReactivePower)," +
+                                " NowDayCPhaseReactivePower =values(NowDayCPhaseReactivePower), " +
+                                "NowDayTotalPowerFactor =values(NowDayTotalPowerFactor), " +
+                                "NowDayAPhasePowerFactor =values(NowDayAPhasePowerFactor), " +
+                                "NowDayBPhasePowerFactor =values(NowDayBPhasePowerFactor)," +
+                                " NowDayCPhasePowerFactor =values(NowDayCPhasePowerFactor)," +
+                                " NowDayAPhaseVoltage =values(NowDayAPhaseVoltage), " +
+                                "NowDayBPhaseVoltage =values(NowDayBPhaseVoltage)," +
+                                " NowDayCPhaseVoltage =values(NowDayCPhaseVoltage), " +
+                                "NowDayAPhaseCurrent =values(NowDayAPhaseCurrent), " +
+                                "NowDayBPhaseCurrent =values(NowDayBPhaseCurrent), " +
+                                "NowDayCPhaseCurrent =values(NowDayCPhaseCurrent)," +
+                                " NowDayResidualCurrent =values(NowDayResidualCurrent)," +
+                                " NowDayTotalApparentPower =values(NowDayTotalApparentPower)," +
+                                " NowDayAPhaseApparentPower =values(NowDayAPhaseApparentPower)," +
+                                " NowDayBPhaseApparentPower =values(NowDayBPhaseApparentPower), " +
+                                "NowDayCPhaseApparentPower =values(NowDayCPhaseApparentPower), " +
+                                "UTPC =values(UTPC), Overload =values(Overload), " +
+                                "RecordTime =values(RecordTime)");
+                        mapper.updateBySql(sb_afn0c25_real.toString());
+                        mapper.insertBySql(sb_afn0c25_history.toString());
+                    }
+                    if (i[11] > 0) mapper.insertBySql(sb_afn0c25_utpc.toString());
+                    if (i[12] > 0) mapper.insertBySql(sb_afn0c25_low_voltage.toString());
+                    if (i[13] > 0) mapper.insertBySql(sb_afn0c25_overload.toString());
                 }
             } catch (Exception e) {
                 ExceptionHandler.handle(e);
@@ -636,5 +841,7 @@ public class DtuDBService {
                 if (sqlSession != null) sqlSession.close();
             }
         }
+
+
     }
 }

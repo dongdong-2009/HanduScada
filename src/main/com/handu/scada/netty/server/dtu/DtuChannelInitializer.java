@@ -5,6 +5,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
+import main.com.handu.scada.config.Config;
 
 import java.nio.ByteOrder;
 
@@ -15,6 +16,8 @@ public class DtuChannelInitializer extends ChannelInitializer<SocketChannel> {
     @Override
     protected void initChannel(SocketChannel socketChannel) throws Exception {
         ChannelPipeline p = socketChannel.pipeline();
+        p.addLast(new DtuReadTimeoutHandler(Config.getTimeout()));
+        p.addLast(new DtuWriteTimeoutHandler(Config.getTimeout()));
         p.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(ByteOrder.BIG_ENDIAN, 64 * 1024, 0, 2, 0, 2, true));
         p.addLast("frameEncoder", new LengthFieldPrepender(2));
         p.addLast("handler", new DtuCommandHandler());

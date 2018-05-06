@@ -8,9 +8,13 @@ public class DeviceHistoryRemotesignalling implements Serializable {
 
     private Date recordtime;
 
-    private String remoteindexsid;
+    private String deviceid;
+
+    private String dataitem;
 
     private Integer value;
+
+    private String unit;
 
     private String description;
 
@@ -32,12 +36,20 @@ public class DeviceHistoryRemotesignalling implements Serializable {
         this.recordtime = recordtime;
     }
 
-    public String getRemoteindexsid() {
-        return remoteindexsid;
+    public String getDeviceid() {
+        return deviceid;
     }
 
-    public void setRemoteindexsid(String remoteindexsid) {
-        this.remoteindexsid = remoteindexsid == null ? null : remoteindexsid.trim();
+    public void setDeviceid(String deviceid) {
+        this.deviceid = deviceid == null ? null : deviceid.trim();
+    }
+
+    public String getDataitem() {
+        return dataitem;
+    }
+
+    public void setDataitem(String dataitem) {
+        this.dataitem = dataitem == null ? null : dataitem.trim();
     }
 
     public Integer getValue() {
@@ -46,6 +58,14 @@ public class DeviceHistoryRemotesignalling implements Serializable {
 
     public void setValue(Integer value) {
         this.value = value;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit == null ? null : unit.trim();
     }
 
     public String getDescription() {
@@ -70,8 +90,10 @@ public class DeviceHistoryRemotesignalling implements Serializable {
         DeviceHistoryRemotesignalling other = (DeviceHistoryRemotesignalling) that;
         return (this.getRemotesignallingid() == null ? other.getRemotesignallingid() == null : this.getRemotesignallingid().equals(other.getRemotesignallingid()))
             && (this.getRecordtime() == null ? other.getRecordtime() == null : this.getRecordtime().equals(other.getRecordtime()))
-            && (this.getRemoteindexsid() == null ? other.getRemoteindexsid() == null : this.getRemoteindexsid().equals(other.getRemoteindexsid()))
+            && (this.getDeviceid() == null ? other.getDeviceid() == null : this.getDeviceid().equals(other.getDeviceid()))
+            && (this.getDataitem() == null ? other.getDataitem() == null : this.getDataitem().equals(other.getDataitem()))
             && (this.getValue() == null ? other.getValue() == null : this.getValue().equals(other.getValue()))
+            && (this.getUnit() == null ? other.getUnit() == null : this.getUnit().equals(other.getUnit()))
             && (this.getDescription() == null ? other.getDescription() == null : this.getDescription().equals(other.getDescription()));
     }
 
@@ -81,8 +103,10 @@ public class DeviceHistoryRemotesignalling implements Serializable {
         int result = 1;
         result = prime * result + ((getRemotesignallingid() == null) ? 0 : getRemotesignallingid().hashCode());
         result = prime * result + ((getRecordtime() == null) ? 0 : getRecordtime().hashCode());
-        result = prime * result + ((getRemoteindexsid() == null) ? 0 : getRemoteindexsid().hashCode());
+        result = prime * result + ((getDeviceid() == null) ? 0 : getDeviceid().hashCode());
+        result = prime * result + ((getDataitem() == null) ? 0 : getDataitem().hashCode());
         result = prime * result + ((getValue() == null) ? 0 : getValue().hashCode());
+        result = prime * result + ((getUnit() == null) ? 0 : getUnit().hashCode());
         result = prime * result + ((getDescription() == null) ? 0 : getDescription().hashCode());
         return result;
     }

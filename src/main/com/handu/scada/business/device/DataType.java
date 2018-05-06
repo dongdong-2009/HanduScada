@@ -12,14 +12,24 @@ public enum DataType {
     YC_HISTORY,
     //遥信历史数据
     YX_HISTORY,
-    //三项不平衡
-    UTPC,
-    //低电压
-    LOW_VOLTAGE,
+    //漏保三项不平衡
+    LP_UTPC,
+    //台表三相不平衡
+    HM_UTPC,
+    //漏保低电压
+    LP_LOW_VOLTAGE,
+    //台表低电压
+    HM_LOW_VOLTAGE,
+    //台表重载过载
+    HM_OVERLOAD,
     //告警
     ALARM,
     //集中器状态
     CONCENTRATOR_STATE,
     //控制字
-    CONTROL_WORD
+    CONTROL_WORD,
+    //二级漏保档案创建
+    SECOND_LP_RECORD_CREATE,
+    //台区总表afn0c25数据
+    HM_AFN0C25,
 }

@@ -1,8 +1,5 @@
 package main.com.handu.scada.netty.client.dtu;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
 import main.com.handu.scada.protocol.base.ProtocolLayerData;
 
 /**
@@ -16,8 +13,4 @@ public interface IClient {
     void send(ProtocolLayerData protocolLayerData);
 
     void send(MsgPriority priority, ProtocolLayerData protocolLayerData);
-
-    void sendCommand(ChannelHandlerContext ctx, ByteBuf data);
-
-    void sendCommand(Channel channel, byte[] data);
 }

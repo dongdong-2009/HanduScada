@@ -1,7 +1,7 @@
 package main.com.handu.scada.protocol.base;
 
 import main.com.handu.scada.protocol.enums.DeviceCmdTypeEnum;
-import main.com.handu.scada.protocol.enums.DeviceTypeEnum;
+import main.com.handu.scada.enums.DeviceTypeEnum;
 
 /**
  * Created by 柳梦 on 2017/12/22.

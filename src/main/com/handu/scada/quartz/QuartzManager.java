@@ -102,8 +102,7 @@ public class QuartzManager {
                         addOnceJob(job.jobName(), DEFAULT_JOB_GROUP_NAME, aClass);
                     } else {
                         //是否启用
-                        boolean isEnable = true;
-                        if (cron.equals("")) isEnable = false;
+                        boolean isEnable = job.isEnable();
                         if (!props.containsKey(aClass.getName() + ".enable")) {
                             props.setProperty(job.getClass().getName() + ".enable", String.valueOf(isEnable));
                             isUpdate = true;

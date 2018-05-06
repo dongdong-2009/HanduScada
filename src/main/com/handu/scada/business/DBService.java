@@ -7,14 +7,19 @@ import main.com.handu.scada.business.dtu.DtuState;
 import main.com.handu.scada.business.dtu.DtuStateResult;
 import main.com.handu.scada.business.message.Msg;
 import main.com.handu.scada.business.message.MsgManager;
-import main.com.handu.scada.business.utpc.UTPCModel;
+import main.com.handu.scada.business.utpc.AnalyzeRecord;
+import main.com.handu.scada.business.utpc.AnalyzeRecordModel;
+import main.com.handu.scada.cache.CacheCmdType;
 import main.com.handu.scada.cache.MyCacheManager;
 import main.com.handu.scada.config.Config;
 import main.com.handu.scada.db.bean.*;
-import main.com.handu.scada.db.bean.common.DeviceDtuCacheResult;
-import main.com.handu.scada.db.mapper.*;
+import main.com.handu.scada.db.bean.common.AdditionProperty;
+import main.com.handu.scada.db.bean.common.DeviceCacheResult;
+import main.com.handu.scada.db.mapper.DeviceAlarmMapper;
+import main.com.handu.scada.db.service.BaseDBService;
 import main.com.handu.scada.db.utils.MyBatisUtil;
-import main.com.handu.scada.enums.TableEnum;
+import main.com.handu.scada.enums.DeviceTableEnum;
+import main.com.handu.scada.enums.DeviceGroup;
 import main.com.handu.scada.event.Subscriber;
 import main.com.handu.scada.event.events.BaseEvent;
 import main.com.handu.scada.event.events.DBEvent;
@@ -28,31 +33,30 @@ import main.com.handu.scada.protocol.base.SecondLpRecord;
 import main.com.handu.scada.protocol.enums.DeviceCmdTypeEnum;
 import main.com.handu.scada.protocol.enums.LPState;
 import main.com.handu.scada.protocol.enums.RemoteType;
-import main.com.handu.scada.protocol.enums.TerminalEnum;
 import main.com.handu.scada.protocol.protocol.DLT645.LP2007.DltControlWord;
-import main.com.handu.scada.protocol.protocol.DLT645.LP2007.TripEventRecord;
+import main.com.handu.scada.protocol.protocol.DLT645.TripEventRecord;
 import main.com.handu.scada.protocol.protocol.Data.DataAttr;
 import main.com.handu.scada.switch101.protocol.bean.BaseData;
 import main.com.handu.scada.thread.MyThreadPoolExecutor;
-import main.com.handu.scada.utils.*;
+import main.com.handu.scada.utils.DateUtils;
+import main.com.handu.scada.utils.LogUtils;
+import main.com.handu.scada.utils.StringsUtils;
+import main.com.handu.scada.utils.UUIDUtils;
 import org.apache.ibatis.session.SqlSession;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
-import static main.com.handu.scada.business.utpc.UTPCModel.UTPC_RATE;
+import static main.com.handu.scada.business.utpc.AnalyzeRecord.*;
 
 /**
  * Created by 柳梦 on 2017/12/22.
  */
 
 @Subscriber
-public class DBService implements ISubscriber {
-    /**
-     * 记录三项不平衡和低电压
-     */
-    private static ConcurrentHashMap<String, UTPCModel> utpcMap = new ConcurrentHashMap<>();
+public class DBService extends BaseDBService implements ISubscriber {
 
     /**
      * 创建自定义线程池
@@ -87,14 +91,7 @@ public class DBService implements ISubscriber {
      */
     private class DtuTask implements Runnable {
 
-        private SqlSession sqlSession;
         private ProtocolLayerData protocolLayerData;
-        private List<DeviceRemoteindexs> remoteindexses = new ArrayList<>();
-        private List<DeviceRealRemotetelemetry> realRemotetelemetries = new ArrayList<>();
-        private List<DeviceRealRemotesignalling> realRemotesignallings = new ArrayList<>();
-        private List<DeviceHistoryRemotetelemetry> historyRemotetelemetries = new ArrayList<>();
-        private List<DeviceHistoryRemotesignalling> historyRemotesignallings = new ArrayList<>();
-        private List<DeviceDtuCacheResult> cacheResults = new ArrayList<>();
 
         DtuTask(ProtocolLayerData protocolLayerData) {
             this.protocolLayerData = protocolLayerData;
@@ -114,7 +111,6 @@ public class DBService implements ISubscriber {
                     }
                     //如果是二级漏保档案上报
                     else if (protocolLayerData.CmdType == DeviceCmdTypeEnum.SecondLpRecord) {
-                        cacheResults.clear();
                         saveSecondLpRecord(new SecondLpRealData() {{
                             setDtuAddress(protocolLayerData.DTUString);
                             setSecondLpRecords(protocolLayerData.secondLpRecords);
@@ -136,15 +132,18 @@ public class DBService implements ISubscriber {
                     else if (protocolLayerData.CmdType == DeviceCmdTypeEnum.ReadControlWordParameterModule) {
                         if (!StringsUtils.isEmpty(protocolLayerData.PostalAddress) && !StringsUtils.isEmpty(protocolLayerData.TabName)) {
                             //找到设备的id
-                            DeviceDtuCacheResult result = MyCacheManager.getInstance().getDeviceDtuCacheResult(protocolLayerData.dtuAddress, protocolLayerData.TabName.toLowerCase(), protocolLayerData.PostalAddress);
+                            DeviceCacheResult result = MyCacheManager.getDeviceCacheResult(protocolLayerData.dtuAddress, protocolLayerData.TabName.toLowerCase(), protocolLayerData.PostalAddress);
                             if (result != null && result.getDeviceId() != null) {
                                 saveControlWord(result.getDeviceId());
                             }
                         }
                     }
+                    //台区总表数据
+                    else if (protocolLayerData.CmdType == DeviceCmdTypeEnum.HM_AFN0C25) {
+                        saveHMAFN0C25();
+                    }
                     //其他遥测值上报
                     else {
-                        clearAll();
                         saveDeviceTelemetering(new RealDataItem() {{
                             this.address = protocolLayerData.DTUString;
                             this.list = protocolLayerData.attrList;
@@ -153,17 +152,167 @@ public class DBService implements ISubscriber {
                             this.postalAddress = protocolLayerData.PostalAddress;
                         }});
                     }
-                    if (sqlSession != null) sqlSession.commit(true);
                 } catch (Exception e) {
-                    if (sqlSession != null) sqlSession.rollback(true);
-                    clearAll();
                     ExceptionHandler.print(e);
-                } finally {
-                    if (sqlSession != null) {
-                        sqlSession.close();
-                        //如果没有报错则丢进入库队列
-                        insertIntoQueue();
-                    }
+                }
+            }
+        }
+
+        /**
+         * 写入台区总表0c25数据
+         */
+        private void saveHMAFN0C25() {
+            if (protocolLayerData.attrList != null && StringsUtils.isNotEmpty(protocolLayerData.DTUString)) {
+                List<DataAttr> attrList = protocolLayerData.attrList;
+                if (attrList != null) {
+                    //三相电流
+                    List<DataAttr> attrsI = attrList
+                            .stream()
+                            .filter(e -> Objects.equals(e.getGroup(), DeviceCmdTypeEnum.Current.name()))
+                            .collect(Collectors.toList());
+                    //三相电压
+                    List<DataAttr> attrsU = attrList
+                            .stream()
+                            .filter(e -> Objects.equals(e.getGroup(), DeviceCmdTypeEnum.Voltage.name()))
+                            .collect(Collectors.toList());
+                    //把所有数据入库
+                    attrList.stream()
+                            .filter(e -> Objects.equals(e.getGroup(), DeviceCmdTypeEnum.HM_AFN0C25.name()))
+                            .findFirst()
+                            .ifPresent(dataAttr -> {
+                                if (dataAttr.getValue() instanceof DeviceHmRealAfn0c25) {
+
+                                    DeviceHmRealAfn0c25 hmRealAfn0c25 = (DeviceHmRealAfn0c25) dataAttr.getValue();
+                                    hmRealAfn0c25.setDtuaddress(protocolLayerData.DTUString);
+                                    DtuDBService.getInstance().push(new DeviceData(DataType.HM_AFN0C25, hmRealAfn0c25));
+                                    //三相不平衡
+                                    double val = hmRealAfn0c25.getUtpc();
+                                    if (val > AnalyzeRecord.UTPC_RATE) {
+                                        attrsI.stream()
+                                                .filter(e -> Double.parseDouble(String.valueOf(e.getValue())) > 0)
+                                                .max((o1, o2) -> {
+                                                    double v1 = Double.parseDouble(String.valueOf(o1.getValue()));
+                                                    double v2 = Double.parseDouble(String.valueOf(o2.getValue()));
+                                                    return v1 < v2 ? -1 : v1 == v2 ? 0 : 1;
+                                                })
+                                                .ifPresent(maxDataAttr -> {
+                                                    String key = maxDataAttr.getName() + hmRealAfn0c25.getDtuaddress();
+                                                    AnalyzeRecordModel recordModel;
+                                                    //如果第一次发生了三相不平衡，记录下来
+                                                    if (!AnalyzeRecord.containsKey(key)) {
+                                                        recordModel = new AnalyzeRecordModel();
+                                                        recordModel.setDtuAddress(hmRealAfn0c25.getDtuaddress());
+                                                        recordModel.setBeginTime(maxDataAttr.getDtime());
+                                                        recordModel.setMaxUtpc(val);
+                                                        recordModel.setPhase(maxDataAttr.getName());
+                                                        AnalyzeRecord.put(key, recordModel);
+                                                    } else {
+                                                        //比较最大相三相不平衡值
+                                                        recordModel = AnalyzeRecord.get(key);
+                                                        recordModel.setMaxUtpc(recordModel.getMaxUtpc() > val ? recordModel.getMaxUtpc() : val);
+                                                    }
+                                                });
+
+                                    } else {
+                                        attrsI.stream()
+                                                .filter(e -> Double.parseDouble(String.valueOf(e.getValue())) > 0)
+                                                .forEach(attr -> {
+                                                    String key = attr.getName() + hmRealAfn0c25.getDtuaddress();
+                                                    if (AnalyzeRecord.containsKey(key)) {
+                                                        AnalyzeRecordModel recordModel = AnalyzeRecord.get(key);
+                                                        recordModel.setEndTime(attr.getDtime());
+                                                        int m = (int) DateUtils.getDiffMinutes(recordModel.getBeginTime(), recordModel.getEndTime());
+                                                        recordModel.setDuration(m);
+                                                        //记录三项不平衡
+                                                        DeviceHmUtpc hmUtpc = new DeviceHmUtpc();
+                                                        hmUtpc.setDtuaddress(recordModel.getDtuAddress());
+                                                        hmUtpc.setMaxutpc(recordModel.getMaxUtpc());
+                                                        hmUtpc.setDuration(recordModel.getDuration());
+                                                        hmUtpc.setBegintime(recordModel.getBeginTime());
+                                                        hmUtpc.setEndtime(recordModel.getEndTime());
+                                                        hmUtpc.setPhase(recordModel.getPhase());
+                                                        DtuDBService.getInstance().push(new DeviceData(DataType.HM_UTPC, hmUtpc));
+                                                        //移除
+                                                        AnalyzeRecord.remove(key);
+                                                    }
+                                                });
+                                    }
+
+                                    //低电压
+                                    attrsU.forEach(attr -> {
+                                        AnalyzeRecordModel model;
+                                        double value = Double.parseDouble(String.valueOf(attr.getValue()));
+                                        double rate = (NORMAL_VOLTAGE - value) * 1.0f / (NORMAL_VOLTAGE * 1.0f);
+                                        String key = attr.getName() + hmRealAfn0c25.getDtuaddress();
+                                        if (rate > LOW_VOLTAGE_RATE) {
+                                            if (!AnalyzeRecord.containsKey(key)) {
+                                                model = new AnalyzeRecordModel();
+                                                model.setDtuAddress(hmRealAfn0c25.getDtuaddress());
+                                                model.setBeginTime(attr.getDtime());
+                                                model.setPhase(attr.getName());
+                                                model.setMinU((int) value);
+                                                AnalyzeRecord.put(key, model);
+                                            } else {
+                                                //比较最低电压
+                                                model = AnalyzeRecord.get(key);
+                                                model.setMinU((int) (model.getMinU() < value ? model.getMinU() : value));
+                                            }
+                                        } else {
+                                            if (AnalyzeRecord.containsKey(key)) {
+                                                model = AnalyzeRecord.get(key);
+                                                model.setEndTime(attr.getDtime());
+                                                int m = (int) DateUtils.getDiffMinutes(model.getBeginTime(), model.getEndTime());
+                                                model.setDuration(m);
+                                                //记录低电压
+                                                DeviceHmLowVoltage lowVoltage = new DeviceHmLowVoltage();
+                                                lowVoltage.setDtuaddress(model.getDtuAddress());
+                                                lowVoltage.setMinu(model.getMinU());
+                                                lowVoltage.setDuration(model.getDuration());
+                                                lowVoltage.setBegintime(model.getBeginTime());
+                                                lowVoltage.setEndtime(model.getEndTime());
+                                                lowVoltage.setPhase(attr.getName());
+                                                DtuDBService.getInstance().push(new DeviceData(DataType.HM_LOW_VOLTAGE, lowVoltage));
+                                                //移除
+                                                AnalyzeRecord.remove(key);
+                                            }
+                                        }
+                                    });
+
+
+                                    //重过载
+                                    String key = AnalyzeRecord.OVERLOAD + hmRealAfn0c25.getDtuaddress();
+                                    AnalyzeRecordModel model;
+                                    double overload = hmRealAfn0c25.getOverload();
+                                    if (overload >= AnalyzeRecord.OVERLOAD60) {
+                                        if (!AnalyzeRecord.containsKey(key)) {
+                                            model = new AnalyzeRecordModel();
+                                            model.setDtuAddress(hmRealAfn0c25.getDtuaddress());
+                                            model.setBeginTime(dataAttr.getDtime());
+                                            model.setOverload(overload);
+                                            AnalyzeRecord.put(key, model);
+                                        } else {
+                                            model = AnalyzeRecord.get(key);
+                                            model.setOverload(overload);
+                                        }
+                                    } else {
+                                        if (AnalyzeRecord.containsKey(key)) {
+                                            model = AnalyzeRecord.get(key);
+                                            model.setEndTime(dataAttr.getDtime());
+                                            int m = (int) DateUtils.getDiffMinutes(model.getBeginTime(), model.getEndTime());
+                                            model.setDuration(m);
+
+                                            DeviceHmOverload hmOverload = new DeviceHmOverload();
+                                            hmOverload.setDtuaddress(model.getDtuAddress());
+                                            hmOverload.setOverload(overload);
+                                            hmOverload.setBegintime(model.getBeginTime());
+                                            hmOverload.setEndtime(model.getEndTime());
+                                            hmOverload.setDuration(model.getDuration());
+                                            DtuDBService.getInstance().push(new DeviceData(DataType.HM_OVERLOAD, hmOverload));
+                                            AnalyzeRecord.remove(key);
+                                        }
+                                    }
+                                }
+                            });
                 }
             }
         }
@@ -185,54 +334,6 @@ public class DBService implements ISubscriber {
                             time.setRecordtime(dataAttr.getDtime());
                             DtuDBService.getInstance().push(new DeviceData(DataType.CONCENTRATOR_STATE, time));
                         });
-            }
-        }
-
-        /**
-         * 清空所有列表
-         */
-        private void clearAll() {
-            remoteindexses.clear();
-            realRemotesignallings.clear();
-            realRemotetelemetries.clear();
-            historyRemotesignallings.clear();
-            historyRemotetelemetries.clear();
-        }
-
-        /**
-         * 丢进入库队列
-         */
-        private void insertIntoQueue() {
-            if (remoteindexses.size() != 0) {
-                for (DeviceRemoteindexs remoteindexs : remoteindexses) {
-                    MyCacheManager.getInstance().putDeviceRemoteindexes(remoteindexs.getDeviceid(), remoteindexs.getDevicetablename().toLowerCase(), remoteindexs.getDataitem(), remoteindexs);
-                }
-            }
-            if (realRemotesignallings.size() != 0) {
-                for (DeviceRealRemotesignalling remotesignalling : realRemotesignallings) {
-                    MyCacheManager.getInstance().putDeviceRealRemotesignalling(remotesignalling.getRemoteindexsid(), remotesignalling);
-                    DtuDBService.getInstance().push(new DeviceData(DataType.YX_REAL, remotesignalling));
-                }
-            }
-            if (realRemotetelemetries.size() != 0) {
-                for (DeviceRealRemotetelemetry remotetelemetry : realRemotetelemetries) {
-                    MyCacheManager.getInstance().putDeviceRealRemotetelemetry(remotetelemetry.getRemoteindexsid(), remotetelemetry);
-                    DtuDBService.getInstance().push(new DeviceData(DataType.YC_REAL, remotetelemetry));
-                }
-            }
-            if (historyRemotesignallings.size() != 0) {
-                for (DeviceHistoryRemotesignalling historyRemotesignalling : historyRemotesignallings) {
-                    DtuDBService.getInstance().push(new DeviceData(DataType.YX_HISTORY, historyRemotesignalling));
-                }
-            }
-            if (historyRemotetelemetries.size() != 0) {
-                for (DeviceHistoryRemotetelemetry historyRemotetelemetry : historyRemotetelemetries) {
-                    DtuDBService.getInstance().push(new DeviceData(DataType.YC_HISTORY, historyRemotetelemetry));
-                }
-            }
-            //二级漏保最后更新缓存
-            if (cacheResults.size() != 0) {
-                MyCacheManager.getInstance().putDeviceDtuCacheResult(cacheResults);
             }
         }
 
@@ -285,111 +386,102 @@ public class DBService implements ISubscriber {
          * @param data 数据
          */
         private void saveDeviceTelemetering(RealDataItem data) {
-            //如果是分合状态
-            if (protocolLayerData.CmdType == DeviceCmdTypeEnum.RunState) {
-                saveDeviceAlarm(protocolLayerData.tripEventRecord);
-            }
-            LogUtils.error("----1--data----" + data.toString());
             if (!StringsUtils.isEmpty(data.postalAddress) && !StringsUtils.isEmpty(data.deviceTableName)) {
-                LogUtils.error("----2--postalAddress----" + data.postalAddress + "---deviceTableName---" + data.deviceTableName);
-                //找到设备的id
-                DeviceDtuCacheResult result = MyCacheManager.getInstance().getDeviceDtuCacheResult(data.dtuAddress, data.deviceTableName.toLowerCase(), data.getPostalAddress());
-                if (result != null) data.deviceId = result.getDeviceId();
-            }
-            if (!StringsUtils.isEmpty(data.deviceId)) {
-                LogUtils.error("----3--deviceId----" + data.deviceId);
+                //找到设备
+                DeviceCacheResult deviceCacheResult = MyCacheManager.getDeviceCacheResult(data.dtuAddress, data.deviceTableName.toLowerCase(), data.getPostalAddress());
+                if (deviceCacheResult == null) return;
+                data.deviceId = deviceCacheResult.getDeviceId();
+                if (data.deviceId == null) return;
                 List<DataAttr> dataAttrs = data.list;
                 if (dataAttrs == null) return;
-                if (sqlSession == null) sqlSession = MyBatisUtil.getSqlSession(false);
-                DeviceRemoteindexsMapper deviceRemoteindexsMapper = sqlSession.getMapper(DeviceRemoteindexsMapper.class);
+                LogUtils.info("----data----" + data.toString());
                 for (int i = 0; i < dataAttrs.size(); i++) {
                     DataAttr dataAttr = dataAttrs.get(i);
-                    //判断索引缓存中有没有当前数据项，有则直接拿来用，没有则同时更新索引缓存和数据库缓存
-                    DeviceRemoteindexs deviceRemoteindexsCache = MyCacheManager.getInstance().getDeviceRemoteindexes(data.deviceId, data.deviceTableName.toLowerCase(), dataAttr.getName());
-                    DeviceRemoteindexs deviceRemoteindexs = new DeviceRemoteindexs();
-                    if (deviceRemoteindexsCache != null) {
-                        deviceRemoteindexs.setRemoteindexsid(deviceRemoteindexsCache.getRemoteindexsid());
-                    } else {
-                        deviceRemoteindexs.setDeviceid(data.deviceId);
-                        deviceRemoteindexs.setDevicetablename(data.deviceTableName);
-                        deviceRemoteindexs.setUnit(dataAttr.getUnit());
-                        deviceRemoteindexs.setDataitem(dataAttr.getName());
-                        deviceRemoteindexs.setDataitemname(dataAttr.getCnname());
-                        deviceRemoteindexs.setGroupname(dataAttr.getGroup());
-                        deviceRemoteindexs.setRemoteindexsid(UUIDUtils.getUUId());
-                        int result = deviceRemoteindexsMapper.insert(deviceRemoteindexs);
-                        if (result > 0) remoteindexses.add(deviceRemoteindexs);
-                    }
-
                     //遥信
                     if (dataAttr.getDateType() == RemoteType.YX) {
                         DeviceRealRemotesignalling deviceRealRemotesignalling = new DeviceRealRemotesignalling();
-                        DeviceRealRemotesignalling deviceRealRemotesignallingCache = MyCacheManager.getInstance().getDeviceRealRemotesignalling(deviceRemoteindexs.getRemoteindexsid());
-                        //3.1 遥信存入实时库和数据更改记录库
-                        if (deviceRealRemotesignallingCache != null) {
-                            //实时表
-                            deviceRealRemotesignalling.setRemoteindexsid(deviceRealRemotesignallingCache.getRemoteindexsid());
-                            deviceRealRemotesignalling.setRemotesignallingid(deviceRealRemotesignallingCache.getRemotesignallingid());
-                            deviceRealRemotesignalling.setRecordtime(dataAttr.getDtime());
-                            deviceRealRemotesignalling.setValue((Integer) dataAttr.getValue());
-                            deviceRealRemotesignalling.setDescription(deviceRealRemotesignallingCache.getDescription());
-                        } else {
-                            //实时表
-                            deviceRealRemotesignalling.setRecordtime(dataAttr.getDtime());
-                            deviceRealRemotesignalling.setValue((Integer) dataAttr.getValue());
-                            deviceRealRemotesignalling.setRemoteindexsid(deviceRemoteindexs.getRemoteindexsid());
-                            deviceRealRemotesignalling.setRemotesignallingid(UUIDUtils.getUUId());
-                        }
-                        realRemotesignallings.add(deviceRealRemotesignalling);
+                        deviceRealRemotesignalling.setDeviceid(data.deviceId);
+                        deviceRealRemotesignalling.setDataitem(dataAttr.getName());
+                        deviceRealRemotesignalling.setValue((Integer) dataAttr.getValue());
+                        deviceRealRemotesignalling.setUnit(dataAttr.getUnit());
+                        deviceRealRemotesignalling.setRecordtime(dataAttr.getDtime());
+                        deviceRealRemotesignalling.setDescription(dataAttr.getCnname());
+                        //遥信放入入库队列
+                        DtuDBService.getInstance().push(new DeviceData(DataType.YX_REAL, deviceRealRemotesignalling));
 
                         if (dataAttr.isInsertHistory()) {
                             //3.2插入历史库
                             DeviceHistoryRemotesignalling deviceHistoryRemotesignalling = new DeviceHistoryRemotesignalling();
-                            deviceHistoryRemotesignalling.setRecordtime(dataAttr.getDtime());
-                            deviceHistoryRemotesignalling.setValue((Integer) dataAttr.getValue());
-                            deviceHistoryRemotesignalling.setRemoteindexsid(deviceRemoteindexs.getRemoteindexsid());
                             deviceHistoryRemotesignalling.setRemotesignallingid(UUIDUtils.getUUId());
-                            historyRemotesignallings.add(deviceHistoryRemotesignalling);
+                            deviceHistoryRemotesignalling.setDeviceid(data.deviceId);
+                            deviceHistoryRemotesignalling.setDataitem(dataAttr.getName());
+                            deviceHistoryRemotesignalling.setValue((Integer) dataAttr.getValue());
+                            deviceHistoryRemotesignalling.setUnit(dataAttr.getUnit());
+                            deviceHistoryRemotesignalling.setRecordtime(dataAttr.getDtime());
+                            deviceHistoryRemotesignalling.setDescription(dataAttr.getCnname());
+                            DtuDBService.getInstance().push(new DeviceData(DataType.YX_HISTORY, deviceHistoryRemotesignalling));
+                        }
+
+                        //如果是分合状态
+                        if (Objects.equals(dataAttr.getGroup(), DeviceCmdTypeEnum.RunState.name())) {
+                            saveDeviceAlarm(protocolLayerData.tripEventRecord);
+                        }
+
+                        //如果是跌落装置分合状态
+                        if (Objects.equals(deviceCacheResult.getDeviceTableName(), DeviceTableEnum.Device_Falling_Type_Switch.getTableName())) {
+                            Map<String, AdditionProperty> additionProperties = deviceCacheResult.getAdditionProperties();
+                            if (additionProperties != null) {
+                                AdditionProperty property = additionProperties.get(dataAttr.getName());
+                                if (property != null) {
+                                    float value = Float.parseFloat(String.valueOf(dataAttr.getValue()));
+                                    if (value != property.getValue()) {
+                                        //是否发送短信
+                                        deviceCacheResult.setAlarmTime(dataAttr.getDtime());
+                                        String content = property.getName() + "相" + (property.getValue() == 0 ? "合" : "分");
+                                        property.setMsgContent(content);
+                                        property.setValue(value);
+                                        deviceCacheResult.setSendMsg(true);
+                                    } else {
+                                        String content = property.getName() + "相" + (property.getValue() == 0 ? "合" : "分");
+                                        property.setMsgContent(content);
+                                    }
+                                }
+                            }
                         }
                     }
                     //遥测
                     else if (dataAttr.getDateType() == RemoteType.YC) {
                         DeviceRealRemotetelemetry deviceRealRemotetelemetry = new DeviceRealRemotetelemetry();
-                        //3.3 遥测存入实时库和数据更改记录库
-                        DeviceRealRemotetelemetry deviceRealRemotetelemetryCache = MyCacheManager.getInstance().getDeviceRealRemotetelemetry(deviceRemoteindexs.getRemoteindexsid());
-                        if (deviceRealRemotetelemetryCache != null) {
-                            deviceRealRemotetelemetry.setRemoteindexsid(deviceRealRemotetelemetryCache.getRemoteindexsid());
-                            deviceRealRemotetelemetry.setRemotetelemetryid(deviceRealRemotetelemetryCache.getRemotetelemetryid());
-                            deviceRealRemotetelemetry.setRecordtime(dataAttr.getDtime());
-                            deviceRealRemotetelemetry.setValue(String.valueOf(dataAttr.getValue()));
-                            deviceRealRemotetelemetry.setDescription(deviceRealRemotetelemetryCache.getDescription());
-                        } else {
-                            //实时表
-                            deviceRealRemotetelemetry = new DeviceRealRemotetelemetry();
-                            deviceRealRemotetelemetry.setRecordtime(dataAttr.getDtime());
-                            deviceRealRemotetelemetry.setValue(String.valueOf(dataAttr.getValue()));
-                            deviceRealRemotetelemetry.setRemoteindexsid(deviceRemoteindexs.getRemoteindexsid());
-                            deviceRealRemotetelemetry.setRemotetelemetryid(UUIDUtils.getUUId());
-                        }
-                        realRemotetelemetries.add(deviceRealRemotetelemetry);
+                        deviceRealRemotetelemetry.setDeviceid(data.deviceId);
+                        deviceRealRemotetelemetry.setDataitem(dataAttr.getName());
+                        deviceRealRemotetelemetry.setValue(String.valueOf(dataAttr.getValue()));
+                        deviceRealRemotetelemetry.setUnit(dataAttr.getUnit());
+                        deviceRealRemotetelemetry.setRecordtime(dataAttr.getDtime());
+                        deviceRealRemotetelemetry.setDescription(dataAttr.getCnname());
+                        //遥测入库队列
+                        DtuDBService.getInstance().push(new DeviceData(DataType.YC_REAL, deviceRealRemotetelemetry));
+
                         if (dataAttr.isInsertHistory()) {
                             //3.4 插入历史库
                             DeviceHistoryRemotetelemetry historyRemotetelemetry = new DeviceHistoryRemotetelemetry();
-                            historyRemotetelemetry.setRecordtime(dataAttr.getDtime());
-                            historyRemotetelemetry.setValue(String.valueOf(dataAttr.getValue()));
-                            historyRemotetelemetry.setRemoteindexsid(deviceRemoteindexs.getRemoteindexsid());
                             historyRemotetelemetry.setRemotetelemetryid(UUIDUtils.getUUId());
-                            historyRemotetelemetries.add(historyRemotetelemetry);
+                            historyRemotetelemetry.setDeviceid(data.deviceId);
+                            historyRemotetelemetry.setDataitem(dataAttr.getName());
+                            historyRemotetelemetry.setValue(String.valueOf(dataAttr.getValue()));
+                            historyRemotetelemetry.setUnit(dataAttr.getUnit());
+                            historyRemotetelemetry.setRecordtime(dataAttr.getDtime());
+                            historyRemotetelemetry.setDescription(dataAttr.getCnname());
+                            DtuDBService.getInstance().push(new DeviceData(DataType.YC_HISTORY, historyRemotetelemetry));
                         }
 
                         //3.5 三项不平衡
                         //3.5.1 判断是否是三项不平衡
-                        if (dataAttr.getName().equals("UTPC")) {
+                        if (dataAttr.getName().equals(AnalyzeRecord.UTPC)) {
                             double val = Double.parseDouble(String.valueOf(dataAttr.getValue()));
                             if (val > UTPC_RATE) {
                                 dataAttrs
                                         .stream()
-                                        .filter(dataAttr1 -> !Objects.equals(dataAttr1.getName(), "UTPC"))
+                                        .filter(dataAttr1 -> Objects.equals(dataAttr1.getGroup(), DeviceCmdTypeEnum.Current.name()))
                                         .max((o1, o2) -> {
                                             double v1 = Double.parseDouble(String.valueOf(o1.getValue()));
                                             double v2 = Double.parseDouble(String.valueOf(o2.getValue()));
@@ -397,19 +489,19 @@ public class DBService implements ISubscriber {
                                         })
                                         .ifPresent(maxDataAttr -> {
                                             String key = maxDataAttr.getName() + data.getDeviceId();
-                                            UTPCModel utpcModel;
+                                            AnalyzeRecordModel recordModel;
                                             //如果第一次发生了三相不平衡，记录下来
-                                            if (!utpcMap.containsKey(key)) {
-                                                utpcModel = new UTPCModel();
-                                                utpcModel.setDeviceId(data.getDeviceId());
-                                                utpcModel.setBeginTime(dataAttr.getDtime());
-                                                utpcModel.setMaxUtpc(val);
-                                                utpcModel.setPhase(maxDataAttr.getName());
-                                                utpcMap.put(key, utpcModel);
+                                            if (!AnalyzeRecord.containsKey(key)) {
+                                                recordModel = new AnalyzeRecordModel();
+                                                recordModel.setDeviceId(data.getDeviceId());
+                                                recordModel.setBeginTime(dataAttr.getDtime());
+                                                recordModel.setMaxUtpc(val);
+                                                recordModel.setPhase(maxDataAttr.getName());
+                                                AnalyzeRecord.put(key, recordModel);
                                             } else {
                                                 //比较最大相三相不平衡值
-                                                utpcModel = utpcMap.get(key);
-                                                utpcModel.setMaxUtpc(utpcModel.getMaxUtpc() > val ? utpcModel.getMaxUtpc() : val);
+                                                recordModel = AnalyzeRecord.get(key);
+                                                recordModel.setMaxUtpc(recordModel.getMaxUtpc() > val ? recordModel.getMaxUtpc() : val);
                                             }
                                         });
                             }
@@ -417,68 +509,68 @@ public class DBService implements ISubscriber {
                             else {
                                 dataAttrs
                                         .stream()
-                                        .filter(attr -> !Objects.equals(attr.getName(), "UTPC"))
+                                        .filter(attr -> Objects.equals(attr.getGroup(), DeviceCmdTypeEnum.Current.name()))
                                         .forEach(dataAttr1 -> {
                                             String key = dataAttr1.getName() + data.getDeviceId();
-                                            if (utpcMap.containsKey(key)) {
-                                                UTPCModel utpcModel = utpcMap.get(key);
-                                                utpcModel.setEndTime(dataAttr1.getDtime());
-                                                int m = (int) DateUtils.getDiffMinutes(utpcModel.getBeginTime(), utpcModel.getEndTime());
-                                                utpcModel.setDuration(m);
+                                            if (AnalyzeRecord.containsKey(key)) {
+                                                AnalyzeRecordModel recordModel = AnalyzeRecord.get(key);
+                                                recordModel.setEndTime(dataAttr1.getDtime());
+                                                int m = (int) DateUtils.getDiffMinutes(recordModel.getBeginTime(), recordModel.getEndTime());
+                                                recordModel.setDuration(m);
                                                 //记录三项不平衡
                                                 DeviceRcdutpc rcd = new DeviceRcdutpc();
                                                 rcd.setUtpcid(UUIDUtils.getUUId());
-                                                rcd.setMaxutpc(utpcModel.getMaxUtpc());
-                                                rcd.setDeviceid(utpcModel.getDeviceId());
-                                                rcd.setDuration(utpcModel.getDuration());
-                                                rcd.setBegintime(utpcModel.getBeginTime());
-                                                rcd.setEndtime(utpcModel.getEndTime());
-                                                rcd.setPhase(utpcModel.getPhase());
-                                                DtuDBService.getInstance().push(new DeviceData(DataType.UTPC, rcd));
+                                                rcd.setMaxutpc(recordModel.getMaxUtpc());
+                                                rcd.setDeviceid(recordModel.getDeviceId());
+                                                rcd.setDuration(recordModel.getDuration());
+                                                rcd.setBegintime(recordModel.getBeginTime());
+                                                rcd.setEndtime(recordModel.getEndTime());
+                                                rcd.setPhase(recordModel.getPhase());
+                                                DtuDBService.getInstance().push(new DeviceData(DataType.LP_UTPC, rcd));
                                                 //移除
-                                                utpcMap.remove(key);
+                                                AnalyzeRecord.remove(key);
                                             }
                                         });
                             }
                         }
 
                         //3.6 低电压
-                        if (dataAttr.getName().equals("Ua") || dataAttr.getName().equals("Ub") || dataAttr.getName().equals("Uc")) {
+                        if (Objects.equals(dataAttr.getGroup(), DeviceCmdTypeEnum.Voltage.name())) {
                             double value = Double.parseDouble(String.valueOf(dataAttr.getValue()));
-                            double rate = (UTPCModel.NORMAL_VOLTAGE - value) * 1.0f / (UTPCModel.NORMAL_VOLTAGE * 1.0f);
+                            double rate = (NORMAL_VOLTAGE - value) * 1.0f / (NORMAL_VOLTAGE * 1.0f);
                             String key = dataAttr.getName() + data.getDeviceId();
-                            UTPCModel utpcModel;
-                            if (rate > UTPCModel.LOW_VOLTAGE_RATE) {
-                                if (!utpcMap.containsKey(key)) {
-                                    utpcModel = new UTPCModel();
-                                    utpcModel.setDeviceId(data.getDeviceId());
-                                    utpcModel.setBeginTime(dataAttr.getDtime());
-                                    utpcModel.setPhase(dataAttr.getName());
-                                    utpcModel.setMinU((int) value);
-                                    utpcMap.put(key, utpcModel);
+                            AnalyzeRecordModel recordModel;
+                            if (rate > LOW_VOLTAGE_RATE) {
+                                if (!AnalyzeRecord.containsKey(key)) {
+                                    recordModel = new AnalyzeRecordModel();
+                                    recordModel.setDeviceId(data.getDeviceId());
+                                    recordModel.setBeginTime(dataAttr.getDtime());
+                                    recordModel.setPhase(dataAttr.getName());
+                                    recordModel.setMinU((int) value);
+                                    AnalyzeRecord.put(key, recordModel);
                                 } else {
                                     //比较最低电压
-                                    utpcModel = utpcMap.get(key);
-                                    utpcModel.setMinU((int) (utpcModel.getMinU() < value ? utpcModel.getMinU() : value));
+                                    recordModel = AnalyzeRecord.get(key);
+                                    recordModel.setMinU((int) (recordModel.getMinU() < value ? recordModel.getMinU() : value));
                                 }
                             } else {
-                                if (utpcMap.containsKey(key)) {
-                                    utpcModel = utpcMap.get(key);
-                                    utpcModel.setEndTime(dataAttr.getDtime());
-                                    int m = (int) DateUtils.getDiffMinutes(utpcModel.getBeginTime(), utpcModel.getEndTime());
-                                    utpcModel.setDuration(m);
+                                if (AnalyzeRecord.containsKey(key)) {
+                                    recordModel = AnalyzeRecord.get(key);
+                                    recordModel.setEndTime(dataAttr.getDtime());
+                                    int m = (int) DateUtils.getDiffMinutes(recordModel.getBeginTime(), recordModel.getEndTime());
+                                    recordModel.setDuration(m);
                                     //记录低电压
                                     DeviceLowvoltage deviceLowvoltage = new DeviceLowvoltage();
                                     deviceLowvoltage.setLowuid(UUIDUtils.getUUId());
-                                    deviceLowvoltage.setMinu(utpcModel.getMinU());
-                                    deviceLowvoltage.setDeviceid(utpcModel.getDeviceId());
-                                    deviceLowvoltage.setDuration(utpcModel.getDuration());
-                                    deviceLowvoltage.setBegintime(utpcModel.getBeginTime());
-                                    deviceLowvoltage.setEndtime(utpcModel.getEndTime());
+                                    deviceLowvoltage.setMinu(recordModel.getMinU());
+                                    deviceLowvoltage.setDeviceid(recordModel.getDeviceId());
+                                    deviceLowvoltage.setDuration(recordModel.getDuration());
+                                    deviceLowvoltage.setBegintime(recordModel.getBeginTime());
+                                    deviceLowvoltage.setEndtime(recordModel.getEndTime());
                                     deviceLowvoltage.setPhase(dataAttr.getName());
-                                    DtuDBService.getInstance().push(new DeviceData(DataType.LOW_VOLTAGE, deviceLowvoltage));
+                                    DtuDBService.getInstance().push(new DeviceData(DataType.LP_LOW_VOLTAGE, deviceLowvoltage));
                                     //移除
-                                    utpcMap.remove(key);
+                                    AnalyzeRecord.remove(key);
                                 }
                             }
                         }
@@ -487,10 +579,65 @@ public class DBService implements ISubscriber {
                         //    DeviceRcdMapper deviceRcdMapper = sqlSession.getMapper(DeviceRcdMapper.class);
                         //    DeviceRcd rcd = deviceRcdMapper.selectByPrimaryKey(data.getDeviceId());
                         //    if (rcd != null) {
-                        //        rcd.setRcdmodel((String) dataAttr.getValue());
+                        //        rcd.setRcdmodel((String) dataAttr.getColumn());
                         //        //deviceRcdMapper.updateByPrimaryKey(rcd);
                         //    }
                         //}
+
+                        //如果是测温
+                        if (Objects.equals(deviceCacheResult.getDeviceTableName(), DeviceTableEnum.Device_Temperature.getTableName())) {
+                            Map<String, AdditionProperty> additionProperties = deviceCacheResult.getAdditionProperties();
+                            if (additionProperties != null) {
+                                //上限值
+                                AdditionProperty limitProperty = additionProperties.get(dataAttr.getName());
+                                //上一次值
+                                AdditionProperty lastProperty = additionProperties.get("last" + dataAttr.getName());
+                                if (limitProperty != null) {
+                                    //本次值
+                                    float value = Float.parseFloat(String.valueOf(dataAttr.getValue()));
+                                    if (lastProperty != null) {
+                                        float lastValue = lastProperty.getValue();
+                                        //本次值如果与上一次值不相等
+                                        if (value != lastValue) {
+                                            //如果本次值大于上限值发送短信
+                                            if (value >= limitProperty.getValue()) {
+                                                deviceCacheResult.setAlarmTime(dataAttr.getDtime());
+                                                String content = limitProperty.getDescription() + "探头(" + (value + limitProperty.getUnit()) + ")" + (value >= limitProperty.getValue() ? "预警" : "正常");
+                                                limitProperty.setMsgContent(content);
+                                                lastProperty.setValue(value);
+                                                deviceCacheResult.setSendMsg(true);
+                                            }
+                                        } else {
+                                            String content = limitProperty.getDescription() + "探头(" + (value + limitProperty.getUnit()) + ")" + (value >= limitProperty.getValue() ? "预警" : "正常");
+                                            limitProperty.setMsgContent(content);
+                                        }
+                                    } else {
+                                        lastProperty = new AdditionProperty();
+                                        lastProperty.setName("last" + dataAttr.getName());
+                                        lastProperty.setValue(value);
+                                        additionProperties.put(lastProperty.getName(), lastProperty);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                //是否发短信
+                if (deviceCacheResult.isSendMsg()) {
+                    Map<String, AdditionProperty> map = deviceCacheResult.getAdditionProperties();
+                    if (map != null) {
+                        StringBuilder sb = new StringBuilder();
+                        map.entrySet()
+                                .stream()
+                                .filter(e -> StringsUtils.isNotEmpty(e.getValue().getMsgContent()))
+                                .map(e -> e.getValue().getMsgContent())
+                                .forEach(e -> sb.append(e).append(","));
+                        String name = deviceCacheResult.getDaName() + deviceCacheResult.getDeviceName();
+                        String systemName = Config.getSystemName();
+                        String alarmTime = DateUtils.dateToStr(deviceCacheResult.getAlarmTime());
+                        String msgContent = String.format("%s,于时间%s,%s%s", name, alarmTime, sb.toString(), "[" + systemName + "]");
+                        MsgManager.getInstance().putMsg(new Msg(deviceCacheResult.getDeviceId(), -1, msgContent));
+                        deviceCacheResult.setSendMsg(false);
                     }
                 }
             }
@@ -503,29 +650,28 @@ public class DBService implements ISubscriber {
          * @return
          */
         private void saveDeviceAlarm(TripEventRecord record) {
-            if (record != null && record.TripReason != null) {
-                sqlSession = MyBatisUtil.getSqlSession(false);
+            if (record != null) {
+                int value = record.deviceGroup == DeviceGroup.LP1997 ? record.tripReason1997.getValue() : record.tripReason2007.getValue();
                 LogUtils.info("TripEventRecord:" + record.toString1());
+                SqlSession sqlSession = MyBatisUtil.getSqlSession(true);
                 DeviceAlarmMapper deviceAlarmMapper = sqlSession.getMapper(DeviceAlarmMapper.class);
                 //分闸报文
                 if (record.State == LPState.OFF) {
-                    DeviceDtuCacheResult result = MyCacheManager.getInstance().getDeviceDtuCacheResult(protocolLayerData.DTUString, TableEnum.Device_Rcd.getTableName().toLowerCase(), protocolLayerData.PostalAddress);
+                    DeviceCacheResult result = MyCacheManager.getDeviceCacheResult(protocolLayerData.DTUString, DeviceTableEnum.Device_Rcd.getTableName().toLowerCase(), protocolLayerData.PostalAddress);
                     if (result != null) {
                         String deviceId = result.getDeviceId();
-                        String tableName = TableEnum.Device_Rcd.getTableName().toLowerCase();
+                        String tableName = DeviceTableEnum.Device_Rcd.getTableName().toLowerCase();
                         Date alarmTime = DateUtils.strToDate(DateUtils.dateToStr(record.AlarmTime));
                         DeviceAlarmExample deviceAlarmExample = new DeviceAlarmExample();
                         deviceAlarmExample
                                 .createCriteria()
                                 .andDeviceidEqualTo(deviceId)
                                 .andDevicetablenameEqualTo(tableName)
-                                .andStateEqualTo(LPState.OFF.getValue())
                                 .andAlarmtimeEqualTo(alarmTime);
                         Optional<DeviceAlarm> optional = deviceAlarmMapper
                                 .selectByExample(deviceAlarmExample)
                                 .stream()
                                 .findFirst();
-
                         if (!optional.isPresent()) {
                             DeviceAlarm item = new DeviceAlarm();
                             item.setAlarmid(UUIDUtils.getUUId());
@@ -541,7 +687,7 @@ public class DBService implements ISubscriber {
                             item.setAlarmphase(record.AlarmPhase);
                             item.setAlarmcontent(record.AlarmReason);
                             item.setAlarmtime(alarmTime);
-                            item.setAlarmtype(record.TripReason.getValue());
+                            item.setAlarmtype(value);
                             item.setCreatedate(DateUtils.getNowSqlDateTime());
                             item.setDevicetablename(tableName);
                             item.setOutagetime(alarmTime);
@@ -549,7 +695,6 @@ public class DBService implements ISubscriber {
                             item.setAlarmlevel(1);
                             item.setIssendworkorder(0);
                             item.setSortcode(0);
-                            //deviceAlarmMapper.insert(item);
                             DtuDBService.getInstance().push(new DeviceData(DataType.ALARM, item));
 
                             //判断是否需要发短信
@@ -561,7 +706,7 @@ public class DBService implements ISubscriber {
                             String temp = DateUtils.getDateStr(cal.getTime());
                             //只报当天的告警，发送分闸短信
                             if (Objects.equals(alarmDate, now) || Objects.equals(temp, now)) {
-                                String name = result.getName();
+                                String name = result.getDeviceName();
                                 String systemName = Config.getSystemName();
                                 String content = record.toString();
                                 String alarmTime1 = DateUtils.dateToStr(record.AlarmTime);
@@ -573,30 +718,29 @@ public class DBService implements ISubscriber {
                 }
                 //合闸报文
                 else if (record.getState() == LPState.ON) {
-                    DeviceDtuCacheResult result = MyCacheManager.getInstance().getDeviceDtuCacheResult(protocolLayerData.DTUString, TableEnum.Device_Rcd.getTableName().toLowerCase(), protocolLayerData.PostalAddress);
+                    DeviceCacheResult result = MyCacheManager.getDeviceCacheResult(protocolLayerData.DTUString, DeviceTableEnum.Device_Rcd.getTableName().toLowerCase(), protocolLayerData.PostalAddress);
                     if (result != null) {
                         DeviceAlarmExample deviceAlarmExample = new DeviceAlarmExample();
                         deviceAlarmExample
                                 .createCriteria()
                                 .andDeviceidEqualTo(result.getDeviceId())
-                                .andDevicetablenameEqualTo(TableEnum.Device_Rcd.getTableName().toLowerCase())
+                                .andDevicetablenameEqualTo(DeviceTableEnum.Device_Rcd.getTableName().toLowerCase())
                                 .andStateEqualTo(LPState.OFF.getValue());
 
                         deviceAlarmMapper
                                 .selectByExample(deviceAlarmExample)
                                 .stream()
-                                .max((o1, o2) -> o1.getAlarmtime().getTime() > o2.getAlarmtime().getTime() ? -1 : o1.getAlarmtime().getTime() == o1.getAlarmtime().getTime() ? 0 : 1)
+                                .max((o1, o2) -> o1.getAlarmtime().getTime() < o2.getAlarmtime().getTime() ? -1 : o1.getAlarmtime().getTime() == o1.getAlarmtime().getTime() ? 0 : 1)
                                 .ifPresent(deviceAlarm -> {
 
                                     deviceAlarm.setPowerontime(DateUtils.getNowSqlDateTime());
                                     deviceAlarm.setDurationtime(DateUtils.getDiffMinutes(deviceAlarm.getOutagetime(), deviceAlarm.getPowerontime()));
                                     deviceAlarm.setModifydate(DateUtils.getNowSqlDateTime());
                                     deviceAlarm.setState(LPState.ON.getValue());
-                                    //deviceAlarmMapper.updateByPrimaryKey(deviceAlarm);
                                     DtuDBService.getInstance().push(new DeviceData(DataType.ALARM, deviceAlarm));
 
                                     //发送合闸短信
-                                    String name = result.getName();
+                                    String name = result.getDeviceName();
                                     String content = "合闸成功";
                                     String systemName = Config.getSystemName();
                                     String alarmTime = DateUtils.dateToStr(DateUtils.getNowSqlDateTime());
@@ -617,140 +761,85 @@ public class DBService implements ISubscriber {
         private void saveSecondLpRecord(SecondLpRealData data) {
             List<SecondLpRecord> records = data.getSecondLpRecords();
             if (records != null && records.size() > 0) {
-                sqlSession = MyBatisUtil.getSqlSession(false);
                 LogUtils.info(records.toString());
-                RelationDtuDeviceMapper dtuDeviceMapper = sqlSession.getMapper(RelationDtuDeviceMapper.class);
-                DeviceDtuMapper deviceDtuMapper = sqlSession.getMapper(DeviceDtuMapper.class);
-                DeviceTerminalMapper terminalMapper = sqlSession.getMapper(DeviceTerminalMapper.class);
-                DeviceRcdMapper deviceRcdMapper = sqlSession.getMapper(DeviceRcdMapper.class);
-
-                //第一步 找到dtu
-                DeviceDtuExample dtuExample = new DeviceDtuExample();
-                dtuExample.createCriteria().andAddressEqualTo(data.getDtuAddress());
-                deviceDtuMapper.selectByExample(dtuExample).stream().findFirst().ifPresent(deviceDtu -> data.setDtuId(deviceDtu.getOid()));
-
-                //第二步 找到dtu相关联的一级漏保
-                if (data.getDtuId() != null) {
-                    RelationDtuDeviceExample dtuDeviceExample = new RelationDtuDeviceExample();
-                    dtuDeviceExample.createCriteria().andDtuidEqualTo(data.getDtuId());
-                    dtuDeviceMapper.selectByExample(dtuDeviceExample).stream().findFirst().ifPresent(relationDtuDevice -> data.setDeviceId(relationDtuDevice.getDeviceid()));
-                }
-
-                //第三步 获取该一级漏保的daId和daName
-                if (data.getDeviceId() != null) {
-                    DeviceRcd deviceRcd = deviceRcdMapper.selectByPrimaryKey(data.getDeviceId());
-                    if (deviceRcd != null) {
-                        data.setDaId(deviceRcd.getDaid());
-                        DeviceDaMapper deviceDaMapper = sqlSession.getMapper(DeviceDaMapper.class);
-                        DeviceDa deviceDa = deviceDaMapper.selectByPrimaryKey(deviceRcd.getDaid());
-                        if (deviceDa != null) {
-                            data.setDaName(deviceDa.getName());
-                        }
+                ConcurrentHashMap<String, DeviceCacheResult> result = MyCacheManager.getDeviceCacheMap();
+                List<DeviceCacheResult> results = null;
+                if (result != null) {
+                    synchronized (result) {
+                        results = result
+                                .entrySet()
+                                .stream()
+                                .map(Map.Entry::getValue)
+                                .collect(Collectors.toList());
                     }
                 }
+                if (results != null) {
+                    //通过dtu地址找到相关联的一级漏保并且获取所需要的信息
+                    Optional<DeviceCacheResult> optional = results.stream()
+                            .filter(entry -> entry.getDtuAddress().equals(data.getDtuAddress())
+                                    && entry.getDeviceTableName().equals(DeviceTableEnum.Device_Rcd.getTableName().toLowerCase())
+                                    && entry.getDeviceLevel() == 1)
+                            .findFirst();
+                    if (optional.isPresent()) {
 
-                //第四步 获取终端类型
-                DeviceTerminalExample terminalExample = new DeviceTerminalExample();
-                terminalExample.createCriteria().andCodeEqualTo(TerminalEnum.DLTLP6452007.getName());
-                terminalMapper.selectByExample(terminalExample).stream().findFirst().ifPresent(deviceTerminal -> data.setTerminalId(deviceTerminal.getTerminalid()));
+                        DeviceCacheResult result1 = optional.get();
+                        data.setDtuId(result1.getDtuId());
+                        data.setDeviceId(result1.getDeviceId());
+                        data.setDaId(result1.getDaId());
+                        data.setDaName(result1.getDaName());
+                        data.setTerminalId(result1.getTerminalId());
 
-                for (SecondLpRecord record : records) {
-                    //第五步 先查询是已经添加过,再添加或修改漏保信息
-                    DeviceRcdExample example = new DeviceRcdExample();
-                    example.createCriteria().andAddressEqualTo(record.getLpAddress());
-                    deviceRcdMapper.selectByExample(example).stream().findFirst().ifPresent(data::setDeviceRcd);
-                    //如果不存在就添加
-                    DeviceRcd rcd = data.getDeviceRcd();
-                    if (rcd == null) {
-                        rcd = new DeviceRcd();
-                        String deviceId = UUIDUtils.getUUId();
-                        rcd.setOid(deviceId);
-                        rcd.setAddress(record.getLpAddress());
-                        rcd.setBaudrate(String.valueOf(record.getBaudRate()));
-                        rcd.setCreatedate(DateUtils.getNowSqlDateTime());
-                        rcd.setTerminalid(data.getTerminalId());
-                        rcd.setName(data.getDaName() != null ? data.getDaName() + "二级漏保" + record.getLpAddress() : "二级漏保" + record.getLpAddress());
-                        rcd.setCheckdigit("8e1");
-                        rcd.setLevel("2");
-                        rcd.setCycle("一年");
-                        rcd.setValidate("一年");
-                        rcd.setDaid(data.getDaId());
-                        rcd.setUa(record.getRatedUa());
-                        rcd.setUb(record.getRatedUb());
-                        rcd.setUc(record.getRatedUc());
-                        rcd.setIa(record.getRatedIa());
-                        rcd.setIb(record.getRatedIb());
-                        rcd.setIc(record.getRatedIc());
-                        rcd.setIo(record.getRatedIo());
-                        deviceRcdMapper.insert(rcd);
+                        List<DeviceCacheResult> cacheResults = new ArrayList<>();
+                        for (SecondLpRecord record : records) {
+                            //先查询缓存是否已经添加过,再添加或修改漏保信息
+                            results
+                                    .stream()
+                                    .filter(e -> e.getDeviceAddress().equals(record.getLpAddress()))
+                                    .findFirst()
+                                    .ifPresent(cacheResult -> data.setDeviceRcd(new DeviceRcd() {{
+                                        setOid(cacheResult.getDeviceId());
+                                    }}));
+                            //如果不存在就添加
+                            DeviceRcd rcd = data.getDeviceRcd();
+                            if (rcd == null) {
+                                rcd = new DeviceRcd();
+                                String deviceId = UUIDUtils.getUUId();
+                                rcd.setOid(deviceId);
 
-                        if (data.getDtuId() != null) {
-                            //添加关联信息
-                            RelationDtuDevice r = new RelationDtuDevice();
-                            r.setId(UUIDUtils.getUUId());
-                            r.setDtuid(data.getDtuId());
-                            r.setDeviceid(deviceId);
-                            r.setDevicetablename(TableEnum.Device_Rcd.getTableName());
-                            r.setCreatedate(DateUtils.getNowSqlDateTime());
-                            dtuDeviceMapper.insert(r);
-                        }
-
-                        //添加缓存信息,不管有没有dtu存在都添加进缓存
-                        DeviceDtuCacheResult cacheResult = new DeviceDtuCacheResult();
-                        cacheResult.setDeviceId(deviceId);
-                        cacheResult.setDtuId(data.getDtuId());
-                        cacheResult.setDaId(data.getDaId());
-                        cacheResult.setDeviceAddress(record.getLpAddress());
-                        cacheResult.setDtuAddress(data.getDtuAddress());
-                        cacheResult.setDeviceTableName(TableEnum.Device_Rcd.getTableName());
-                        cacheResult.setLevel("2");
-                        cacheResults.add(cacheResult);
-                    }
-                    //修改
-                    else {
-                        rcd.setBaudrate(String.valueOf(record.getBaudRate()));
-                        rcd.setTerminalid(data.getTerminalId());
-                        rcd.setLevel("2");
-                        rcd.setModifydate(DateUtils.getNowSqlDateTime());
-                        rcd.setDaid(data.getDaId());
-                        rcd.setName(data.getDaName() != null ? data.getDaName() + "二级漏保" + record.getLpAddress() : "二级漏保" + record.getLpAddress());
-                        rcd.setBaudrate(String.valueOf(record.getBaudRate()));
-                        rcd.setUa(record.getRatedUa());
-                        rcd.setUb(record.getRatedUb());
-                        rcd.setUc(record.getRatedUc());
-                        rcd.setIa(record.getRatedIa());
-                        rcd.setIb(record.getRatedIb());
-                        rcd.setIc(record.getRatedIc());
-                        rcd.setIo(record.getRatedIo());
-                        deviceRcdMapper.updateByPrimaryKey(rcd);
-
-                        //查询关联信息,修改或添加关联信息
-                        if (data.getDtuId() != null) {
-                            RelationDtuDeviceExample relationDtuDeviceExample = new RelationDtuDeviceExample();
-                            relationDtuDeviceExample.createCriteria().andDtuidEqualTo(data.getDtuId()).andDeviceidEqualTo(rcd.getOid());
-                            dtuDeviceMapper.selectByExample(relationDtuDeviceExample).stream().findFirst().ifPresent(data::setRelationDtuDevice);
-                            RelationDtuDevice relationDtuDevice = data.getRelationDtuDevice();
-                            if (relationDtuDevice == null) {
-                                //添加关联信息
-                                relationDtuDevice = new RelationDtuDevice();
-                                relationDtuDevice.setId(UUIDUtils.getUUId());
-                                relationDtuDevice.setDtuid(data.getDtuId());
-                                relationDtuDevice.setDeviceid(rcd.getOid());
-                                relationDtuDevice.setDevicetablename(TableEnum.Device_Rcd.getTableName());
-                                relationDtuDevice.setCreatedate(DateUtils.getNowSqlDateTime());
-                                dtuDeviceMapper.insert(relationDtuDevice);
-
-                                //添加缓存信息
-                                DeviceDtuCacheResult cacheResult = new DeviceDtuCacheResult();
-                                cacheResult.setDeviceId(rcd.getOid());
-                                cacheResult.setDaId(rcd.getDaid());
-                                cacheResult.setDeviceAddress(rcd.getAddress());
-                                cacheResult.setLevel(rcd.getLevel());
-                                cacheResult.setDeviceTableName(TableEnum.Device_Rcd.getTableName().toLowerCase());
+                                //添加缓存
+                                DeviceCacheResult cacheResult = new DeviceCacheResult();
+                                cacheResult.setDeviceId(deviceId);
                                 cacheResult.setDtuId(data.getDtuId());
+                                cacheResult.setDaId(data.getDaId());
+                                cacheResult.setDeviceAddress(record.getLpAddress());
                                 cacheResult.setDtuAddress(data.getDtuAddress());
+                                cacheResult.setDeviceTableName(DeviceTableEnum.Device_Rcd.getTableName());
+                                cacheResult.setDeviceLevel("2");
+                                cacheResult.setCmdType(CacheCmdType.CREATE);
                                 cacheResults.add(cacheResult);
                             }
+                            rcd.setAddress(record.getLpAddress());
+                            rcd.setBaudrate(String.valueOf(record.getBaudRate()));
+                            rcd.setCreatedate(DateUtils.getNowSqlDateTime());
+                            rcd.setTerminalid(data.getTerminalId());
+                            rcd.setName(data.getDaName() != null ? data.getDaName() + "二级漏保" + record.getLpAddress() : "二级漏保" + record.getLpAddress());
+                            rcd.setCheckdigit("8e1");
+                            rcd.setBaudrate("2400");
+                            rcd.setLevel("2");
+                            rcd.setDaid(data.getDaId());
+                            rcd.setUa(record.getRatedUa());
+                            rcd.setUb(record.getRatedUb());
+                            rcd.setUc(record.getRatedUc());
+                            rcd.setIa(record.getRatedIa());
+                            rcd.setIb(record.getRatedIb());
+                            rcd.setIc(record.getRatedIc());
+                            rcd.setIo(record.getRatedIo());
+                            rcd.setDtuid(data.getDtuId());
+                            DtuDBService.getInstance().push(new DeviceData(DataType.SECOND_LP_RECORD_CREATE, rcd));
+                        }
+                        if (cacheResults.size() > 0) {
+                            //添加进缓存
+                            MyCacheManager.updateDeviceCacheResult(cacheResults);
                         }
                     }
                 }

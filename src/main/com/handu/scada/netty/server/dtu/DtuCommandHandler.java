@@ -7,24 +7,19 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.ReferenceCountUtil;
-import main.com.handu.scada.business.dtu.DtuStateCallback;
 import main.com.handu.scada.config.Config;
 import main.com.handu.scada.exception.ExceptionHandler;
 import main.com.handu.scada.netty.server.MsgType;
-import main.com.handu.scada.protocol.base.MediaData;
 import main.com.handu.scada.utils.HexUtils;
 import main.com.handu.scada.utils.LogUtils;
 import main.com.handu.scada.utils.StringsUtils;
 
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
 
 public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
-
-    private DtuStateCallback callback = new DtuStateCallback();
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
@@ -38,65 +33,74 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
         Channel channel = ctx.channel();
         if (channel != null && channel.isActive()) {
             String clientId = ctx.channel().id().asShortText();
-            callback.online(clientId, null, MsgType.ONLINE);
-            DtuNetworkConnection state = new DtuNetworkConnection(ctx.channel(), ctx, callback);
+            DtuNetworkConnection state = new DtuNetworkConnection(ctx.channel(), ctx);
+            state.getCallback().online(clientId, null, MsgType.ONLINE);
             DtuChannelManager.addClient(clientId, state);
-            //15分钟没收到数据服务端主动断掉连接
+            //3倍心跳没收到数据服务端主动断掉连接
             channel.closeFuture().addListener(future -> offline(ctx));
-            ctx.executor().schedule((Runnable) channel::close, Config.getHeartBeat(), TimeUnit.SECONDS);
+            ctx.executor().schedule((Runnable) channel::close, 3 * Config.getHeartBeat(), TimeUnit.SECONDS);
         }
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf result = (ByteBuf) msg;
-        byte[] byteResult = new byte[result.readableBytes()];
-        try {
-            // msg中存储的是ByteBuf类型的数据，把数据读取到byte[]中
-            result.readBytes(byteResult);
-            if (byteResult.length > 0) {
-                //登录
-                if (byteResult[0] == (byte) 0x01) {
-                    login(ctx, byteResult);
+        int length = result.readableBytes();
+        if (length > 0) {
+            byte[] byteResult = new byte[length];
+            try {
+                // msg中存储的是ByteBuf类型的数据，把数据读取到byte[]中
+                result.readBytes(byteResult);
+                if (byteResult.length > 0) {
+                    //登录
+                    if (byteResult[0] == (byte) 0x01) {
+                        login(ctx, byteResult);
+                    }
+                    //心跳
+                    else if (byteResult[0] == (byte) 0x02) {
+                        heartbeat(ctx, byteResult);
+                    }
+                    //漏保上行下行都是5A
+                    else if (byteResult[0] == (byte) 0x5A) {
+                        serialPort(ctx, byteResult);
+                    }
+                    //0x5c,dtu配置报文特殊事件
+                    else if (byteResult[0] == (byte) 0x5c) {
+                        deviceInfo(ctx, byteResult);
+                    }
+                    //0x5e,远程升级
+                    else if (byteResult[0] == (byte) 0x5E) {
+                        dtuUpdate(ctx);
+                    }
+                    //二级漏保上报配置数据
+                    else if (byteResult[0] == (byte) 0x5B) {
+                        secondLpRecord(ctx, byteResult);
+                    }
+                    //集中器最后一次心跳时间
+                    else if (byteResult[0] == 0x6B) {
+                        concentratorHeartbeatTime(ctx, byteResult);
+                    }
+                    //信号强度
+                    else if (byteResult[0] == 0x7B) {
+                        signalStrength(ctx, byteResult);
+                    }
+                    //集中器台表数据
+                    else if (byteResult[0] == 0x25) {
+                        afn0c25(ctx, byteResult);
+                    }
+                    //ACK或者NACK帧
+                    else if (byteResult[0] == 0x55 || byteResult[0] == (byte) 0xAA) {
+                        ack(ctx, byteResult);
+                    }//二级漏保上传升级文件
+                    else if (byteResult[0] == 0x6E) {
+                    }
                 }
-                //心跳
-                else if (byteResult[0] == (byte) 0x02) {
-                    heartbeat(ctx, byteResult);
-                }
-                //漏保上行下行都是5A
-                else if (byteResult[0] == (byte) 0x5A) {
-                    serialPort(ctx, byteResult);
-                }
-                //0x5c,dtu配置报文特殊事件
-                else if (byteResult[0] == (byte) 0x5c) {
-                    deviceInfo(ctx, byteResult);
-                }
-                //0x5e,远程升级
-                else if (byteResult[0] == (byte) 0x5E) {
-                    dtuUpdate(ctx);
-                }
-                //二级漏保上报配置数据
-                else if (byteResult[0] == (byte) 0x5B) {
-                    secondLpRecord(ctx, byteResult);
-                }
-                //集中器最后一次心跳时间
-                else if (byteResult[0] == 0x6B) {
-                    concentratorHeartbeatTime(ctx, byteResult);
-                }
-                //信号强度
-                else if (byteResult[0] == 0x7B) {
-                    signalStrength(ctx, byteResult);
-                }//二级漏保上传升级文件
-                else if (byteResult[0] == 0x6E) {
-                }
+            } catch (Exception e) {
+                ExceptionHandler.print(e);
+            } finally {
+                //释放资源，这行很关键
+                ReferenceCountUtil.release(result);
             }
-
-        } catch (Exception e) {
-            ExceptionHandler.print(e);
-        } finally {
-            //释放资源，这行很关键
-            ReferenceCountUtil.release(result);
-            //result.release();
         }
     }
 
@@ -116,11 +120,15 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
      * @param ctx
      */
     private void offline(ChannelHandlerContext ctx) {
+        if (ctx == null) return;
         try {
             String clientId = ctx.channel().id().asShortText();
-            String dtuAddress = DtuChannelManager.getDtuAddress(clientId);
-            callback.offline(clientId, dtuAddress);
-            DtuChannelManager.removeClient(clientId, dtuAddress);
+            DtuNetworkConnection connection = DtuChannelManager.getNetworkState(clientId);
+            if (connection != null) {
+                String dtuAddress = DtuChannelManager.getDtuAddress(clientId);
+                connection.getCallback().offline(clientId, dtuAddress);
+                DtuChannelManager.removeClient(clientId, dtuAddress);
+            }
         } catch (Exception e) {
             ExceptionHandler.print(e);
         } finally {
@@ -129,8 +137,8 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
     }
 
     @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        super.channelReadComplete(ctx);
+    public void channelReadComplete(ChannelHandlerContext ctx) {
+        ctx.flush();
     }
 
     /**
@@ -212,7 +220,7 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
         if (state != null && state.getChannel().isActive()) {
             printReceiveMsg(state, byteResult, "heartbeat");
             state.setLastReceiptTime(System.currentTimeMillis());
-            nextSend(state);
+            state.nextSend();
         }
     }
 
@@ -229,7 +237,7 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
             printReceiveMsg(state, byteResult, "serialPort");
             state.setLastReceiptTime(System.currentTimeMillis());
             state.notifyUpParse(bytes);
-            nextSend(state);
+            state.nextSend();
         }
     }
 
@@ -246,7 +254,7 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
             state.setLastReceiptTime(System.currentTimeMillis());
             String resultStr = new String(byteResult);
             LogUtils.info(state.getDtuAddress() + " info-->" + resultStr, true);
-            nextSend(state);
+            state.nextSend();
         }
     }
 
@@ -263,7 +271,7 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
             state.setLastReceiptTime(System.currentTimeMillis());
             String resultStr = new String(byteResult);
             LogUtils.info(state.getDtuAddress() + " signalStrength-->" + resultStr, true);
-            nextSend(state);
+            state.nextSend();
         }
     }
 
@@ -278,7 +286,7 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
             printReceiveMsg(state, byteResult, "secondLpRecord");
             state.setLastReceiptTime(System.currentTimeMillis());
             state.createSecondLpRecord(byteResult);
-            nextSend(state);
+            state.nextSend();
         }
     }
 
@@ -291,7 +299,7 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
             printReceiveMsg(state, byteResult, "concentratorHeartbeatTime");
             state.setLastReceiptTime(System.currentTimeMillis());
             state.notifyUpParse(byteResult);
-            nextSend(state);
+            state.nextSend();
         }
     }
 
@@ -315,6 +323,35 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
     }
 
     /**
+     * 台表afn0c25数据
+     */
+    private void afn0c25(ChannelHandlerContext ctx, byte[] byteResult) {
+        DtuNetworkConnection state = DtuChannelManager.getNetworkState(ctx.channel().id().asShortText());
+        byte[] bytes = Arrays.copyOfRange(byteResult, 1, byteResult.length);
+        if (state != null && state.getChannel().isActive()) {
+            printReceiveMsg(state, byteResult, "afn0c25");
+            state.setLastReceiptTime(System.currentTimeMillis());
+            state.notifyUpParse(bytes);
+            state.nextSend();
+        }
+    }
+
+    /**
+     * ack或nack帧
+     *
+     * @param ctx
+     * @param byteResult
+     */
+    private void ack(ChannelHandlerContext ctx, byte[] byteResult) {
+        DtuNetworkConnection state = DtuChannelManager.getNetworkState(ctx.channel().id().asShortText());
+        if (state != null && state.getChannel().isActive()) {
+            printReceiveMsg(state, byteResult, "ack");
+            state.setLastReceiptTime(System.currentTimeMillis());
+            state.nextSend();
+        }
+    }
+
+    /**
      * 根据报文获取设备地址
      *
      * @param bytes
@@ -330,54 +367,6 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
             ExceptionHandler.print(e);
         }
         return null;
-    }
-
-    /**
-     * 触发下一次发送
-     *
-     * @param state
-     */
-    private void nextSend(DtuNetworkConnection state) {
-        ChannelHandlerContext context = state.getContext();
-        if (context == null) return;
-        MediaData data;
-        Queue<MediaData> highQueue = state.getHighQueue();
-        Queue<MediaData> lowQueue = state.getLowQueue();
-        if (highQueue.size() > 0) {
-            data = highQueue.poll();
-            if (data != null) {
-                ByteBuf byteBuf = context.alloc().buffer(data.CommandData.length);
-                byteBuf.writeBytes(data.CommandData);
-                state.setBusy(data.isWaitReceive);
-                state.setLastSendTime(System.currentTimeMillis());
-                sendCommand(context, byteBuf);
-                printSendMsg(data);
-            }
-        } else if (lowQueue.size() > 0) {
-            data = lowQueue.poll();
-            if (data != null) {
-                ByteBuf byteBuf = context.alloc().buffer(data.CommandData.length);
-                byteBuf.writeBytes(data.CommandData);
-                state.setLastSendTime(System.currentTimeMillis());
-                state.setBusy(data.isWaitReceive);
-                sendCommand(context, byteBuf);
-                printSendMsg(data);
-            }
-        } else {
-            state.setBusy(false);
-        }
-    }
-
-    /**
-     * 打印下发报文
-     *
-     * @param data
-     */
-    private void printSendMsg(MediaData data) {
-        if (Config.isDebug) {
-            String resultStr = HexUtils.byteArrayToHexStr(data.CommandData);
-            LogUtils.info(data.DTUString + " next send-->deviceType=" + data.deviceTypeEnum.name() + ",cmdType=" + data.cmdTypeEnum.name() + ",data=" + resultStr);
-        }
     }
 
     /**

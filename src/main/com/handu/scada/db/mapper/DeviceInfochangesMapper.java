@@ -21,9 +21,9 @@ public interface DeviceInfochangesMapper extends CommonMapper {
 
     DeviceInfochanges selectByPrimaryKey(String oid);
 
-    int updateByExampleSelective(@Param("tripEventRecord") DeviceInfochanges record, @Param("example") DeviceInfochangesExample example);
+    int updateByExampleSelective(@Param("record") DeviceInfochanges record, @Param("example") DeviceInfochangesExample example);
 
-    int updateByExample(@Param("tripEventRecord") DeviceInfochanges record, @Param("example") DeviceInfochangesExample example);
+    int updateByExample(@Param("record") DeviceInfochanges record, @Param("example") DeviceInfochangesExample example);
 
     int updateByPrimaryKeySelective(DeviceInfochanges record);
 

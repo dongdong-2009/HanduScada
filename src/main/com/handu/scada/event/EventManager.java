@@ -7,6 +7,7 @@ import main.com.handu.scada.event.publish.IPublisher;
 import main.com.handu.scada.event.publish.PublisherImp;
 import main.com.handu.scada.event.subscribe.ISubscriber;
 import main.com.handu.scada.event.subscribe.SubscribePublish;
+import main.com.handu.scada.exception.ExceptionHandler;
 import main.com.handu.scada.netty.client.dtu.MsgPriority;
 import main.com.handu.scada.utils.AnnotationUtils;
 
@@ -104,7 +105,8 @@ public class EventManager {
                                     register(iSubscriber);
                                 }
                             }
-                        } catch (InstantiationException | IllegalAccessException | InvocationTargetException ignored) {
+                        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                            ExceptionHandler.handle(e);
                         }
                     }
                 }

@@ -105,143 +105,143 @@ public class DeviceRealRemotesignallingExample {
             criteria.add(new Criterion(condition, value1, value2));
         }
 
-        public Criteria andRemotesignallingidIsNull() {
-            addCriterion("RemoteSignallingId is null");
+        public Criteria andDeviceidIsNull() {
+            addCriterion("DeviceId is null");
             return (Criteria) this;
         }
 
-        public Criteria andRemotesignallingidIsNotNull() {
-            addCriterion("RemoteSignallingId is not null");
+        public Criteria andDeviceidIsNotNull() {
+            addCriterion("DeviceId is not null");
             return (Criteria) this;
         }
 
-        public Criteria andRemotesignallingidEqualTo(String value) {
-            addCriterion("RemoteSignallingId =", value, "remotesignallingid");
+        public Criteria andDeviceidEqualTo(String value) {
+            addCriterion("DeviceId =", value, "deviceid");
             return (Criteria) this;
         }
 
-        public Criteria andRemotesignallingidNotEqualTo(String value) {
-            addCriterion("RemoteSignallingId <>", value, "remotesignallingid");
+        public Criteria andDeviceidNotEqualTo(String value) {
+            addCriterion("DeviceId <>", value, "deviceid");
             return (Criteria) this;
         }
 
-        public Criteria andRemotesignallingidGreaterThan(String value) {
-            addCriterion("RemoteSignallingId >", value, "remotesignallingid");
+        public Criteria andDeviceidGreaterThan(String value) {
+            addCriterion("DeviceId >", value, "deviceid");
             return (Criteria) this;
         }
 
-        public Criteria andRemotesignallingidGreaterThanOrEqualTo(String value) {
-            addCriterion("RemoteSignallingId >=", value, "remotesignallingid");
+        public Criteria andDeviceidGreaterThanOrEqualTo(String value) {
+            addCriterion("DeviceId >=", value, "deviceid");
             return (Criteria) this;
         }
 
-        public Criteria andRemotesignallingidLessThan(String value) {
-            addCriterion("RemoteSignallingId <", value, "remotesignallingid");
+        public Criteria andDeviceidLessThan(String value) {
+            addCriterion("DeviceId <", value, "deviceid");
             return (Criteria) this;
         }
 
-        public Criteria andRemotesignallingidLessThanOrEqualTo(String value) {
-            addCriterion("RemoteSignallingId <=", value, "remotesignallingid");
+        public Criteria andDeviceidLessThanOrEqualTo(String value) {
+            addCriterion("DeviceId <=", value, "deviceid");
             return (Criteria) this;
         }
 
-        public Criteria andRemotesignallingidLike(String value) {
-            addCriterion("RemoteSignallingId like", value, "remotesignallingid");
+        public Criteria andDeviceidLike(String value) {
+            addCriterion("DeviceId like", value, "deviceid");
             return (Criteria) this;
         }
 
-        public Criteria andRemotesignallingidNotLike(String value) {
-            addCriterion("RemoteSignallingId not like", value, "remotesignallingid");
+        public Criteria andDeviceidNotLike(String value) {
+            addCriterion("DeviceId not like", value, "deviceid");
             return (Criteria) this;
         }
 
-        public Criteria andRemotesignallingidIn(List<String> values) {
-            addCriterion("RemoteSignallingId in", values, "remotesignallingid");
+        public Criteria andDeviceidIn(List<String> values) {
+            addCriterion("DeviceId in", values, "deviceid");
             return (Criteria) this;
         }
 
-        public Criteria andRemotesignallingidNotIn(List<String> values) {
-            addCriterion("RemoteSignallingId not in", values, "remotesignallingid");
+        public Criteria andDeviceidNotIn(List<String> values) {
+            addCriterion("DeviceId not in", values, "deviceid");
             return (Criteria) this;
         }
 
-        public Criteria andRemotesignallingidBetween(String value1, String value2) {
-            addCriterion("RemoteSignallingId between", value1, value2, "remotesignallingid");
+        public Criteria andDeviceidBetween(String value1, String value2) {
+            addCriterion("DeviceId between", value1, value2, "deviceid");
             return (Criteria) this;
         }
 
-        public Criteria andRemotesignallingidNotBetween(String value1, String value2) {
-            addCriterion("RemoteSignallingId not between", value1, value2, "remotesignallingid");
+        public Criteria andDeviceidNotBetween(String value1, String value2) {
+            addCriterion("DeviceId not between", value1, value2, "deviceid");
             return (Criteria) this;
         }
 
-        public Criteria andRemoteindexsidIsNull() {
-            addCriterion("RemoteIndexsId is null");
+        public Criteria andDataitemIsNull() {
+            addCriterion("DataItem is null");
             return (Criteria) this;
         }
 
-        public Criteria andRemoteindexsidIsNotNull() {
-            addCriterion("RemoteIndexsId is not null");
+        public Criteria andDataitemIsNotNull() {
+            addCriterion("DataItem is not null");
             return (Criteria) this;
         }
 
-        public Criteria andRemoteindexsidEqualTo(String value) {
-            addCriterion("RemoteIndexsId =", value, "remoteindexsid");
+        public Criteria andDataitemEqualTo(String value) {
+            addCriterion("DataItem =", value, "dataitem");
             return (Criteria) this;
         }
 
-        public Criteria andRemoteindexsidNotEqualTo(String value) {
-            addCriterion("RemoteIndexsId <>", value, "remoteindexsid");
+        public Criteria andDataitemNotEqualTo(String value) {
+            addCriterion("DataItem <>", value, "dataitem");
             return (Criteria) this;
         }
 
-        public Criteria andRemoteindexsidGreaterThan(String value) {
-            addCriterion("RemoteIndexsId >", value, "remoteindexsid");
+        public Criteria andDataitemGreaterThan(String value) {
+            addCriterion("DataItem >", value, "dataitem");
             return (Criteria) this;
         }
 
-        public Criteria andRemoteindexsidGreaterThanOrEqualTo(String value) {
-            addCriterion("RemoteIndexsId >=", value, "remoteindexsid");
+        public Criteria andDataitemGreaterThanOrEqualTo(String value) {
+            addCriterion("DataItem >=", value, "dataitem");
             return (Criteria) this;
         }
 
-        public Criteria andRemoteindexsidLessThan(String value) {
-            addCriterion("RemoteIndexsId <", value, "remoteindexsid");
+        public Criteria andDataitemLessThan(String value) {
+            addCriterion("DataItem <", value, "dataitem");
             return (Criteria) this;
         }
 
-        public Criteria andRemoteindexsidLessThanOrEqualTo(String value) {
-            addCriterion("RemoteIndexsId <=", value, "remoteindexsid");
+        public Criteria andDataitemLessThanOrEqualTo(String value) {
+            addCriterion("DataItem <=", value, "dataitem");
             return (Criteria) this;
         }
 
-        public Criteria andRemoteindexsidLike(String value) {
-            addCriterion("RemoteIndexsId like", value, "remoteindexsid");
+        public Criteria andDataitemLike(String value) {
+            addCriterion("DataItem like", value, "dataitem");
             return (Criteria) this;
         }
 
-        public Criteria andRemoteindexsidNotLike(String value) {
-            addCriterion("RemoteIndexsId not like", value, "remoteindexsid");
+        public Criteria andDataitemNotLike(String value) {
+            addCriterion("DataItem not like", value, "dataitem");
             return (Criteria) this;
         }
 
-        public Criteria andRemoteindexsidIn(List<String> values) {
-            addCriterion("RemoteIndexsId in", values, "remoteindexsid");
+        public Criteria andDataitemIn(List<String> values) {
+            addCriterion("DataItem in", values, "dataitem");
             return (Criteria) this;
         }
 
-        public Criteria andRemoteindexsidNotIn(List<String> values) {
-            addCriterion("RemoteIndexsId not in", values, "remoteindexsid");
+        public Criteria andDataitemNotIn(List<String> values) {
+            addCriterion("DataItem not in", values, "dataitem");
             return (Criteria) this;
         }
 
-        public Criteria andRemoteindexsidBetween(String value1, String value2) {
-            addCriterion("RemoteIndexsId between", value1, value2, "remoteindexsid");
+        public Criteria andDataitemBetween(String value1, String value2) {
+            addCriterion("DataItem between", value1, value2, "dataitem");
             return (Criteria) this;
         }
 
-        public Criteria andRemoteindexsidNotBetween(String value1, String value2) {
-            addCriterion("RemoteIndexsId not between", value1, value2, "remoteindexsid");
+        public Criteria andDataitemNotBetween(String value1, String value2) {
+            addCriterion("DataItem not between", value1, value2, "dataitem");
             return (Criteria) this;
         }
 
@@ -305,6 +305,76 @@ public class DeviceRealRemotesignallingExample {
             return (Criteria) this;
         }
 
+        public Criteria andUnitIsNull() {
+            addCriterion("Unit is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitIsNotNull() {
+            addCriterion("Unit is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitEqualTo(String value) {
+            addCriterion("Unit =", value, "unit");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitNotEqualTo(String value) {
+            addCriterion("Unit <>", value, "unit");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitGreaterThan(String value) {
+            addCriterion("Unit >", value, "unit");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitGreaterThanOrEqualTo(String value) {
+            addCriterion("Unit >=", value, "unit");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitLessThan(String value) {
+            addCriterion("Unit <", value, "unit");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitLessThanOrEqualTo(String value) {
+            addCriterion("Unit <=", value, "unit");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitLike(String value) {
+            addCriterion("Unit like", value, "unit");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitNotLike(String value) {
+            addCriterion("Unit not like", value, "unit");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitIn(List<String> values) {
+            addCriterion("Unit in", values, "unit");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitNotIn(List<String> values) {
+            addCriterion("Unit not in", values, "unit");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitBetween(String value1, String value2) {
+            addCriterion("Unit between", value1, value2, "unit");
+            return (Criteria) this;
+        }
+
+        public Criteria andUnitNotBetween(String value1, String value2) {
+            addCriterion("Unit not between", value1, value2, "unit");
+            return (Criteria) this;
+        }
+
         public Criteria andRecordtimeIsNull() {
             addCriterion("RecordTime is null");
             return (Criteria) this;
@@ -362,6 +432,76 @@ public class DeviceRealRemotesignallingExample {
 
         public Criteria andRecordtimeNotBetween(Date value1, Date value2) {
             addCriterion("RecordTime not between", value1, value2, "recordtime");
+            return (Criteria) this;
+        }
+
+        public Criteria andDescriptionIsNull() {
+            addCriterion("Description is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andDescriptionIsNotNull() {
+            addCriterion("Description is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andDescriptionEqualTo(String value) {
+            addCriterion("Description =", value, "description");
+            return (Criteria) this;
+        }
+
+        public Criteria andDescriptionNotEqualTo(String value) {
+            addCriterion("Description <>", value, "description");
+            return (Criteria) this;
+        }
+
+        public Criteria andDescriptionGreaterThan(String value) {
+            addCriterion("Description >", value, "description");
+            return (Criteria) this;
+        }
+
+        public Criteria andDescriptionGreaterThanOrEqualTo(String value) {
+            addCriterion("Description >=", value, "description");
+            return (Criteria) this;
+        }
+
+        public Criteria andDescriptionLessThan(String value) {
+            addCriterion("Description <", value, "description");
+            return (Criteria) this;
+        }
+
+        public Criteria andDescriptionLessThanOrEqualTo(String value) {
+            addCriterion("Description <=", value, "description");
+            return (Criteria) this;
+        }
+
+        public Criteria andDescriptionLike(String value) {
+            addCriterion("Description like", value, "description");
+            return (Criteria) this;
+        }
+
+        public Criteria andDescriptionNotLike(String value) {
+            addCriterion("Description not like", value, "description");
+            return (Criteria) this;
+        }
+
+        public Criteria andDescriptionIn(List<String> values) {
+            addCriterion("Description in", values, "description");
+            return (Criteria) this;
+        }
+
+        public Criteria andDescriptionNotIn(List<String> values) {
+            addCriterion("Description not in", values, "description");
+            return (Criteria) this;
+        }
+
+        public Criteria andDescriptionBetween(String value1, String value2) {
+            addCriterion("Description between", value1, value2, "description");
+            return (Criteria) this;
+        }
+
+        public Criteria andDescriptionNotBetween(String value1, String value2) {
+            addCriterion("Description not between", value1, value2, "description");
             return (Criteria) this;
         }
     }

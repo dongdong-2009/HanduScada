@@ -25,7 +25,6 @@ public class DateUtils {
         return new Timestamp(date.getTime());
     }
 
-
     /**
      * 获取当前时间前后seconds的时间
      *

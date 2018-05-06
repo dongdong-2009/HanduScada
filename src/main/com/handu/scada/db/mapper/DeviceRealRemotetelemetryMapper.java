@@ -11,27 +11,21 @@ public interface DeviceRealRemotetelemetryMapper extends CommonMapper {
 
     int deleteByExample(DeviceRealRemotetelemetryExample example);
 
-    int deleteByPrimaryKey(String remotetelemetryid);
+    int deleteByPrimaryKey(@Param("deviceid") String deviceid, @Param("dataitem") String dataitem);
 
     int insert(DeviceRealRemotetelemetry record);
 
     int insertSelective(DeviceRealRemotetelemetry record);
 
-    List<DeviceRealRemotetelemetry> selectByExampleWithBLOBs(DeviceRealRemotetelemetryExample example);
-
     List<DeviceRealRemotetelemetry> selectByExample(DeviceRealRemotetelemetryExample example);
 
-    DeviceRealRemotetelemetry selectByPrimaryKey(String remotetelemetryid);
+    DeviceRealRemotetelemetry selectByPrimaryKey(@Param("deviceid") String deviceid, @Param("dataitem") String dataitem);
 
-    int updateByExampleSelective(@Param("tripEventRecord") DeviceRealRemotetelemetry record, @Param("example") DeviceRealRemotetelemetryExample example);
+    int updateByExampleSelective(@Param("record") DeviceRealRemotetelemetry record, @Param("example") DeviceRealRemotetelemetryExample example);
 
-    int updateByExampleWithBLOBs(@Param("tripEventRecord") DeviceRealRemotetelemetry record, @Param("example") DeviceRealRemotetelemetryExample example);
-
-    int updateByExample(@Param("tripEventRecord") DeviceRealRemotetelemetry record, @Param("example") DeviceRealRemotetelemetryExample example);
+    int updateByExample(@Param("record") DeviceRealRemotetelemetry record, @Param("example") DeviceRealRemotetelemetryExample example);
 
     int updateByPrimaryKeySelective(DeviceRealRemotetelemetry record);
-
-    int updateByPrimaryKeyWithBLOBs(DeviceRealRemotetelemetry record);
 
     int updateByPrimaryKey(DeviceRealRemotetelemetry record);
 }

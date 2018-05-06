@@ -63,7 +63,7 @@ public class BaseDICode {
      * @param arr
      * @return
      */
-    public static byte[] add33(byte[] arr) {
+    public static byte[] increase33(byte[] arr) {
         byte[] temp = new byte[arr.length];
         for (int i = 0; i < arr.length; i++) {
             temp[i] = HexUtils.increase33(arr[i]);

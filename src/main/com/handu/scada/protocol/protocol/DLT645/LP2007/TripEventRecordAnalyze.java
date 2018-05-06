@@ -1,6 +1,6 @@
 package main.com.handu.scada.protocol.protocol.DLT645.LP2007;
 
-import main.com.handu.scada.protocol.enums.TripReasonEnum;
+import main.com.handu.scada.protocol.protocol.DLT645.TripEventRecord;
 import main.com.handu.scada.utils.HexUtils;
 
 import java.util.Calendar;
@@ -22,9 +22,9 @@ public class TripEventRecordAnalyze {
         tripEventRecord = new TripEventRecord();
         int index = 0;
         byte reason = data[index];
-        TripReasonEnum tripReasonEnum = TripReasonEnum.getTripReasonEnumByValue(HexUtils.byteToInt((byte) (reason & 0x1f)));
+        TripReason2007Enum tripReasonEnum = TripReason2007Enum.getTripReasonEnumByValue(HexUtils.byteToInt((byte) (reason & 0x1f)));
         if (tripReasonEnum != null) {
-            tripEventRecord.setTripReason(tripReasonEnum);
+            tripEventRecord.tripReason2007 = tripReasonEnum;
             tripEventRecord.setAlarmReason(tripReasonEnum.getName());
         }
         index++;
@@ -74,7 +74,7 @@ public class TripEventRecordAnalyze {
         index++;
         BCD2 = HexUtils.bcdByteToInt(data[index]);
         index++;
-        tripEventRecord.setResidualCurrent(Short.parseShort(String.valueOf(BCD2 * 100 + BCD1)));
+        tripEventRecord.setResidualCurrent(BCD2 * 100 + BCD1);
 
         BCD1 = HexUtils.bcdByteToInt(data[index]);
         index++;

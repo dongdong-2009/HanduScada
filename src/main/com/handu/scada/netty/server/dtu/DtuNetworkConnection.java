@@ -5,16 +5,18 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import main.com.handu.scada.business.dtu.DtuStateCallback;
 import main.com.handu.scada.business.dtu.DtuUpdateUtil;
+import main.com.handu.scada.config.Config;
+import main.com.handu.scada.enums.DeviceTypeEnum;
 import main.com.handu.scada.event.EventManager;
 import main.com.handu.scada.event.events.DBEvent;
 import main.com.handu.scada.exception.ExceptionHandler;
+import main.com.handu.scada.netty.client.dtu.MsgPriority;
 import main.com.handu.scada.protocol.DtuDownParse;
 import main.com.handu.scada.protocol.DtuUpParse;
 import main.com.handu.scada.protocol.IProtocol;
 import main.com.handu.scada.protocol.base.MediaData;
 import main.com.handu.scada.protocol.base.ProtocolLayerData;
-import main.com.handu.scada.protocol.enums.DeviceTypeEnum;
-import main.com.handu.scada.protocol.protocol.DLT645.impl.SecondLpRecordCreate;
+import main.com.handu.scada.protocol.protocol.DLT645.LP2007.impl.SecondLpRecordCreate;
 import main.com.handu.scada.protocol.protocol.Data.DataAttr;
 import main.com.handu.scada.quartz.utils.DtuCommand;
 import main.com.handu.scada.utils.*;
@@ -29,13 +31,14 @@ import static main.com.handu.scada.protocol.enums.DeviceCmdTypeEnum.*;
 
 public class DtuNetworkConnection {
 
+    //是否忙碌
     private boolean isBusy;
     private Channel channel;
+    //超时时间
+    private int timeoutTime = 60000;
     private String deviceAddress;
     private ChannelHandlerContext context;
     private String dtuAddress;
-    private int sendCount;
-    private int receiveCount;
     private DtuStateCallback callback;
     /**
      * 发送命令低队列
@@ -45,14 +48,13 @@ public class DtuNetworkConnection {
      * 发送命令高队列
      */
     private Queue<MediaData> highQueue = new ArrayDeque<>();
-
     /**
      * 升级
      */
     private boolean isUpdating = false;
     private float progress;
+    //升级文件字节包
     private List<byte[]> updateBuffList;
-
     //最近一次发送时间
     private long lastSendTime;
     private long lastReceiptTime;
@@ -65,6 +67,14 @@ public class DtuNetworkConnection {
      * 下发解析类型集合
      */
     private Set<IProtocol> iDownParseProtocols = new HashSet<>();
+
+    public int getTimeoutTime() {
+        return timeoutTime;
+    }
+
+    public void setTimeoutTime(int timeoutTime) {
+        this.timeoutTime = timeoutTime;
+    }
 
     public boolean isUpdating() {
         return isUpdating;
@@ -96,22 +106,6 @@ public class DtuNetworkConnection {
 
     public void setCallback(DtuStateCallback callback) {
         this.callback = callback;
-    }
-
-    public int getSendCount() {
-        return sendCount;
-    }
-
-    public void setSendCount(int sendCount) {
-        this.sendCount = sendCount;
-    }
-
-    public int getReceiveCount() {
-        return receiveCount;
-    }
-
-    public void setReceiveCount(int receiveCount) {
-        this.receiveCount = receiveCount;
     }
 
     public String getDeviceAddress() {
@@ -162,15 +156,11 @@ public class DtuNetworkConnection {
         this.highQueue = highQueue;
     }
 
-    public DtuNetworkConnection(Channel channel, ChannelHandlerContext context, DtuStateCallback callback) {
+    public DtuNetworkConnection(Channel channel, ChannelHandlerContext context) {
         this.channel = channel;
         this.context = context;
-        this.callback = callback;
+        this.callback = new DtuStateCallback();
         this.setLastSendTime(System.currentTimeMillis());
-        init(IProtocol.class);
-    }
-
-    public DtuNetworkConnection() {
         init(IProtocol.class);
     }
 
@@ -239,7 +229,7 @@ public class DtuNetworkConnection {
     /**
      * 如果是二级漏保档案上报,创建二级漏保档案
      */
-    public void createSecondLpRecord(byte[] bytes) {
+    void createSecondLpRecord(byte[] bytes) {
         MediaData mediaData = new MediaData();
         mediaData.DTUString = getDtuAddress();
         mediaData.CommandData = bytes;
@@ -259,7 +249,7 @@ public class DtuNetworkConnection {
      *
      * @param bytes 数据源
      */
-    public void notifyUpParse(byte[] bytes) {
+    void notifyUpParse(byte[] bytes) {
         MediaData mediaData = new MediaData();
         mediaData.CommandData = bytes;
         mediaData.DTUString = getDtuAddress();
@@ -299,19 +289,18 @@ public class DtuNetworkConnection {
     /**
      * 通知下行解析
      */
-    public MediaData notifyDownParse(ProtocolLayerData protocolLayerData) {
-        MediaData mediaData = special(protocolLayerData);
-        if (mediaData == null) {
+    public synchronized void notifyDownParse(ProtocolLayerData protocolLayerData, MsgPriority priority) {
+        MediaData data = special(protocolLayerData);
+        if (data == null) {
             for (IProtocol protocol : iDownParseProtocols) {
                 try {
-                    MediaData data = protocol.sendCommand(protocolLayerData);
+                    data = protocol.sendCommand(protocolLayerData);
                     if (data != null) {
                         if (data.CommandData != null) {
                             byte[] bytes = new byte[data.CommandData.length + 1];
                             bytes[0] = 0x5A;
                             System.arraycopy(data.CommandData, 0, bytes, 1, data.CommandData.length);
                             data.CommandData = bytes;
-                            return data;
                         }
                     }
                 } catch (Exception e) {
@@ -319,7 +308,12 @@ public class DtuNetworkConnection {
                 }
             }
         }
-        return mediaData;
+        if (data != null && data.CommandData != null) {
+            data.isWaitReceive = protocolLayerData.isWaitReceive;
+            data.cmdTypeEnum = protocolLayerData.CmdType;
+            data.deviceTypeEnum = protocolLayerData.deviceTypeEnum;
+            sendOrIntoQueue(data, priority);
+        }
     }
 
     /**
@@ -330,7 +324,7 @@ public class DtuNetworkConnection {
      */
     private MediaData special(ProtocolLayerData protocolLayerData) {
         if (protocolLayerData.CmdType == DTU_INFO) {
-            LogUtils.info("dtu " + protocolLayerData.DTUString + " read info ...", true);
+            LogUtils.info("dtu " + protocolLayerData.DTUString + " read info...", true);
             return new MediaData() {{
                 CommandData = new byte[]{0X5C};
                 deviceTypeEnum = DeviceTypeEnum.DTU;
@@ -338,7 +332,7 @@ public class DtuNetworkConnection {
             }};
         }
         if (protocolLayerData.CmdType == DTU_RESTART) {
-            LogUtils.info("dtu " + protocolLayerData.DTUString + " restart...", true);
+            LogUtils.info("dtu " + protocolLayerData.DTUString + " restart,please wait...", true);
             return new MediaData() {{
                 CommandData = new byte[]{(byte) 0x5F};
                 deviceTypeEnum = DeviceTypeEnum.DTU;
@@ -352,21 +346,37 @@ public class DtuNetworkConnection {
                 DTUString = protocolLayerData.DTUString;
             }};
         }
-
         if (protocolLayerData.CmdType == COLLECT_DTU_SIGNAL_STRENGTH) {
-            LogUtils.info("dtu " + protocolLayerData.DTUString + " collect signal strength ...", true);
+            LogUtils.info("dtu " + protocolLayerData.DTUString + " collect signal strength,please wait 10 seconds...", true);
             return new MediaData() {{
                 CommandData = new byte[]{(byte) 0x7A};
                 deviceTypeEnum = DeviceTypeEnum.DTU;
                 DTUString = protocolLayerData.DTUString;
             }};
         }
-
         if (protocolLayerData.CmdType == READ_DTU_SIGNAL_STRENGTH) {
-            LogUtils.info("dtu " + protocolLayerData.DTUString + " read signal strength ...", true);
+            LogUtils.info("dtu " + protocolLayerData.DTUString + " read signal strength...", true);
             return new MediaData() {{
                 CommandData = new byte[]{(byte) 0x7B};
                 deviceTypeEnum = DeviceTypeEnum.DTU;
+                DTUString = protocolLayerData.DTUString;
+            }};
+        }
+        if (protocolLayerData.CmdType == COMMUNICATION_MODEL) {
+            byte type = protocolLayerData.CommandData[0];
+            int model = type == 0x04 ? 38 : type == 0x02 ? 13 : 2;
+            LogUtils.info("dtu " + protocolLayerData.DTUString + " set communication model to " + type + "G,please wait...", true);
+            return new MediaData() {{
+                String cmd = "16," + model + ",255";
+                CommandData = getParamsData(cmd);
+                deviceTypeEnum = DeviceTypeEnum.DTU;
+                DTUString = protocolLayerData.DTUString;
+            }};
+        }
+        if (protocolLayerData.CmdType == HM_AFN0C25) {
+            return new MediaData() {{
+                CommandData = new byte[]{(byte) 0x25};
+                deviceTypeEnum = DeviceTypeEnum.DTU4G;
                 DTUString = protocolLayerData.DTUString;
             }};
         }
@@ -374,18 +384,41 @@ public class DtuNetworkConnection {
     }
 
     /**
+     * 修改参数数据
+     *
+     * @param cmd
+     * @return
+     */
+    private byte[] getParamsData(String cmd) {
+        if (StringsUtils.isEmpty(cmd)) return null;
+        byte[] b = cmd.getBytes();
+        byte[] bytes = new byte[b.length + 9];
+        bytes[0] = 0x5b;
+        bytes[1] = 0x00;
+        bytes[2] = 0x00;
+        bytes[3] = 0x00;
+        bytes[4] = 0x00;
+        bytes[5] = 0x00;
+        bytes[6] = 0x00;
+        bytes[bytes.length - 1] = 0x00;
+        bytes[bytes.length - 2] = 0x00;
+        System.arraycopy(b, 0, bytes, 7, b.length);
+        return bytes;
+    }
+
+    /**
      * 获取未下发的命令数量
      *
      * @return
      */
-    public int getQueueSize() {
+    private int getQueueSize() {
         return highQueue.size() + lowQueue.size();
     }
 
     /**
      * 清空发送队列
      */
-    public void clearQueue() {
+    private void clearQueue() {
         highQueue.clear();
         lowQueue.clear();
     }
@@ -414,7 +447,7 @@ public class DtuNetworkConnection {
     /**
      * 更新错误
      */
-    public void updateError() {
+    void updateError() {
         progress = 0;
         isUpdating = false;
         LogUtils.error(dtuAddress + " update error...", true);
@@ -434,7 +467,7 @@ public class DtuNetworkConnection {
     /**
      * 更新成功
      */
-    public void updateSuccess() {
+    void updateSuccess() {
         progress = 0;
         isUpdating = false;
         this.updateBuffList = null;
@@ -646,6 +679,105 @@ public class DtuNetworkConnection {
             ExceptionHandler.handle(e);
         }
         return null;
+    }
+
+    /**
+     * 读数据超时
+     */
+    public void readTimeout() {
+        nextSend();
+    }
+
+    /**
+     * 写数据超时
+     */
+    public void writeTimeout() {
+        nextSend();
+    }
+
+    /**
+     * 触发下一次发送
+     */
+    public synchronized void nextSend() {
+        if (context == null) return;
+        MediaData data;
+        Queue<MediaData> highQueue = getHighQueue();
+        Queue<MediaData> lowQueue = getLowQueue();
+        if (highQueue.size() > 0) {
+            data = highQueue.poll();
+            if (data != null) {
+                sendCommand(context, data);
+            }
+        } else if (lowQueue.size() > 0) {
+            data = lowQueue.poll();
+            if (data != null) {
+                sendCommand(context, data);
+            }
+        } else {
+            setBusy(false);
+        }
+    }
+
+    /**
+     * 发送或加入队列
+     * 需要同步，保证多线程安全
+     *
+     * @param data
+     * @param priority
+     */
+    public void sendOrIntoQueue(MediaData data, MsgPriority priority) {
+        if (context == null) return;
+        try {
+            //如果上一次发送时间大于1倍心跳并且队列数量不为0，清空队列避免发送重复命令
+            if (getQueueSize() > 0 && System.currentTimeMillis() - getLastSendTime() > Config.getHeartBeat()) {
+                clearQueue();
+            }
+            //如果不忙或者上一次发送时间已超时,设备还未回复则直接发送
+            if (!isBusy() || System.currentTimeMillis() - getLastSendTime() > timeoutTime) {
+                sendCommand(context, data);
+            } else {
+                if (priority == MsgPriority.HIGH) {
+                    Queue<MediaData> highQueue = getHighQueue();
+                    highQueue.add(data);
+                } else if (priority == MsgPriority.LOW) {
+                    Queue<MediaData> lowQueue = getLowQueue();
+                    lowQueue.add(data);
+                }
+                printCommand(data, "into queue");
+            }
+        } catch (Exception e) {
+            ExceptionHandler.handle(e);
+        }
+    }
+
+    /**
+     * 发送命令
+     *
+     * @param ctx
+     * @param data
+     */
+    private synchronized void sendCommand(ChannelHandlerContext ctx, MediaData data) {
+        isBusy = true;
+        ByteBuf byteBuf = context.alloc().buffer(data.CommandData.length);
+        byteBuf.writeBytes(data.CommandData);
+        ctx.writeAndFlush(byteBuf).addListener(future -> {
+            setLastSendTime(System.currentTimeMillis());
+            printCommand(data, "send");
+        });
+    }
+
+    /**
+     * 打印下发命令报文
+     *
+     * @param mediaData
+     */
+    private void printCommand(MediaData mediaData, String str) {
+        if (Config.isDebug) {
+            if (mediaData.deviceTypeEnum != null) {
+                String resultStr = HexUtils.byteArrayToHexStr(mediaData.CommandData);
+                LogUtils.info(str + "-->dtuAddress=" + mediaData.DTUString + ",deviceType=" + mediaData.deviceTypeEnum.name() + ",cmdType=" + mediaData.cmdTypeEnum.name() + ",data=" + resultStr);
+            }
+        }
     }
 }
 

@@ -1,48 +1,28 @@
 package main.com.handu.scada.protocol.protocol.DLT645.LP2007;
 
+import main.com.handu.scada.exception.ExceptionHandler;
 import main.com.handu.scada.protocol.base.BaseDataAnalyze;
 import main.com.handu.scada.protocol.base.BaseIdentifyCodeDesc;
 import main.com.handu.scada.protocol.enums.LPState;
 import main.com.handu.scada.protocol.enums.RemoteType;
-import main.com.handu.scada.protocol.enums.TripReasonEnum;
+import main.com.handu.scada.protocol.protocol.DLT645.TripEventRecord;
 import main.com.handu.scada.protocol.protocol.Data.DataAttr;
 import main.com.handu.scada.utils.DateUtils;
 import main.com.handu.scada.utils.HexUtils;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class DataAnalyze extends BaseDataAnalyze {
 
-
     @Override
     public List<DataAttr> getData(BaseIdentifyCodeDesc item) {
-        if (item.data == null) return null;
         try {
-
-            String[] itemNames;
-            String[] itemCnNames;
-            String itemName;
-            String itemCnName;
-            Object objVal;
-            DataAttr dataAttr;
-
-            int BCD1;
-            int BCD2;
-            int BCD3;
-            int BCD4;
-            int BCD5;
-            int BCD6;
-
-            List<DataAttr> list = new ArrayList<>();
-
-            if (item.data.length > 0) {
-                item.data = (DICodeLP2007.decrease33(item.data));
-            }
-
-            switch (item.cmdtype) {
+            if (item.data == null) return null;
+            if (item.data.length == 0) return null;
+            this.cmdType = item.cmdType;
+            item.data = (DICodeLP2007.decrease33(item.data));
+            dataAttrs = new ArrayList<>();
+            switch (item.cmdType) {
                 //region 电流
                 case Current: {
                     itemNames = new String[]{"Ia", "Ib", "Ic", "UTPC"};
@@ -61,44 +41,43 @@ public class DataAnalyze extends BaseDataAnalyze {
                         for (int n = 0; n < 3; n++) {
                             itemName = itemNames[n];
                             itemCnName = itemCnNames[n];
-                            objVal = BcdArr[n][2] * 1000 + BcdArr[n][1] * 10 + BcdArr[n][0] / 10;
+                            value = BcdArr[n][2] * 1000 + BcdArr[n][1] * 10 + BcdArr[n][0] / 10;
                             dataAttr = new DataAttr();
                             dataAttr.setName(itemName);
-                            dataAttr.setValue(objVal);
+                            dataAttr.setValue(value);
                             dataAttr.setUnit(item.unit);
-                            dataAttr.setDtime(item.dtime);
+                            dataAttr.setDtime(item.dTime);
                             dataAttr.setCnname(itemCnName);
-                            dataAttr.setGroup(item.cmdtype.name());
+                            dataAttr.setGroup(item.cmdType.name());
                             dataAttr.setDateType(RemoteType.YC);
-                            list.add(dataAttr);
+                            dataAttrs.add(dataAttr);
                         }
 
                         //计算电流 - 三相不平衡值
-                        if (list.size() == 3) {
-                            double tmpval = 0.0;
-                            double maxI = getMaxFromList(list);
-                            double minI = getMinFromList(list);
-
+                        if (dataAttrs.size() == 3) {
+                            double tmpVal;
+                            double maxI = getMaxFromList(dataAttrs);
+                            double minI = getMinFromList(dataAttrs);
                             if (maxI == 0.0) {
-                                tmpval = 0;
+                                tmpVal = 0;
                             } else if (minI == 0.0) {
-                                tmpval = 1;
+                                tmpVal = 1;
                             } else {
-                                tmpval = (maxI - minI) / maxI;
-                                tmpval = Math.round(tmpval * 10000) / 10000.0;
+                                tmpVal = (maxI - minI) / maxI;
+                                tmpVal = Math.round(tmpVal * 10000) / 10000.0;
                             }
                             dataAttr = new DataAttr();
                             dataAttr.setName(itemNames[3]);
-                            dataAttr.setValue(tmpval);
-                            dataAttr.setUnit("");
-                            dataAttr.setDtime(item.dtime);
+                            dataAttr.setValue(tmpVal);
+                            dataAttr.setUnit("%");
+                            dataAttr.setDtime(item.dTime);
                             dataAttr.setCnname(itemCnNames[3]);
-                            dataAttr.setGroup(item.cmdtype.name());
+                            dataAttr.setGroup("UTPC");
                             dataAttr.setDateType(RemoteType.YC);
-                            list.add(dataAttr);
+                            dataAttrs.add(dataAttr);
                         }
                     }
-                    return list;
+                    return dataAttrs;
                 }// endregion
                 case Voltage: //region 电压
                 {
@@ -116,19 +95,19 @@ public class DataAnalyze extends BaseDataAnalyze {
                         for (int n = 0; n < 3; n++) {
                             itemName = itemNames[n];
                             itemCnName = itemCnNames[n];
-                            objVal = BcdArr[n][1] * 10 + BcdArr[n][0] / 10;
+                            value = BcdArr[n][1] * 10 + BcdArr[n][0] / 10;
                             dataAttr = new DataAttr();
                             dataAttr.setName(itemName);
-                            dataAttr.setValue(objVal);
+                            dataAttr.setValue(value);
                             dataAttr.setUnit(item.unit);
-                            dataAttr.setDtime(item.dtime);
+                            dataAttr.setDtime(item.dTime);
                             dataAttr.setCnname(itemCnName);
-                            dataAttr.setGroup(item.cmdtype.name());
+                            dataAttr.setGroup(item.cmdType.name());
                             dataAttr.setDateType(RemoteType.YC);
-                            list.add(dataAttr);
+                            dataAttrs.add(dataAttr);
                         }
                     }
-                    return list;
+                    return dataAttrs;
                 }
                 case ResidualAndMaxPhase://region 最大相 剩余电流
                 {
@@ -139,42 +118,42 @@ public class DataAnalyze extends BaseDataAnalyze {
                         itemCnName = itemCnNames[0];
                         byte Phase = item.data[0];
                         if ((Phase & 0x01) == 0x01)
-                            objVal = "A";
+                            value = "A";
                         else if ((Phase & 0x02) == 0x02)
-                            objVal = "B";
+                            value = "B";
                         else if ((Phase & 0x04) == 0x04)
-                            objVal = "C";
+                            value = "C";
                         else
-                            objVal = "";
-                        objVal += "相";
+                            value = "";
+                        value += "相";
 
                         dataAttr = new DataAttr();
                         dataAttr.setName(itemName);
-                        dataAttr.setValue(objVal);
+                        dataAttr.setValue(value);
                         dataAttr.setUnit(item.unit == null ? "" : item.unit.split(",")[0]);
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setCnname(itemCnName);
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setDateType(RemoteType.YC);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
 
                         BCD1 = HexUtils.bcdByteToInt(item.data[1]);
                         BCD2 = HexUtils.bcdByteToInt(item.data[2]);
                         itemName = itemNames[1];
                         itemCnName = itemCnNames[1];
-                        objVal = BCD2 * 100 + BCD1;
+                        value = BCD2 * 100 + BCD1;
 
                         DataAttr dataAttr1 = new DataAttr();
                         dataAttr1.setName(itemName);
-                        dataAttr1.setValue(objVal);
+                        dataAttr1.setValue(value);
                         dataAttr1.setUnit(item.unit == null ? "" : item.unit.split(",")[1]);
-                        dataAttr1.setDtime(item.dtime);
+                        dataAttr1.setDtime(item.dTime);
                         dataAttr1.setCnname(itemCnName);
-                        dataAttr1.setGroup(item.cmdtype.name());
+                        dataAttr1.setGroup(item.cmdType.name());
                         dataAttr1.setDateType(RemoteType.YC);
-                        list.add(dataAttr1);
+                        dataAttrs.add(dataAttr1);
                     }
-                    return list;
+                    return dataAttrs;
                 }
                 case Residual:
                     itemNames = new String[]{"Io"};
@@ -184,19 +163,19 @@ public class DataAnalyze extends BaseDataAnalyze {
                         BCD2 = HexUtils.bcdByteToInt(item.data[1]);
                         itemName = itemNames[0];
                         itemCnName = itemCnNames[0];
-                        objVal = BCD2 * 100 + BCD1;
+                        value = BCD2 * 100 + BCD1;
 
                         DataAttr dataAttr1 = new DataAttr();
                         dataAttr1.setName(itemName);
-                        dataAttr1.setValue(objVal);
+                        dataAttr1.setValue(value);
                         dataAttr1.setUnit(item.unit);
-                        dataAttr1.setDtime(item.dtime);
+                        dataAttr1.setDtime(item.dTime);
                         dataAttr1.setCnname(itemCnName);
-                        dataAttr1.setGroup(item.cmdtype.name());
+                        dataAttr1.setGroup(item.cmdType.name());
                         dataAttr1.setDateType(RemoteType.YC);
-                        list.add(dataAttr1);
+                        dataAttrs.add(dataAttr1);
                     }
-                    return list;
+                    return dataAttrs;
                 //当前额度剩余电流动作值 极限不驱动时间
                 case ResidualActionValue:
                     itemNames = new String[]{"CurrentLimitValue", "LimitNonDriveTime"};
@@ -213,24 +192,24 @@ public class DataAnalyze extends BaseDataAnalyze {
                         for (int n = 0; n < 2; n++) {
                             itemName = itemNames[n];
                             itemCnName = itemCnNames[n];
-                            objVal = BcdArr[n][1] * 100 + BcdArr[n][0];
+                            value = BcdArr[n][1] * 100 + BcdArr[n][0];
                             dataAttr = new DataAttr();
                             dataAttr.setName(itemName);
-                            dataAttr.setValue(objVal);
+                            dataAttr.setValue(value);
                             dataAttr.setUnit(item.unit.split(",")[n]);
                             dataAttr.setCnname(itemCnName);
-                            dataAttr.setGroup(item.cmdtype.name());
-                            dataAttr.setDtime(item.dtime);
+                            dataAttr.setGroup(item.cmdType.name());
+                            dataAttr.setDtime(item.dTime);
                             dataAttr.setInsertHistory(false);
                             dataAttr.setDateType(RemoteType.YC);
-                            list.add(dataAttr);
+                            dataAttrs.add(dataAttr);
                         }
                     }
-                    return list;
+                    return dataAttrs;
 
                 case RunState://region 漏保状态
                 {
-                    itemName = item.cmdtype.name();
+                    itemName = item.cmdType.name();
                     if (item.length == 1) {
                         byte stateWord = item.data[0];
                         if ((stateWord & 0x60) == 0x60 || (stateWord & 0x60) == 0x20) {
@@ -238,32 +217,32 @@ public class DataAnalyze extends BaseDataAnalyze {
                             dataAttr.setName(itemName);
                             dataAttr.setValue(LPState.OFF.getValue());
                             dataAttr.setUnit(item.unit);
-                            dataAttr.setDtime(item.dtime);
+                            dataAttr.setDtime(item.dTime);
                             dataAttr.setCnname("分合状态");
-                            dataAttr.setGroup(item.cmdtype.name());
+                            dataAttr.setGroup(item.cmdType.name());
                             dataAttr.setDateType(RemoteType.YX);
-                            list.add(dataAttr);
+                            dataAttrs.add(dataAttr);
                         } else {
                             dataAttr = new DataAttr();
                             dataAttr.setName(itemName);
                             dataAttr.setValue(LPState.ON.getValue());
                             dataAttr.setUnit(item.unit);
-                            dataAttr.setDtime(item.dtime);
+                            dataAttr.setDtime(item.dTime);
                             dataAttr.setCnname("分合状态");
-                            dataAttr.setGroup(item.cmdtype.name());
+                            dataAttr.setGroup(item.cmdType.name());
                             dataAttr.setDateType(RemoteType.YX);
-                            list.add(dataAttr);
+                            dataAttrs.add(dataAttr);
                             tripEventRecord = new TripEventRecord();
                             tripEventRecord.setState(LPState.ON);
-                            tripEventRecord.setTripReason(TripReasonEnum.Normal);
+                            tripEventRecord.tripReason2007 = TripReason2007Enum.Normal;
                             tripEventRecord.setAddress(getAddress());
                         }
                     }
-                    return list;
+                    return dataAttrs;
                 }
                 case SecondLpUploadDateTime:
                 case SecondLpCollectDateTime: {
-                    itemName = item.cmdtype.name();
+                    itemName = item.cmdType.name();
                     BCD1 = HexUtils.bcdByteToInt(item.data[0]);//秒
                     BCD2 = HexUtils.bcdByteToInt(item.data[1]);//分
                     BCD3 = HexUtils.bcdByteToInt(item.data[2]);//时
@@ -277,16 +256,16 @@ public class DataAnalyze extends BaseDataAnalyze {
                     dataAttr.setName(itemName);
                     dataAttr.setValue(DateUtils.dateToStr(time));
                     dataAttr.setUnit(item.unit);
-                    dataAttr.setDtime(item.dtime);
-                    dataAttr.setCnname(item.cmdtype.getName());
-                    dataAttr.setGroup(item.cmdtype.name());
+                    dataAttr.setDtime(item.dTime);
+                    dataAttr.setCnname(item.cmdType.getName());
+                    dataAttr.setGroup(item.cmdType.name());
                     dataAttr.setDateType(RemoteType.YC);
-                    list.add(dataAttr);
-                    return list;
+                    dataAttrs.add(dataAttr);
+                    return dataAttrs;
                 }
                 case RunDate://region 日期
                 {
-                    itemName = item.cmdtype.name();
+                    itemName = item.cmdType.name();
                     //BCD1 = HexUtils.bcdByteToInt(item.data[0]);//周
                     BCD2 = HexUtils.bcdByteToInt(item.data[1]);//日
                     BCD3 = HexUtils.bcdByteToInt(item.data[2]);//月
@@ -298,16 +277,16 @@ public class DataAnalyze extends BaseDataAnalyze {
                     dataAttr.setName(itemName);
                     dataAttr.setValue(DateUtils.dateToStr(date));
                     dataAttr.setUnit(item.unit);
-                    dataAttr.setDtime(item.dtime);
+                    dataAttr.setDtime(item.dTime);
                     dataAttr.setCnname("日期");
-                    dataAttr.setGroup(item.cmdtype.name());
+                    dataAttr.setGroup(item.cmdType.name());
                     dataAttr.setDateType(RemoteType.YC);
-                    list.add(dataAttr);
-                    return list;
+                    dataAttrs.add(dataAttr);
+                    return dataAttrs;
                 }
                 case RunTime://region 时间
                 {
-                    itemName = item.cmdtype.name();
+                    itemName = item.cmdType.name();
                     BCD1 = HexUtils.bcdByteToInt(item.data[0]);//秒
                     BCD2 = HexUtils.bcdByteToInt(item.data[1]);//分
                     BCD3 = HexUtils.bcdByteToInt(item.data[2]);//时
@@ -318,12 +297,12 @@ public class DataAnalyze extends BaseDataAnalyze {
                     dataAttr.setName(itemName);
                     dataAttr.setValue(DateUtils.dateToStr(time));
                     dataAttr.setUnit(item.unit);
-                    dataAttr.setDtime(item.dtime);
+                    dataAttr.setDtime(item.dTime);
                     dataAttr.setCnname("时间");
-                    dataAttr.setGroup(item.cmdtype.name());
+                    dataAttr.setGroup(item.cmdType.name());
                     dataAttr.setDateType(RemoteType.YC);
-                    list.add(dataAttr);
-                    return list;
+                    dataAttrs.add(dataAttr);
+                    return dataAttrs;
                 }
                 case ProtectorTripEventRecord://region 保护器跳闸事件记录
                 {
@@ -348,22 +327,22 @@ public class DataAnalyze extends BaseDataAnalyze {
                     return null;
                 case ReadDeviceModel://region 设备型号
                 {
-                    itemNames = new String[]{item.cmdtype.name()};
+                    itemNames = new String[]{item.cmdType.name()};
                     if (item.length == 10) {
                         itemName = itemNames[0];
-                        objVal = HexUtils.HexArrayToASCII(item.data);
+                        value = HexUtils.HexArrayToASCII(item.data);
                         dataAttr = new DataAttr();
                         dataAttr.setName(itemName);
-                        dataAttr.setValue(objVal);
+                        dataAttr.setValue(value);
                         dataAttr.setUnit(item.unit);
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setCnname("设备型号");
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setDateType(RemoteType.YC);
                         dataAttr.setInsertHistory(false);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
                     }
-                    return list;
+                    return dataAttrs;
                 }
                 //通讯地址
                 case ReadPostalAddress:
@@ -374,10 +353,10 @@ public class DataAnalyze extends BaseDataAnalyze {
                     dataAttr.setDtime(DateUtils.getNowSqlDateTime());
                     dataAttr.setCnname("读通讯地址");
                     dataAttr.setInsertHistory(false);
-                    dataAttr.setGroup(item.cmdtype.name());
-                    dataAttr.setName(item.cmdtype.name());
-                    list.add(dataAttr);
-                    return list;
+                    dataAttr.setGroup(item.cmdType.name());
+                    dataAttr.setName(item.cmdType.name());
+                    dataAttrs.add(dataAttr);
+                    return dataAttrs;
                 //广播校时
                 case BroadcastTime:
                     return null;
@@ -386,14 +365,14 @@ public class DataAnalyze extends BaseDataAnalyze {
                 case SwitchTrip:
                     dataAttr = new DataAttr();
                     dataAttr.setDateType(RemoteType.YCC);
-                    dataAttr.setValue(item.cmdtype.getName() + "操作成功");
+                    dataAttr.setValue(item.cmdType.getName() + "操作成功");
                     dataAttr.setUnit("");
                     dataAttr.setDtime(DateUtils.getNowSqlDateTime());
-                    dataAttr.setCnname(item.cmdtype.getName());
-                    dataAttr.setGroup(item.cmdtype.name());
-                    dataAttr.setName(item.cmdtype.name());
-                    list.add(dataAttr);
-                    return list;
+                    dataAttr.setCnname(item.cmdType.getName());
+                    dataAttr.setGroup(item.cmdType.name());
+                    dataAttr.setName(item.cmdType.name());
+                    dataAttrs.add(dataAttr);
+                    return dataAttrs;
                 //通信波特率
                 case CommunicationBaudRateCharacter:
                     dataAttr = new DataAttr();
@@ -403,10 +382,10 @@ public class DataAnalyze extends BaseDataAnalyze {
                     dataAttr.setInsertHistory(false);
                     dataAttr.setDtime(DateUtils.getNowSqlDateTime());
                     dataAttr.setCnname("通信波特率征字(0-9)");
-                    dataAttr.setGroup(item.cmdtype.name());
-                    dataAttr.setName(item.cmdtype.name());
-                    list.add(dataAttr);
-                    return list;
+                    dataAttr.setGroup(item.cmdType.name());
+                    dataAttr.setName(item.cmdType.name());
+                    dataAttrs.add(dataAttr);
+                    return dataAttrs;
 
                 //额定电流整定值", "电流超限报警整定值
                 case CurrentSettingParameterBlock:
@@ -417,31 +396,31 @@ public class DataAnalyze extends BaseDataAnalyze {
                     BCD1 = HexUtils.bcdByteToInt(item.data[0]);
                     BCD2 = HexUtils.bcdByteToInt(item.data[1]);
                     BCD3 = HexUtils.bcdByteToInt(item.data[2]);
-                    objVal = BCD3 * 1000 + BCD2 * 10 + BCD1 / 10;
+                    value = BCD3 * 1000 + BCD2 * 10 + BCD1 / 10;
 
                     dataAttr = new DataAttr();
                     dataAttr.setDateType(RemoteType.YC);
-                    dataAttr.setValue(objVal);
+                    dataAttr.setValue(value);
                     dataAttr.setUnit(item.unit.split(",")[0]);
-                    dataAttr.setDtime(item.dtime);
+                    dataAttr.setDtime(item.dTime);
                     dataAttr.setInsertHistory(false);
                     dataAttr.setCnname(itemCnNames[0]);
-                    dataAttr.setGroup(item.cmdtype.name());
+                    dataAttr.setGroup(item.cmdType.name());
                     dataAttr.setName(itemNames[0]);
-                    list.add(dataAttr);
+                    dataAttrs.add(dataAttr);
 
                     dataAttr = new DataAttr();
                     dataAttr.setDateType(RemoteType.YC);
                     dataAttr.setUnit(item.unit.split(",")[1]);
                     dataAttr.setName(itemNames[1]);
                     dataAttr.setCnname(itemCnNames[1]);
-                    dataAttr.setDtime(item.dtime);
-                    dataAttr.setGroup(item.cmdtype.name());
+                    dataAttr.setDtime(item.dTime);
+                    dataAttr.setGroup(item.cmdType.name());
                     dataAttr.setInsertHistory(false);
                     dataAttr.setValue(HexUtils.bcdByteToInt(item.data[3]));
-                    list.add(dataAttr);
+                    dataAttrs.add(dataAttr);
 
-                    return list;
+                    return dataAttrs;
 
                 //"剩余电流超限报警整定值", "剩余电流记录变化差值整定值", "剩余电流记录间隔时间整定值"
                 case ResidualCurrentSettingParameterBlock:
@@ -449,50 +428,50 @@ public class DataAnalyze extends BaseDataAnalyze {
                     itemNames = new String[]{"Residualcurrentalarmsettingvalue", "Residualcurrentrecord", "Residualcurrentrecordingintervalsettingvalue"};
                     BCD1 = HexUtils.bcdByteToInt(item.data[0]);
                     BCD2 = HexUtils.bcdByteToInt(item.data[1]);
-                    objVal = BCD2 * 100 + BCD1;
+                    value = BCD2 * 100 + BCD1;
 
-                    Object finalObjVal = objVal;
-                    list.add(new DataAttr() {{
+                    Object finalObjVal = value;
+                    dataAttrs.add(new DataAttr() {{
                         setDateType(RemoteType.YC);
                         setUnit(item.unit.split(",")[0]);
                         setName(itemNames[0]);
                         setCnname(itemCnNames[0]);
-                        setDtime(item.dtime);
-                        setGroup(item.cmdtype.name());
+                        setDtime(item.dTime);
+                        setGroup(item.cmdType.name());
                         setValue(finalObjVal);
                         setInsertHistory(false);
                         setRecordchange(true);
                     }});
 
-                    objVal = HexUtils.bcdByteToInt(item.data[2]);
-                    Object finalObjVal1 = objVal;
-                    list.add(new DataAttr() {{
+                    value = HexUtils.bcdByteToInt(item.data[2]);
+                    Object finalObjVal1 = value;
+                    dataAttrs.add(new DataAttr() {{
                         setDateType(RemoteType.YC);
                         setUnit(item.unit.split(",")[1]);
                         setName(itemNames[1]);
                         setCnname(itemCnNames[1]);
-                        setDtime(item.dtime);
-                        setGroup(item.cmdtype.name());
+                        setDtime(item.dTime);
+                        setGroup(item.cmdType.name());
                         setValue(finalObjVal1);
                         setInsertHistory(false);
                         setRecordchange(true);
                     }});
 
-                    objVal = HexUtils.bcdByteToInt(item.data[3]);
-                    Object finalObjVal2 = objVal;
-                    list.add(new DataAttr() {{
+                    value = HexUtils.bcdByteToInt(item.data[3]);
+                    Object finalObjVal2 = value;
+                    dataAttrs.add(new DataAttr() {{
                         setDateType(RemoteType.YC);
                         setUnit(item.unit.split(",")[2]);
                         setName(itemNames[2]);
                         setCnname(itemCnNames[2]);
-                        setDtime(item.dtime);
-                        setGroup(item.cmdtype.name());
+                        setDtime(item.dTime);
+                        setGroup(item.cmdType.name());
                         setValue(finalObjVal2);
                         setInsertHistory(false);
                         setRecordchange(true);
                     }});
 
-                    return list;
+                    return dataAttrs;
 
                 // "过电压整定值", "欠电压整定值", "断相电压整定值"
                 case VoltageSettingParameterBlock:
@@ -512,78 +491,78 @@ public class DataAnalyze extends BaseDataAnalyze {
                         for (int n = 0; n < 3; n++) {
                             itemName = itemNames[n];
                             itemCnName = itemCnNames[n];
-                            objVal = BcdArr[n][1] * 10 + BcdArr[n][0] / 10;
+                            value = BcdArr[n][1] * 10 + BcdArr[n][0] / 10;
                             dataAttr = new DataAttr();
                             dataAttr.setDateType(RemoteType.YC);
-                            dataAttr.setValue(objVal);
+                            dataAttr.setValue(value);
                             dataAttr.setInsertHistory(false);
                             dataAttr.setUnit(item.unit);
-                            dataAttr.setDtime(item.dtime);
+                            dataAttr.setDtime(item.dTime);
                             dataAttr.setCnname(itemCnName);
-                            dataAttr.setGroup(item.cmdtype.name());
+                            dataAttr.setGroup(item.cmdType.name());
                             dataAttr.setName(itemName);
                             dataAttr.setRecordchange(true);
-                            list.add(dataAttr);
+                            dataAttrs.add(dataAttr);
                         }
                     }
-                    return list;
+                    return dataAttrs;
 
                 //额定电流
                 case RatedCurrent:
-                    itemNames = new String[]{item.cmdtype.name()};
+                    itemNames = new String[]{item.cmdType.name()};
                     if (item.length == 6) {
                         itemName = itemNames[0];
-                        objVal = HexUtils.HexArrayToASCII(item.data);
+                        value = HexUtils.HexArrayToASCII(item.data);
                         dataAttr = new DataAttr();
-                        dataAttr.setValue(objVal);
+                        dataAttr.setValue(value);
                         dataAttr.setUnit(item.unit);
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setDateType(RemoteType.YC);
                         dataAttr.setCnname("额定电流");
                         dataAttr.setInsertHistory(false);
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setName(itemName);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
                     }
-                    return list;
+                    return dataAttrs;
 
                 //额定电压
                 case RatedVoltage:
-                    itemNames = new String[]{item.cmdtype.name()};
+                    itemNames = new String[]{item.cmdType.name()};
                     if (item.length == 6) {
-                        objVal = HexUtils.HexArrayToASCII(item.data);
+                        value = HexUtils.HexArrayToASCII(item.data);
                         itemName = itemNames[0];
                         dataAttr = new DataAttr();
-                        dataAttr.setValue(objVal);
+                        dataAttr.setValue(value);
                         dataAttr.setUnit(item.unit);
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setDateType(RemoteType.YC);
                         dataAttr.setCnname("额定电压");
                         dataAttr.setInsertHistory(false);
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setName(itemName);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
                     }
-                    return list;
+                    return dataAttrs;
 
                 //自动重合闸时间范围
                 case AutoReclosingTimeRange:
-                    itemNames = new String[]{item.cmdtype.name()};
+                    itemNames = new String[]{item.cmdType.name()};
                     if (item.length == 24) {
-                        objVal = HexUtils.HexArrayToASCII(item.data);
+                        value = HexUtils.HexArrayToASCII(item.data);
                         itemName = itemNames[0];
                         dataAttr = new DataAttr();
-                        dataAttr.setValue(objVal);
+                        dataAttr.setValue(value);
                         dataAttr.setUnit(item.unit);
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setInsertHistory(false);
                         dataAttr.setDateType(RemoteType.YC);
                         dataAttr.setCnname("自动重合闸时间范围");
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setName(itemName);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
                     }
-                    return list;
+                    return dataAttrs;
                 //设备号
                 case DeviceNumber:
                     dataAttr = new DataAttr();
@@ -593,29 +572,29 @@ public class DataAnalyze extends BaseDataAnalyze {
                     dataAttr.setDateType(RemoteType.YC);
                     dataAttr.setCnname("设备号");
                     dataAttr.setInsertHistory(false);
-                    dataAttr.setGroup(item.cmdtype.name());
-                    dataAttr.setName(item.cmdtype.name());
-                    list.add(dataAttr);
-                    return list;
+                    dataAttr.setGroup(item.cmdType.name());
+                    dataAttr.setName(item.cmdType.name());
+                    dataAttrs.add(dataAttr);
+                    return dataAttrs;
 
                 //剩余电流动作特性（ A型或 AC 型）
                 case AAC:
-                    itemNames = new String[]{item.cmdtype.name()};
+                    itemNames = new String[]{item.cmdType.name()};
                     if (item.length == 24) {
                         itemName = itemNames[0];
-                        objVal = HexUtils.HexArrayToASCII(item.data);
+                        value = HexUtils.HexArrayToASCII(item.data);
                         dataAttr = new DataAttr();
-                        dataAttr.setValue(objVal);
+                        dataAttr.setValue(value);
                         dataAttr.setInsertHistory(false);
                         dataAttr.setUnit(item.unit);
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setDateType(RemoteType.YC);
-                        dataAttr.setCnname(item.cmdtype.getName());
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setCnname(item.cmdType.getName());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setName(itemName);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
                     }
-                    return list;
+                    return dataAttrs;
 
                 //总跳闸次数
                 case TripTimes:
@@ -643,79 +622,79 @@ public class DataAnalyze extends BaseDataAnalyze {
                         for (int n = 0; n < 8; n++) {
                             itemName = itemNames[n];
                             itemCnName = itemCnNames[n];
-                            objVal = BcdArr[n][1] * 100 + BcdArr[n][0];
+                            value = BcdArr[n][1] * 100 + BcdArr[n][0];
                             dataAttr = new DataAttr();
                             dataAttr.setName(itemName);
-                            dataAttr.setValue(objVal);
+                            dataAttr.setValue(value);
                             dataAttr.setUnit(item.unit);
                             dataAttr.setInsertHistory(false);
-                            dataAttr.setDtime(item.dtime);
+                            dataAttr.setDtime(item.dTime);
                             dataAttr.setCnname(itemCnName);
-                            dataAttr.setGroup(item.cmdtype.name());
+                            dataAttr.setGroup(item.cmdType.name());
                             dataAttr.setDateType(RemoteType.YC);
-                            list.add(dataAttr);
+                            dataAttrs.add(dataAttr);
                         }
                     }
-                    return list;
+                    return dataAttrs;
 
                 //生产日期
                 case ProduceDate:
-                    itemNames = new String[]{item.cmdtype.name()};
+                    itemNames = new String[]{item.cmdType.name()};
                     if (item.length == 24) {
                         itemName = itemNames[0];
-                        objVal = HexUtils.HexArrayToASCII(item.data);
+                        value = HexUtils.HexArrayToASCII(item.data);
                         dataAttr = new DataAttr();
                         dataAttr.setName(itemName);
                         dataAttr.setInsertHistory(false);
-                        dataAttr.setValue(objVal);
+                        dataAttr.setValue(value);
                         dataAttr.setUnit(item.unit);
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setCnname("生产日期");
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setDateType(RemoteType.YC);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
                     }
-                    return list;
+                    return dataAttrs;
 
                 //最大（ 壳架 ）电流 (Inm)
                 case MaxShellCurrent:
-                    itemNames = new String[]{item.cmdtype.name()};
+                    itemNames = new String[]{item.cmdType.name()};
                     if (item.length == 6) {
                         itemName = itemNames[0];
-                        objVal = HexUtils.HexArrayToASCII(item.data);
+                        value = HexUtils.HexArrayToASCII(item.data);
                         dataAttr = new DataAttr();
                         dataAttr.setName(itemName);
-                        dataAttr.setValue(objVal);
+                        dataAttr.setValue(value);
                         dataAttr.setInsertHistory(false);
                         dataAttr.setUnit(item.unit);
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setCnname("最大（ 壳架 ）电流 (Inm)");
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setDateType(RemoteType.YC);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
                     }
-                    return list;
+                    return dataAttrs;
 
                 //退出剩余电流保护次数
                 case ExitResidualModule:
                     BCD1 = HexUtils.bcdByteToInt(item.data[0]);
                     BCD2 = HexUtils.bcdByteToInt(item.data[1]);
 
-                    itemName = item.cmdtype.name();
+                    itemName = item.cmdType.name();
                     itemCnName = "退出剩余电流保护次数";
 
-                    objVal = BCD2 * 100 + BCD1;
+                    value = BCD2 * 100 + BCD1;
                     dataAttr = new DataAttr();
                     dataAttr.setName(itemName);
-                    dataAttr.setValue(objVal);
+                    dataAttr.setValue(value);
                     dataAttr.setUnit(item.unit);
                     dataAttr.setInsertHistory(false);
-                    dataAttr.setDtime(item.dtime);
+                    dataAttr.setDtime(item.dTime);
                     dataAttr.setCnname(itemCnName);
-                    dataAttr.setGroup(item.cmdtype.name());
+                    dataAttr.setGroup(item.cmdType.name());
                     dataAttr.setDateType(RemoteType.YC);
-                    list.add(dataAttr);
-                    return list;
+                    dataAttrs.add(dataAttr);
+                    return dataAttrs;
 
                 //保护器运行时间总累计
                 case RunTotalTime:
@@ -724,81 +703,81 @@ public class DataAnalyze extends BaseDataAnalyze {
                     BCD3 = HexUtils.bcdByteToInt(item.data[2]);
                     BCD4 = HexUtils.bcdByteToInt(item.data[3]);
 
-                    itemName = item.cmdtype.name();
+                    itemName = item.cmdType.name();
                     itemCnName = "保护器运行时间总累计";
 
-                    objVal = BCD4 * 10000 + BCD3 * 1000 + BCD2 * 100 + BCD1;
+                    value = BCD4 * 10000 + BCD3 * 1000 + BCD2 * 100 + BCD1;
                     dataAttr = new DataAttr();
                     dataAttr.setName(itemName);
-                    dataAttr.setValue(objVal);
+                    dataAttr.setValue(value);
                     dataAttr.setUnit(item.unit);
                     dataAttr.setInsertHistory(false);
-                    dataAttr.setDtime(item.dtime);
+                    dataAttr.setDtime(item.dTime);
                     dataAttr.setCnname(itemCnName);
-                    dataAttr.setGroup(item.cmdtype.name());
+                    dataAttr.setGroup(item.cmdType.name());
                     dataAttr.setDateType(RemoteType.YC);
-                    list.add(dataAttr);
+                    dataAttrs.add(dataAttr);
 
-                    return list;
+                    return dataAttrs;
 
                 //厂家硬件版本号
                 case HardWareVersionNumber:
-                    itemNames = new String[]{item.cmdtype.name()};
+                    itemNames = new String[]{item.cmdType.name()};
                     if (item.length == 32) {
                         itemName = itemNames[0];
                         itemCnName = "厂家硬件版本号";
-                        objVal = HexUtils.HexArrayToASCII(item.data);
+                        value = HexUtils.HexArrayToASCII(item.data);
                         dataAttr = new DataAttr();
                         dataAttr.setName(itemName);
-                        dataAttr.setValue(objVal);
+                        dataAttr.setValue(value);
                         dataAttr.setUnit(item.unit);
                         dataAttr.setInsertHistory(false);
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setCnname(itemCnName);
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setDateType(RemoteType.YC);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
                     }
-                    return list;
+                    return dataAttrs;
                 //厂家固件版本号
                 case FirmwareVersionNumber:
-                    itemNames = new String[]{item.cmdtype.name()};
+                    itemNames = new String[]{item.cmdType.name()};
                     if (item.length == 32) {
                         itemName = itemNames[0];
                         itemCnName = "厂家固件版本号";
-                        objVal = HexUtils.HexArrayToASCII(item.data);
+                        value = HexUtils.HexArrayToASCII(item.data);
                         dataAttr = new DataAttr();
                         dataAttr.setName(itemName);
                         dataAttr.setInsertHistory(false);
-                        dataAttr.setValue(objVal);
+                        dataAttr.setValue(value);
                         dataAttr.setUnit(item.unit);
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setCnname(itemCnName);
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setDateType(RemoteType.YC);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
                     }
-                    return list;
+                    return dataAttrs;
 
                 //协议版本号
                 case ProtocolVerNumber:
-                    itemNames = new String[]{item.cmdtype.name()};
+                    itemNames = new String[]{item.cmdType.name()};
                     if (item.length == 16) {
                         itemName = itemNames[0];
                         itemCnName = "协议版本号";
-                        objVal = HexUtils.HexArrayToASCII(item.data);
+                        value = HexUtils.HexArrayToASCII(item.data);
                         dataAttr = new DataAttr();
                         dataAttr.setName(itemName);
                         dataAttr.setInsertHistory(false);
-                        dataAttr.setValue(objVal);
+                        dataAttr.setValue(value);
                         dataAttr.setUnit(item.unit);
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setCnname(itemCnName);
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setDateType(RemoteType.YC);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
                     }
-                    return list;
+                    return dataAttrs;
                 //剩余电流最大相,最大值,最大值及发生时刻
                 case MaxRC:
                     //剩余电流最小相,最小值,最小值及发生时刻
@@ -807,7 +786,7 @@ public class DataAnalyze extends BaseDataAnalyze {
                             "MaxPhase", "Io", "HappenTime"
                     };
                     itemCnNames = new String[]{
-                            item.cmdtype.getName(), "剩余电流", "出现时刻"
+                            item.cmdType.getName(), "剩余电流", "出现时刻"
                     };
                     if (item.length == 9) {
 
@@ -815,41 +794,41 @@ public class DataAnalyze extends BaseDataAnalyze {
                         itemCnName = itemCnNames[0];
                         byte Phase = item.data[0];
                         if ((Phase & 0x01) == 0x01)
-                            objVal = "A";
+                            value = "A";
                         else if ((Phase & 0x02) == 0x02)
-                            objVal = "B";
+                            value = "B";
                         else if ((Phase & 0x04) == 0x04)
-                            objVal = "C";
+                            value = "C";
                         else
-                            objVal = "";
-                        objVal += "相";
+                            value = "";
+                        value += "相";
 
                         dataAttr = new DataAttr();
                         dataAttr.setName(itemName);
-                        dataAttr.setValue(objVal);
+                        dataAttr.setValue(value);
                         dataAttr.setUnit("");
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setCnname(itemCnName);
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setDateType(RemoteType.YC);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
 
 
                         BCD1 = HexUtils.bcdByteToInt(item.data[1]);
                         BCD2 = HexUtils.bcdByteToInt(item.data[2]);
                         itemName = itemNames[1];
                         itemCnName = itemCnNames[1];
-                        objVal = BCD2 * 100 + BCD1;
+                        value = BCD2 * 100 + BCD1;
 
                         dataAttr = new DataAttr();
                         dataAttr.setName(itemName);
-                        dataAttr.setValue(objVal);
+                        dataAttr.setValue(value);
                         dataAttr.setUnit(item.unit.split(",")[1]);
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setCnname(itemCnName);
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setDateType(RemoteType.YC);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
 
                         itemName = itemNames[2];
                         itemCnName = itemCnNames[2];
@@ -869,14 +848,14 @@ public class DataAnalyze extends BaseDataAnalyze {
                         dataAttr.setName(itemName);
                         dataAttr.setValue(DateUtils.dateToStr(alarmTime));
                         dataAttr.setUnit("");
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setCnname(itemCnName);
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setDateType(RemoteType.YC);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
 
                     }
-                    return list;
+                    return dataAttrs;
 
                 case MaxAC:
                 case MaxBC:
@@ -885,7 +864,7 @@ public class DataAnalyze extends BaseDataAnalyze {
                             "MaxCValue", "HappenTime"
                     };
                     itemCnNames = new String[]{
-                            item.cmdtype.getName(), "出现时刻"
+                            item.cmdType.getName(), "出现时刻"
                     };
 
                     if (item.length == 9) {
@@ -896,16 +875,16 @@ public class DataAnalyze extends BaseDataAnalyze {
                         BCD2 = HexUtils.bcdByteToInt(item.data[1]);
                         BCD3 = HexUtils.bcdByteToInt(item.data[2]);
 
-                        objVal = BCD3 * 1000 + BCD2 * 10 + BCD1 / 10;
+                        value = BCD3 * 1000 + BCD2 * 10 + BCD1 / 10;
                         dataAttr = new DataAttr();
                         dataAttr.setName(itemName);
-                        dataAttr.setValue(objVal);
+                        dataAttr.setValue(value);
                         dataAttr.setUnit(item.unit.split(",")[0]);
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setCnname(itemCnName);
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setDateType(RemoteType.YC);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
 
                         itemName = itemNames[1];
                         itemCnName = itemCnNames[1];
@@ -925,13 +904,13 @@ public class DataAnalyze extends BaseDataAnalyze {
                         dataAttr.setName(itemName);
                         dataAttr.setValue(DateUtils.dateToStr(alarmTime));
                         dataAttr.setUnit("");
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setCnname(itemCnName);
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setDateType(RemoteType.YC);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
                     }
-                    return list;
+                    return dataAttrs;
 
                 case MinAC:
                 case MinBC:
@@ -940,7 +919,7 @@ public class DataAnalyze extends BaseDataAnalyze {
                             "MinCValue", "HappenTime"
                     };
                     itemCnNames = new String[]{
-                            item.cmdtype.getName(), "出现时刻"
+                            item.cmdType.getName(), "出现时刻"
                     };
 
                     if (item.length == 9) {
@@ -951,16 +930,16 @@ public class DataAnalyze extends BaseDataAnalyze {
                         BCD1 = HexUtils.bcdByteToInt(item.data[0]);
                         BCD3 = HexUtils.bcdByteToInt(item.data[2]);
 
-                        objVal = BCD3 * 1000 + BCD2 * 10 + BCD1 / 10;
+                        value = BCD3 * 1000 + BCD2 * 10 + BCD1 / 10;
                         dataAttr = new DataAttr();
                         dataAttr.setName(itemName);
-                        dataAttr.setValue(objVal);
+                        dataAttr.setValue(value);
                         dataAttr.setUnit(item.unit.split(",")[0]);
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setCnname(itemCnName);
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setDateType(RemoteType.YC);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
 
                         itemName = itemNames[1];
                         itemCnName = itemCnNames[1];
@@ -980,13 +959,13 @@ public class DataAnalyze extends BaseDataAnalyze {
                         dataAttr.setName(itemName);
                         dataAttr.setValue(DateUtils.dateToStr(alarmTime));
                         dataAttr.setUnit("");
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setCnname(itemCnName);
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setDateType(RemoteType.YC);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
                     }
-                    return list;
+                    return dataAttrs;
 
                 case MaxAV:
                 case MaxBV:
@@ -995,7 +974,7 @@ public class DataAnalyze extends BaseDataAnalyze {
                             "MaxVValue", "HappenTime"
                     };
                     itemCnNames = new String[]{
-                            item.cmdtype.getName(), "出现时刻"
+                            item.cmdType.getName(), "出现时刻"
                     };
 
                     if (item.length == 8) {
@@ -1005,16 +984,16 @@ public class DataAnalyze extends BaseDataAnalyze {
                         BCD1 = HexUtils.bcdByteToInt(item.data[0]);
                         BCD2 = HexUtils.bcdByteToInt(item.data[1]);
 
-                        objVal = BCD2 * 10 + BCD1 / 10;
+                        value = BCD2 * 10 + BCD1 / 10;
                         dataAttr = new DataAttr();
                         dataAttr.setName(itemName);
-                        dataAttr.setValue(objVal);
+                        dataAttr.setValue(value);
                         dataAttr.setUnit(item.unit.split(",")[0]);
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setCnname(itemCnName);
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setDateType(RemoteType.YC);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
 
                         itemName = itemNames[1];
                         itemCnName = itemCnNames[1];
@@ -1034,13 +1013,13 @@ public class DataAnalyze extends BaseDataAnalyze {
                         dataAttr.setName(itemName);
                         dataAttr.setValue(DateUtils.dateToStr(alarmTime));
                         dataAttr.setUnit("");
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setCnname(itemCnName);
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setDateType(RemoteType.YC);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
                     }
-                    return list;
+                    return dataAttrs;
 
                 case MinAV:
                 case MinBV:
@@ -1049,7 +1028,7 @@ public class DataAnalyze extends BaseDataAnalyze {
                             "MinVValue", "HappenTime"
                     };
                     itemCnNames = new String[]{
-                            item.cmdtype.getName(), "出现时刻"
+                            item.cmdType.getName(), "出现时刻"
                     };
 
                     if (item.length == 8) {
@@ -1059,16 +1038,16 @@ public class DataAnalyze extends BaseDataAnalyze {
                         BCD1 = HexUtils.bcdByteToInt(item.data[0]);
                         BCD2 = HexUtils.bcdByteToInt(item.data[1]);
 
-                        objVal = BCD2 * 10 + BCD1 / 10;
+                        value = BCD2 * 10 + BCD1 / 10;
                         dataAttr = new DataAttr();
                         dataAttr.setName(itemName);
                         dataAttr.setUnit(item.unit.split(",")[0]);
-                        dataAttr.setValue(objVal);
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setValue(value);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setCnname(itemCnName);
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setDateType(RemoteType.YC);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
 
                         itemName = itemNames[1];
                         itemCnName = itemCnNames[1];
@@ -1088,41 +1067,40 @@ public class DataAnalyze extends BaseDataAnalyze {
                         dataAttr.setName(itemName);
                         dataAttr.setValue(DateUtils.dateToStr(alarmTime));
                         dataAttr.setUnit("");
-                        dataAttr.setDtime(item.dtime);
+                        dataAttr.setDtime(item.dTime);
                         dataAttr.setCnname(itemCnName);
-                        dataAttr.setGroup(item.cmdtype.name());
+                        dataAttr.setGroup(item.cmdType.name());
                         dataAttr.setDateType(RemoteType.YC);
-                        list.add(dataAttr);
+                        dataAttrs.add(dataAttr);
                     }
-                    return list;
+                    return dataAttrs;
 
                 default:
                     return null;
             }
         } catch (Exception ex) {
-            return null;
+            ExceptionHandler.print(ex);
         }
+        return null;
     }
 
     private double getMaxFromList(List<DataAttr> list) {
         double max = -1;
-        for (DataAttr dataAttr : list) {
-            double temp = Double.parseDouble(dataAttr.getValue().toString());
-            if (max < temp) {
-                max = temp;
-            }
-        }
-        return max;
+        Optional<DataAttr> o = list.stream().max((o1, o2) -> {
+            double v1 = Double.parseDouble(o1.getValue().toString());
+            double v2 = Double.parseDouble(o2.getValue().toString());
+            return v1 < v2 ? -1 : v1 == v2 ? 0 : 1;
+        });
+        return o.isPresent() ? Double.parseDouble(String.valueOf(o.get().getValue())) : max;
     }
 
     private double getMinFromList(List<DataAttr> list) {
         double min = 9999;
-        for (DataAttr dataAttr : list) {
-            double temp = Double.parseDouble(dataAttr.getValue().toString());
-            if (min > temp) {
-                min = temp;
-            }
-        }
-        return min;
+        Optional<DataAttr> o = list.stream().min((o1, o2) -> {
+            double v1 = Double.parseDouble(o1.getValue().toString());
+            double v2 = Double.parseDouble(o2.getValue().toString());
+            return v1 < v2 ? -1 : v1 == v2 ? 0 : 1;
+        });
+        return o.isPresent() ? Double.parseDouble(String.valueOf(o.get().getValue())) : min;
     }
 }

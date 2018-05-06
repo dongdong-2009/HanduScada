@@ -108,22 +108,29 @@
         <!--<table tableName="device_staterecord"/>-->
         <!--<table tableName="device_history_staterecord"/>-->
         <!--<table tableName="device_controlword"/>-->
-        <!--<table tableName="DEVICE_REAL_REMOTE_TELEMETRY"/>-->
-        <!--<table tableName="DEVICE_REAL_REMOTE_SIGNALLING"/>-->
+        <!--<table tableName="device_real_remotetelemetry"/>-->
+        <!--<table tableName="device_real_remotesignalling"/>-->
         <!--<table tableName="device_rcd"/>-->
         <!--<table tableName="device_graphicsrelation"/>-->
         <!--<table tableName="device_remoteindexs"/>-->
-        <!--<table tableName="device_History_remotetelemetry"/>-->
+        <!--<table tableName="device_history_remotetelemetry"/>-->
         <!--<table tableName="device_history_remotesignalling"/>-->
         <!--<table tableName="device_change_remotetelemetry"/>-->
         <!--<table tableName="device_change_remotesignalling"/>-->
-        <table tableName="device_communicationgroup"/>
+        <!--<table tableName="device_communicationgroup"/>-->
+        <!--<table tableName="device_concentrator_last_heartbeat_time"/>-->
         <!--<table tableName="device_hm"/>-->
         <!--<table tableName="device_intelligentswitch"/>-->
         <!--<table tableName="device_temperatureprobe"/>-->
         <!--<table tableName="device_temperature"/>-->
         <!--<table tableName="relation_dtu_device"/>-->
         <!--<table tableName="device_infochanges"/>-->
+        <!--<table tableName="device_hm_history_afn0c25"/>-->
+        <!--<table tableName="device_hm_real_afn0c25"/>-->
+
+        <table tableName="device_hm_low_voltage"/>
+        <table tableName="device_hm_overload"/>
+        <table tableName="device_hm_utpc"/>
 
     </context>
 </generatorConfiguration>

@@ -4,7 +4,7 @@ import main.com.handu.scada.business.dtu.DtuDBService;
 import main.com.handu.scada.business.dtu.DtuState;
 import main.com.handu.scada.business.dtu.DtuStateResult;
 import main.com.handu.scada.cache.MyCacheManager;
-import main.com.handu.scada.db.bean.common.DeviceDtuCacheResult;
+import main.com.handu.scada.db.bean.common.DtuCacheResult;
 import main.com.handu.scada.netty.server.dtu.DtuChannelManager;
 import main.com.handu.scada.quartz.job.BaseJob;
 import main.com.handu.scada.quartz.job.CommonJob;
@@ -24,37 +24,50 @@ import java.util.stream.Collectors;
 public class DtuStateJob extends CommonJob implements BaseJob {
 
     @Override
-    public void isEnable(boolean isEnable) {
-        enable = isEnable;
-    }
-
-    @Override
     public String jobName() {
-        return "lp DtuStateJob";
+        return "DtuStateJob";
     }
 
     @Override
     public String cronExpression() {
-        return "30 0/2 * * * ?";
+        return "20 1/5 * * * ?";
     }
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        if (enable) {
-            LogUtils.error(DateUtils.dateToStr(DateUtils.getNowSqlDateTime()) + "-->" + jobName());
-            List<DeviceDtuCacheResult> list = null;
-            ConcurrentHashMap<String, DeviceDtuCacheResult> cacheResults = MyCacheManager.getInstance().getDeviceDtuCache();
-            if (cacheResults != null) {
-                synchronized (cacheResults) {
-                    list = cacheResults.entrySet().stream().map(Map.Entry::getValue).collect(Collectors.toList());
-                }
+        LogUtils.error(DateUtils.dateToStr(DateUtils.getNowSqlDateTime()) + "-->" + jobName());
+        ConcurrentHashMap<String, DtuCacheResult> cacheResults = MyCacheManager.getDtuCacheMap();
+        List<DtuCacheResult> list = null;
+        if (cacheResults != null) {
+            synchronized (cacheResults) {
+                list = cacheResults
+                        .entrySet()
+                        .stream()
+                        .map(Map.Entry::getValue)
+                        .collect(Collectors.toList());
             }
-            if (list != null) {
-                list.forEach(cacheResult -> {
-                    DtuStateResult result = new DtuStateResult(DtuChannelManager.getDeviceChannelIsActive(cacheResult.getDtuAddress()) ? DtuState.ONLINE : DtuState.OFFLINE, cacheResult.getDtuId(), DateUtils.getNowSqlDateTime());
+        }
+        if (list != null) {
+            list.forEach(cacheResult -> {
+                //先获取当前dtu的在线状态
+                boolean isOnline1 = cacheResult.isDtuIsOnline();
+                //判断连接的有效性
+                boolean isOnline2 = DtuChannelManager.getDeviceChannelIsActive(cacheResult.getDtuAddress());
+                //开始在线，现在掉线
+                if (isOnline1 && !isOnline2) {
+                    DtuStateResult result = new DtuStateResult(DtuState.OFFLINE, cacheResult.getDtuAddress(), DateUtils.getNowSqlDateTime());
+                    result.setDtuId(cacheResult.getDtuId());
                     DtuDBService.getInstance().push(result);
-                });
-            }
+                }
+                //开始不在线，现在在线
+                else if (!isOnline1 && isOnline2) {
+                    DtuStateResult result = new DtuStateResult(DtuState.ONLINE, cacheResult.getDtuAddress(), DateUtils.getNowSqlDateTime());
+                    result.setDtuId(cacheResult.getDtuId());
+                    DtuDBService.getInstance().push(result);
+                }
+                //更新缓存中dtu状态
+                cacheResult.setDtuIsOnline(isOnline2);
+            });
         }
     }
 }

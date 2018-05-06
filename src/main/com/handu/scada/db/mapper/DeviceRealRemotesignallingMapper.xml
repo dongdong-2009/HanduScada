@@ -2,13 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="main.com.handu.scada.db.mapper.DeviceRealRemotesignallingMapper">
   <resultMap id="BaseResultMap" type="main.com.handu.scada.db.bean.DeviceRealRemotesignalling">
-    <id column="RemoteSignallingId" jdbcType="VARCHAR" property="remotesignallingid" />
-    <result column="RemoteIndexsId" jdbcType="VARCHAR" property="remoteindexsid" />
+    <id column="DeviceId" jdbcType="VARCHAR" property="deviceid" />
+    <id column="DataItem" jdbcType="VARCHAR" property="dataitem" />
     <result column="Value" jdbcType="INTEGER" property="value" />
+    <result column="Unit" jdbcType="VARCHAR" property="unit" />
     <result column="RecordTime" jdbcType="TIMESTAMP" property="recordtime" />
-  </resultMap>
-  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="main.com.handu.scada.db.bean.DeviceRealRemotesignalling">
-    <result column="Description" jdbcType="LONGVARCHAR" property="description" />
+    <result column="Description" jdbcType="VARCHAR" property="description" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -69,27 +68,8 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    RemoteSignallingId, RemoteIndexsId, Value, RecordTime
+    DeviceId, DataItem, Value, Unit, RecordTime, Description
   </sql>
-  <sql id="Blob_Column_List">
-    Description
-  </sql>
-  <select id="selectByExampleWithBLOBs" parameterType="main.com.handu.scada.db.bean.DeviceRealRemotesignallingExample" resultMap="ResultMapWithBLOBs">
-    select
-    <if test="distinct">
-      distinct
-    </if>
-    <include refid="Base_Column_List" />
-    ,
-    <include refid="Blob_Column_List" />
-    from device_real_remotesignalling
-    <if test="_parameter != null">
-      <include refid="Example_Where_Clause" />
-    </if>
-    <if test="orderByClause != null">
-      order by ${orderByClause}
-    </if>
-  </select>
   <select id="selectByExample" parameterType="main.com.handu.scada.db.bean.DeviceRealRemotesignallingExample" resultMap="BaseResultMap">
     select
     <if test="distinct">
@@ -104,17 +84,17 @@
       order by ${orderByClause}
     </if>
   </select>
-  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
+  <select id="selectByPrimaryKey" parameterType="map" resultMap="BaseResultMap">
     select 
     <include refid="Base_Column_List" />
-    ,
-    <include refid="Blob_Column_List" />
     from device_real_remotesignalling
-    where RemoteSignallingId = #{remotesignallingid,jdbcType=VARCHAR}
+    where DeviceId = #{deviceid,jdbcType=VARCHAR}
+      and DataItem = #{dataitem,jdbcType=VARCHAR}
   </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+  <delete id="deleteByPrimaryKey" parameterType="map">
     delete from device_real_remotesignalling
-    where RemoteSignallingId = #{remotesignallingid,jdbcType=VARCHAR}
+    where DeviceId = #{deviceid,jdbcType=VARCHAR}
+      and DataItem = #{dataitem,jdbcType=VARCHAR}
   </delete>
   <delete id="deleteByExample" parameterType="main.com.handu.scada.db.bean.DeviceRealRemotesignallingExample">
     delete from device_real_remotesignalling
@@ -123,24 +103,27 @@
     </if>
   </delete>
   <insert id="insert" parameterType="main.com.handu.scada.db.bean.DeviceRealRemotesignalling">
-    insert into device_real_remotesignalling (RemoteSignallingId, RemoteIndexsId, 
-      Value, RecordTime, Description
+    insert into device_real_remotesignalling (DeviceId, DataItem, Value, 
+      Unit, RecordTime, Description
       )
-    values (#{remotesignallingid,jdbcType=VARCHAR}, #{remoteindexsid,jdbcType=VARCHAR}, 
-      #{value,jdbcType=INTEGER}, #{recordtime,jdbcType=TIMESTAMP}, #{description,jdbcType=LONGVARCHAR}
+    values (#{deviceid,jdbcType=VARCHAR}, #{dataitem,jdbcType=VARCHAR}, #{value,jdbcType=INTEGER}, 
+      #{unit,jdbcType=VARCHAR}, #{recordtime,jdbcType=TIMESTAMP}, #{description,jdbcType=VARCHAR}
       )
   </insert>
   <insert id="insertSelective" parameterType="main.com.handu.scada.db.bean.DeviceRealRemotesignalling">
     insert into device_real_remotesignalling
     <trim prefix="(" suffix=")" suffixOverrides=",">
-      <if test="remotesignallingid != null">
-        RemoteSignallingId,
+      <if test="deviceid != null">
+        DeviceId,
       </if>
-      <if test="remoteindexsid != null">
-        RemoteIndexsId,
+      <if test="dataitem != null">
+        DataItem,
       </if>
       <if test="value != null">
         Value,
+      </if>
+      <if test="unit != null">
+        Unit,
       </if>
       <if test="recordtime != null">
         RecordTime,
@@ -150,20 +133,23 @@
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
-      <if test="remotesignallingid != null">
-        #{remotesignallingid,jdbcType=VARCHAR},
+      <if test="deviceid != null">
+        #{deviceid,jdbcType=VARCHAR},
       </if>
-      <if test="remoteindexsid != null">
-        #{remoteindexsid,jdbcType=VARCHAR},
+      <if test="dataitem != null">
+        #{dataitem,jdbcType=VARCHAR},
       </if>
       <if test="value != null">
         #{value,jdbcType=INTEGER},
+      </if>
+      <if test="unit != null">
+        #{unit,jdbcType=VARCHAR},
       </if>
       <if test="recordtime != null">
         #{recordtime,jdbcType=TIMESTAMP},
       </if>
       <if test="description != null">
-        #{description,jdbcType=LONGVARCHAR},
+        #{description,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>
@@ -176,43 +162,37 @@
   <update id="updateByExampleSelective" parameterType="map">
     update device_real_remotesignalling
     <set>
-      <if test="tripEventRecord.remotesignallingid != null">
-        RemoteSignallingId = #{tripEventRecord.remotesignallingid,jdbcType=VARCHAR},
+      <if test="record.deviceid != null">
+        DeviceId = #{record.deviceid,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.remoteindexsid != null">
-        RemoteIndexsId = #{tripEventRecord.remoteindexsid,jdbcType=VARCHAR},
+      <if test="record.dataitem != null">
+        DataItem = #{record.dataitem,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.value != null">
-        Value = #{tripEventRecord.value,jdbcType=INTEGER},
+      <if test="record.value != null">
+        Value = #{record.value,jdbcType=INTEGER},
       </if>
-      <if test="tripEventRecord.recordtime != null">
-        RecordTime = #{tripEventRecord.recordtime,jdbcType=TIMESTAMP},
+      <if test="record.unit != null">
+        Unit = #{record.unit,jdbcType=VARCHAR},
       </if>
-      <if test="tripEventRecord.description != null">
-        Description = #{tripEventRecord.description,jdbcType=LONGVARCHAR},
+      <if test="record.recordtime != null">
+        RecordTime = #{record.recordtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.description != null">
+        Description = #{record.description,jdbcType=VARCHAR},
       </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
   </update>
-  <update id="updateByExampleWithBLOBs" parameterType="map">
-    update device_real_remotesignalling
-    set RemoteSignallingId = #{tripEventRecord.remotesignallingid,jdbcType=VARCHAR},
-      RemoteIndexsId = #{tripEventRecord.remoteindexsid,jdbcType=VARCHAR},
-      Value = #{tripEventRecord.value,jdbcType=INTEGER},
-      RecordTime = #{tripEventRecord.recordtime,jdbcType=TIMESTAMP},
-      Description = #{tripEventRecord.description,jdbcType=LONGVARCHAR}
-    <if test="_parameter != null">
-      <include refid="Update_By_Example_Where_Clause" />
-    </if>
-  </update>
   <update id="updateByExample" parameterType="map">
     update device_real_remotesignalling
-    set RemoteSignallingId = #{tripEventRecord.remotesignallingid,jdbcType=VARCHAR},
-      RemoteIndexsId = #{tripEventRecord.remoteindexsid,jdbcType=VARCHAR},
-      Value = #{tripEventRecord.value,jdbcType=INTEGER},
-      RecordTime = #{tripEventRecord.recordtime,jdbcType=TIMESTAMP}
+    set DeviceId = #{record.deviceid,jdbcType=VARCHAR},
+      DataItem = #{record.dataitem,jdbcType=VARCHAR},
+      Value = #{record.value,jdbcType=INTEGER},
+      Unit = #{record.unit,jdbcType=VARCHAR},
+      RecordTime = #{record.recordtime,jdbcType=TIMESTAMP},
+      Description = #{record.description,jdbcType=VARCHAR}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -220,34 +200,29 @@
   <update id="updateByPrimaryKeySelective" parameterType="main.com.handu.scada.db.bean.DeviceRealRemotesignalling">
     update device_real_remotesignalling
     <set>
-      <if test="remoteindexsid != null">
-        RemoteIndexsId = #{remoteindexsid,jdbcType=VARCHAR},
-      </if>
       <if test="value != null">
         Value = #{value,jdbcType=INTEGER},
+      </if>
+      <if test="unit != null">
+        Unit = #{unit,jdbcType=VARCHAR},
       </if>
       <if test="recordtime != null">
         RecordTime = #{recordtime,jdbcType=TIMESTAMP},
       </if>
       <if test="description != null">
-        Description = #{description,jdbcType=LONGVARCHAR},
+        Description = #{description,jdbcType=VARCHAR},
       </if>
     </set>
-    where RemoteSignallingId = #{remotesignallingid,jdbcType=VARCHAR}
-  </update>
-  <update id="updateByPrimaryKeyWithBLOBs" parameterType="main.com.handu.scada.db.bean.DeviceRealRemotesignalling">
-    update device_real_remotesignalling
-    set RemoteIndexsId = #{remoteindexsid,jdbcType=VARCHAR},
-      Value = #{value,jdbcType=INTEGER},
-      RecordTime = #{recordtime,jdbcType=TIMESTAMP},
-      Description = #{description,jdbcType=LONGVARCHAR}
-    where RemoteSignallingId = #{remotesignallingid,jdbcType=VARCHAR}
+    where DeviceId = #{deviceid,jdbcType=VARCHAR}
+      and DataItem = #{dataitem,jdbcType=VARCHAR}
   </update>
   <update id="updateByPrimaryKey" parameterType="main.com.handu.scada.db.bean.DeviceRealRemotesignalling">
     update device_real_remotesignalling
-    set RemoteIndexsId = #{remoteindexsid,jdbcType=VARCHAR},
-      Value = #{value,jdbcType=INTEGER},
-      RecordTime = #{recordtime,jdbcType=TIMESTAMP}
-    where RemoteSignallingId = #{remotesignallingid,jdbcType=VARCHAR}
+    set Value = #{value,jdbcType=INTEGER},
+      Unit = #{unit,jdbcType=VARCHAR},
+      RecordTime = #{recordtime,jdbcType=TIMESTAMP},
+      Description = #{description,jdbcType=VARCHAR}
+    where DeviceId = #{deviceid,jdbcType=VARCHAR}
+      and DataItem = #{dataitem,jdbcType=VARCHAR}
   </update>
 </mapper>

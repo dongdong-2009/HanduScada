@@ -1,12 +1,12 @@
 package main.com.handu.scada.protocol.protocol.FallTypeSwitch;
 
-import main.com.handu.scada.enums.TableEnum;
+import main.com.handu.scada.enums.DeviceTableEnum;
 import main.com.handu.scada.exception.ExceptionHandler;
 import main.com.handu.scada.protocol.DtuUpParse;
 import main.com.handu.scada.protocol.IProtocol;
 import main.com.handu.scada.protocol.base.MediaData;
 import main.com.handu.scada.protocol.base.ProtocolLayerData;
-import main.com.handu.scada.protocol.enums.DeviceTypeEnum;
+import main.com.handu.scada.enums.DeviceTypeEnum;
 import main.com.handu.scada.protocol.enums.RemoteType;
 import main.com.handu.scada.protocol.protocol.Data.DataAttr;
 import main.com.handu.scada.utils.Crc16Utils;
@@ -117,7 +117,7 @@ public class FallTypeSwitchUp implements IProtocol {
                 PostalAddress = deviceAddress;
                 DTUString = mediaData.DTUString;
                 attrList = attrs;
-                TabName = TableEnum.Device_Falling_Type_Switch.getTableName().toLowerCase();
+                TabName = DeviceTableEnum.Device_Falling_Type_Switch.getTableName().toLowerCase();
             }};
         } catch (Exception e) {
             ExceptionHandler.print(e);
@@ -126,16 +126,12 @@ public class FallTypeSwitchUp implements IProtocol {
     }
 
     @Override
-    public void getAddress(byte[] buff) {
-
-    }
-
-    @Override
     public boolean valid(byte[] bytes) {
         try {
             if (bytes == null) return false;
             //跌落开关的长度为6
             if (bytes.length != 6) return false;
+            if (bytes[0] != 0x01) return false;
             //跌落装置功能码是0x02
             if (bytes[1] != 0x02) return false;
             int Crc = Crc16Utils.calcCrc16(bytes, 0, bytes.length - 2);
@@ -146,8 +142,5 @@ public class FallTypeSwitchUp implements IProtocol {
         return false;
     }
 
-    @Override
-    public MediaData sendCommand(ProtocolLayerData protocolLayerData) {
-        return null;
-    }
+
 }

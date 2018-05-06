@@ -2,10 +2,13 @@ package main.com.handu.scada.utils;
 
 import main.com.handu.scada.business.dtu.DtuUpdateUtil;
 import main.com.handu.scada.config.Config;
+import main.com.handu.scada.protocol.enums.DeviceCmdTypeEnum;
 import main.com.handu.scada.quartz.QuartzManager;
 import main.com.handu.scada.quartz.utils.DtuCommand;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by 柳梦 on 2018/01/11.
@@ -25,7 +28,10 @@ public class Command {
         add("10." + NUMBER);
         add("11." + BROAD_CAST_TIME);
         add("12." + SQL);
-        add("13." + SIGNAL);
+        add("13." + SIGNAL_STRENGTH);
+        add("14." + COMMUNICATION_MODEL);
+        add("15." + EXPORT);
+        add("16." + AFN0C25);
     }};
     private static final ArrayList<String> cmdList = new ArrayList<String>() {{
         add("cmd-1000(baseData)");
@@ -36,11 +42,29 @@ public class Command {
         add("cmd-1005(temperature)");
         add("cmd-1006(fallSwitch)");
         add("cmd-1007(readPostalAddress)");
+        add("cmd-1008(readAFN0C25)");
     }};
 
-    private static final String SIGNAL = "signal strength --> c(ollect)ss-dtuAddress r(ead)ss-dtuAddress)";
+    /**
+     * 通信模式
+     */
+    private static final String COMMUNICATION_MODEL = "communication model --> cm4(G)-dtuAddress,cm2(G)-dtuAddress,cma(uto)-dtuAddress";
+    //4G模式
+    private static final String COMMUNICATION_MODEL_4G = "cm4-*";
+    //2G模式
+    private static final String COMMUNICATION_MODEL_2G = "cm2-*";
+    //自动模式
+    private static final String COMMUNICATION_MODEL_AUTO = "cma-*";
+
+    /**
+     * 信号强度
+     */
+    private static final String SIGNAL_STRENGTH = "signal strength --> c(ollect)ss-dtuAddress,r(ead)ss-dtuAddress)";
     private static final String SIGNAL_R = "rss-*";
     private static final String SIGNAL_C = "css-*";
+
+    private static final String AFN0C25 = "HM_AFN0C25 --> afn25-dtuAddress";
+    private static final String AFN0C25_Y = "afn25-*";
 
     private static final String MENU = "menu";
 
@@ -76,8 +100,10 @@ public class Command {
     private static final String DTU_INFO_Y = "if-*";
 
     private static final String NUMBER = "num";
+    private static final String EXPORT = "dtu online export --> export";
+    private static final String EXPORT_Y = "export";
 
-    private static final String SQL = "sql";
+    private static final String SQL = "sql execute --> sql-*";
     private static final String SQL_Y = "sql-*";
 
     private static final String BROAD_CAST_TIME = "broadcastTime --> bt-dtuAddress";
@@ -85,15 +111,6 @@ public class Command {
 
     public static void command(String command) {
         switch (command) {
-            case MENU:
-                String menu = "";
-                for (String s : menuList) {
-                    if (!menu.equals("")) menu += ",\n";
-                    else menu += "\n";
-                    menu += s;
-                }
-                LogUtils.info(menu, true);
-                return;
             case CMD:
                 String cmd = "";
                 for (String s : cmdList) {
@@ -135,6 +152,34 @@ public class Command {
             case UPDATE_N:
                 DtuUpdateUtil.stop();
                 return;
+            case EXPORT_Y:
+                DtuCommand.getInstance().exportDtuOnline2Txt();
+                return;
+        }
+
+        if (command.startsWith(MENU)) {
+            int index = 0;
+            String str = command.replace(MENU, "");
+            try {
+                if (StringsUtils.isNotEmpty(str)) index = Integer.parseInt(str);
+            } catch (Exception e) {
+                LogUtils.error("not find command!", true);
+                return;
+            }
+            //分页
+            List<String> menu = menuList.stream().skip(index * 10).limit(10).collect(Collectors.toList());
+            str = "\n--current page " + (index + 1) + "," + "total menus " + menuList.size() + "--";
+            for (String s : menu) {
+                str += "\n" + s;
+            }
+            if (menu.size() == 0) {
+                LogUtils.error("not find any more menus!", true);
+                return;
+            }
+            if (StringsUtils.isNotEmpty(str)) {
+                LogUtils.info(str, true);
+            }
+            return;
         }
 
         if (isMatch(command, UPDATE_Y)) {
@@ -189,11 +234,9 @@ public class Command {
             command = command.substring(command.indexOf("-") + 1, command.length());
             if (!StringsUtils.isEmpty(command)) {
                 String dtuAddresses[] = command.split(",");
-                if (dtuAddresses.length > 0) {
-                    DtuCommand.getInstance().readDtuInfo(dtuAddresses);
-                } else {
-                    LogUtils.error("input error!", true);
-                }
+                DtuCommand.getInstance().readDtuInfo(dtuAddresses);
+            } else {
+                LogUtils.error("input error!", true);
             }
             return;
         }
@@ -202,11 +245,9 @@ public class Command {
             command = command.substring(command.indexOf("-") + 1, command.length());
             if (!StringsUtils.isEmpty(command)) {
                 String dtuAddresses[] = command.split(",");
-                if (dtuAddresses.length > 0) {
-                    DtuCommand.getInstance().restartDtu(dtuAddresses);
-                } else {
-                    LogUtils.error("input error!", true);
-                }
+                DtuCommand.getInstance().restartDtu(dtuAddresses);
+            } else {
+                LogUtils.error("input error!", true);
             }
             return;
         }
@@ -226,9 +267,10 @@ public class Command {
         if (isMatch(command, SIGNAL_R)) {
             command = command.substring(command.indexOf("-") + 1, command.length());
             if (!StringsUtils.isEmpty(command)) {
-                if (command.length() > 0) {
-                    DtuCommand.getInstance().readSignalStrength(command);
-                }
+                String dtuAddresses[] = command.split(",");
+                DtuCommand.getInstance().readSignalStrength(dtuAddresses);
+            } else {
+                LogUtils.error("input error!", true);
             }
             return;
         }
@@ -236,22 +278,61 @@ public class Command {
         if (isMatch(command, SIGNAL_C)) {
             command = command.substring(command.indexOf("-") + 1, command.length());
             if (!StringsUtils.isEmpty(command)) {
-                if (command.length() > 0) {
-                    DtuCommand.getInstance().collectSignalStrength(command);
-                }
+                String dtuAddresses[] = command.split(",");
+                DtuCommand.getInstance().collectSignalStrength(dtuAddresses);
+            } else {
+                LogUtils.error("input error!", true);
             }
             return;
         }
 
+        if (isMatch(command, COMMUNICATION_MODEL_4G)) {
+            command = command.substring(command.indexOf("-") + 1, command.length());
+            if (!StringsUtils.isEmpty(command)) {
+                String dtuAddresses[] = command.split(",");
+                DtuCommand.getInstance().setCommunicationModel(4, dtuAddresses);
+            } else {
+                LogUtils.error("input error!", true);
+            }
+            return;
+        }
+        if (isMatch(command, COMMUNICATION_MODEL_2G)) {
+            command = command.substring(command.indexOf("-") + 1, command.length());
+            if (!StringsUtils.isEmpty(command)) {
+                String dtuAddresses[] = command.split(",");
+                DtuCommand.getInstance().setCommunicationModel(2, dtuAddresses);
+            } else {
+                LogUtils.error("input error!", true);
+            }
+            return;
+        }
+        if (isMatch(command, AFN0C25_Y)) {
+            command = command.substring(command.indexOf("-") + 1, command.length());
+            if (!StringsUtils.isEmpty(command)) {
+                String dtuAddresses[] = command.split(",");
+                DtuCommand.getInstance().sendTo4g(DeviceCmdTypeEnum.HM_AFN0C25, dtuAddresses);
+            } else {
+                LogUtils.error("input error!", true);
+            }
+            return;
+        }
+        if (isMatch(command, COMMUNICATION_MODEL_AUTO)) {
+            command = command.substring(command.indexOf("-") + 1, command.length());
+            if (!StringsUtils.isEmpty(command)) {
+                String dtuAddresses[] = command.split(",");
+                DtuCommand.getInstance().setCommunicationModel(0, dtuAddresses);
+            } else {
+                LogUtils.error("input error!", true);
+            }
+            return;
+        }
         if (isMatch(command, TIME)) {
             command = command.substring(command.indexOf("-") + 1, command.length());
             if (!StringsUtils.isEmpty(command)) {
                 String dtuAddresses[] = command.split(",");
-                if (dtuAddresses.length > 0) {
-                    DtuCommand.getInstance().broadcastTime(dtuAddresses);
-                } else {
-                    LogUtils.error("input error!", true);
-                }
+                DtuCommand.getInstance().broadcastTime(dtuAddresses);
+            } else {
+                LogUtils.error("input error!", true);
             }
             return;
         }

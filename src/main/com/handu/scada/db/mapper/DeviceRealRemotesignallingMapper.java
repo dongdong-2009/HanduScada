@@ -11,27 +11,21 @@ public interface DeviceRealRemotesignallingMapper extends CommonMapper {
 
     int deleteByExample(DeviceRealRemotesignallingExample example);
 
-    int deleteByPrimaryKey(String remotesignallingid);
+    int deleteByPrimaryKey(@Param("deviceid") String deviceid, @Param("dataitem") String dataitem);
 
     int insert(DeviceRealRemotesignalling record);
 
     int insertSelective(DeviceRealRemotesignalling record);
 
-    List<DeviceRealRemotesignalling> selectByExampleWithBLOBs(DeviceRealRemotesignallingExample example);
-
     List<DeviceRealRemotesignalling> selectByExample(DeviceRealRemotesignallingExample example);
 
-    DeviceRealRemotesignalling selectByPrimaryKey(String remotesignallingid);
+    DeviceRealRemotesignalling selectByPrimaryKey(@Param("deviceid") String deviceid, @Param("dataitem") String dataitem);
 
-    int updateByExampleSelective(@Param("tripEventRecord") DeviceRealRemotesignalling record, @Param("example") DeviceRealRemotesignallingExample example);
+    int updateByExampleSelective(@Param("record") DeviceRealRemotesignalling record, @Param("example") DeviceRealRemotesignallingExample example);
 
-    int updateByExampleWithBLOBs(@Param("tripEventRecord") DeviceRealRemotesignalling record, @Param("example") DeviceRealRemotesignallingExample example);
-
-    int updateByExample(@Param("tripEventRecord") DeviceRealRemotesignalling record, @Param("example") DeviceRealRemotesignallingExample example);
+    int updateByExample(@Param("record") DeviceRealRemotesignalling record, @Param("example") DeviceRealRemotesignallingExample example);
 
     int updateByPrimaryKeySelective(DeviceRealRemotesignalling record);
-
-    int updateByPrimaryKeyWithBLOBs(DeviceRealRemotesignalling record);
 
     int updateByPrimaryKey(DeviceRealRemotesignalling record);
 }

@@ -6,7 +6,7 @@ import main.com.handu.scada.protocol.IProtocol;
 import main.com.handu.scada.protocol.base.MediaData;
 import main.com.handu.scada.protocol.base.ProtocolLayerData;
 import main.com.handu.scada.protocol.enums.DeviceCmdTypeEnum;
-import main.com.handu.scada.protocol.enums.DeviceTypeEnum;
+import main.com.handu.scada.enums.DeviceTypeEnum;
 import main.com.handu.scada.protocol.enums.RemoteType;
 import main.com.handu.scada.protocol.protocol.Data.DataAttr;
 import main.com.handu.scada.utils.Crc16Utils;
@@ -64,14 +64,11 @@ public class HD4GUp implements IProtocol {
     }
 
     @Override
-    public void getAddress(byte[] buff) {
-
-    }
-
-    @Override
     public boolean valid(byte[] bytes) {
+        if (bytes == null) return false;
+        if (bytes.length < 6) return false;
         try {
-            if (bytes == null || bytes[0] != 0x6B) return false;
+            if (bytes[0] != 0x6B) return false;
             if (bytes.length != 16 || bytes[4] != 0x6B) return false;
             int Crc = Crc16Utils.calcCrc16(bytes, 4, 9);
             return (byte) (Crc & 0xFF) == bytes[bytes.length - 2] && (byte) (Crc >> 8) == bytes[bytes.length - 3];
@@ -79,10 +76,5 @@ public class HD4GUp implements IProtocol {
             ExceptionHandler.print(e);
         }
         return false;
-    }
-
-    @Override
-    public MediaData sendCommand(ProtocolLayerData protocolLayerData) {
-        return null;
     }
 }

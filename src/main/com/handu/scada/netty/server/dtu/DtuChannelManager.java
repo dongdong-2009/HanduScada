@@ -1,11 +1,13 @@
 package main.com.handu.scada.netty.server.dtu;
 
 
+import io.netty.channel.ChannelHandlerContext;
 import main.com.handu.scada.config.Config;
 import main.com.handu.scada.netty.server.MsgType;
 
-import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 
 /**
@@ -13,8 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DtuChannelManager {
 
-    private static ConcurrentHashMap<String, DtuNetworkConnection> networkStateMap = new ConcurrentHashMap<>();
-    private static ConcurrentHashMap<String, String> dtuIdMap = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, DtuNetworkConnection> networkStateMap = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, String> dtuIdMap = new ConcurrentHashMap<>();
 
     /**
      * @param clientId     客户端连接id
@@ -63,30 +65,13 @@ public class DtuChannelManager {
      */
     public static void removeClient(String clientId, String dtuAddress) {
         if (dtuAddress != null) {
-            if (dtuIdMap.containsKey(dtuAddress)) {
-                dtuIdMap.remove(dtuAddress);
-            }
+            dtuIdMap.remove(dtuAddress);
         }
-        if (networkStateMap.containsKey(clientId)) {
+        if (clientId != null) {
             networkStateMap.remove(clientId);
         }
     }
 
-    /**
-     * 更新dtuId
-     *
-     * @param clientId
-     * @param dtuAddress
-     */
-    private static void updateDtuAddress(String clientId, String dtuAddress, MsgType type) {
-        if (networkStateMap.containsKey(clientId)) {
-            DtuNetworkConnection state = networkStateMap.get(clientId);
-            if (state != null) {
-                state.setDtuAddress(dtuAddress);
-                state.getCallback().online(clientId, dtuAddress, type);
-            }
-        }
-    }
 
     /**
      * 更新
@@ -96,8 +81,7 @@ public class DtuChannelManager {
      */
     public static void update(String clientId, String dtuAddress, MsgType type) {
         dtuIdMap.put(dtuAddress, clientId);
-        removeUselessChannel(clientId, dtuAddress);
-        updateDtuAddress(clientId, dtuAddress, type);
+        removeUselessChannel(clientId, dtuAddress, type);
     }
 
     /**
@@ -118,30 +102,36 @@ public class DtuChannelManager {
      * @return
      */
     public static String getDtuAddress(String clientId) {
-        if (networkStateMap.containsKey(clientId)) {
-            DtuNetworkConnection state = networkStateMap.get(clientId);
-            if (state != null) {
-                return state.getDtuAddress();
-            }
+        DtuNetworkConnection state = networkStateMap.get(clientId);
+        if (state != null) {
+            return state.getDtuAddress();
         }
         return null;
     }
 
     /**
-     * 移除无用链接
+     * 移除无用链接并更新dtu连接
      *
      * @param clientId
      * @param dtuAddress
      */
-    public static void removeUselessChannel(String clientId, String dtuAddress) {
-        for (Map.Entry<String, DtuNetworkConnection> entry : networkStateMap.entrySet()) {
-            DtuNetworkConnection state = entry.getValue();
-            if (state.getDtuAddress() != null) {
-                if (state.getDtuAddress().equals(dtuAddress)) {
-                    if (!entry.getKey().equals(clientId)) {
-                        networkStateMap.remove(entry.getKey());
-                    }
-                }
+    public static void removeUselessChannel(String clientId, String dtuAddress, MsgType type) {
+        synchronized (networkStateMap) {
+            networkStateMap
+                    .entrySet()
+                    .stream()
+                    .filter(e -> Objects.equals(e.getValue().getDtuAddress(), dtuAddress) && !Objects.equals(e.getKey(), clientId))
+                    .collect(Collectors.toList())
+                    .forEach(e -> {
+                        DtuNetworkConnection c = networkStateMap.get(e.getKey());
+                        ChannelHandlerContext context = c.getContext();
+                        if (context != null) context.close();
+                        networkStateMap.remove(e.getKey());
+                    });
+            DtuNetworkConnection connection = networkStateMap.get(clientId);
+            if (connection != null) {
+                connection.setDtuAddress(dtuAddress);
+                connection.getCallback().online(clientId, dtuAddress, type);
             }
         }
     }
@@ -154,20 +144,15 @@ public class DtuChannelManager {
      * @return
      */
     public static boolean getDeviceChannelIsActive(String dtuAddress) {
-        String clientId = DtuChannelManager.getClientId(dtuAddress);
+        String clientId = getClientId(dtuAddress);
         if (clientId == null) return false;
-        DtuNetworkConnection state = DtuChannelManager.getNetworkState(clientId);
+        DtuNetworkConnection state = getNetworkState(clientId);
         if (state != null && state.getContext() != null && state.getChannel() != null) {
             long time = System.currentTimeMillis() - state.getLastReceiptTime();
             boolean isActive = state.getChannel().isActive() && time < Config.getHeartBeat() * 3;
             if (!isActive) {
                 state.getContext().close();
-                if (dtuIdMap.containsKey(dtuAddress)) {
-                    dtuIdMap.remove(dtuAddress);
-                }
-                if (networkStateMap.containsKey(clientId)) {
-                    networkStateMap.remove(clientId);
-                }
+                removeClient(clientId, dtuAddress);
             }
             return isActive;
         }

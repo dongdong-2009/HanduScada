@@ -18,11 +18,11 @@ public class BaseDownStreamDLT645 {
     protected byte[] diCode;
     public String address;
     protected byte[] pwd;
-    protected byte[] opercode;
+    protected byte[] operCode;
     protected byte[] datas;
     protected byte controlCode;
-    public String msgname;
-    public byte[] cmdbyte;
+    public String msgName;
+    public byte[] cmdByte;
     protected WR wr;
 
     protected static byte[] const_pwd = new byte[]{
@@ -59,8 +59,8 @@ public class BaseDownStreamDLT645 {
                     list.add(b);
                 }
             }
-            if (opercode != null && opercode.length > 0) {
-                for (byte b : opercode) {
+            if (operCode != null && operCode.length > 0) {
+                for (byte b : operCode) {
                     list.add(b);
                 }
             }
@@ -72,11 +72,11 @@ public class BaseDownStreamDLT645 {
             list.add((byte) 0x00);
             byte endHex = 0x16;
             list.add(endHex);
-            cmdbyte = new byte[list.size()];
+            cmdByte = new byte[list.size()];
             for (int i = 0; i < list.size(); i++) {
-                cmdbyte[i] = list.get(i);
+                cmdByte[i] = list.get(i);
             }
-            cmdbyte[cmdbyte.length - 2] = HexUtils.getCheckCode(cmdbyte);
+            cmdByte[cmdByte.length - 2] = HexUtils.getCheckCode(cmdByte);
             return true;
         } catch (Exception e) {
             ExceptionHandler.print(e);

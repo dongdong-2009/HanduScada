@@ -16,6 +16,8 @@ public class DeviceInfochanges implements Serializable {
 
     private Integer status;
 
+    private Integer port;
+
     private static final long serialVersionUID = 1L;
 
     public String getOid() {
@@ -66,6 +68,14 @@ public class DeviceInfochanges implements Serializable {
         this.status = status;
     }
 
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
+    }
+
     @Override
     public boolean equals(Object that) {
         if (this == that) {
@@ -83,7 +93,8 @@ public class DeviceInfochanges implements Serializable {
             && (this.getKeyid() == null ? other.getKeyid() == null : this.getKeyid().equals(other.getKeyid()))
             && (this.getOptype() == null ? other.getOptype() == null : this.getOptype().equals(other.getOptype()))
             && (this.getRecordtime() == null ? other.getRecordtime() == null : this.getRecordtime().equals(other.getRecordtime()))
-            && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()));
+            && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()))
+            && (this.getPort() == null ? other.getPort() == null : this.getPort().equals(other.getPort()));
     }
 
     @Override
@@ -96,6 +107,7 @@ public class DeviceInfochanges implements Serializable {
         result = prime * result + ((getOptype() == null) ? 0 : getOptype().hashCode());
         result = prime * result + ((getRecordtime() == null) ? 0 : getRecordtime().hashCode());
         result = prime * result + ((getStatus() == null) ? 0 : getStatus().hashCode());
+        result = prime * result + ((getPort() == null) ? 0 : getPort().hashCode());
         return result;
     }
 }

@@ -5,7 +5,7 @@ import main.com.handu.scada.protocol.DtuDownParse;
 import main.com.handu.scada.protocol.base.MediaData;
 import main.com.handu.scada.protocol.base.ProtocolLayerData;
 import main.com.handu.scada.protocol.enums.DeviceCmdTypeEnum;
-import main.com.handu.scada.protocol.enums.DeviceTypeEnum;
+import main.com.handu.scada.enums.DeviceTypeEnum;
 import main.com.handu.scada.protocol.protocol.Thermometry.BaseDownStreamTemperature;
 import main.com.handu.scada.protocol.protocol.Thermometry.TemperatureCmdType;
 import main.com.handu.scada.utils.Crc16Utils;
@@ -58,23 +58,8 @@ public class DownWiredTemperatureProtocol extends BaseDownStreamTemperature {
     }
 
     @Override
-    public ProtocolLayerData parse(MediaData mediaData) {
-        return null;
-    }
-
-    @Override
-    public void getAddress(byte[] buff) {
-
-    }
-
-    @Override
-    public boolean valid(byte[] bytes) {
-        return false;
-    }
-
-    @Override
     public MediaData sendCommand(ProtocolLayerData protocolLayerData) {
-        if (protocolLayerData.deviceTypeEnum != DeviceTypeEnum.THERMOMETRY) return null;
+        if (protocolLayerData.deviceTypeEnum != DeviceTypeEnum.WIRED_TEMPERATURE) return null;
         try {
             if (protocolLayerData.CmdType == DeviceCmdTypeEnum.ALL_CALL) {
                 MediaData mediaData = new MediaData() {

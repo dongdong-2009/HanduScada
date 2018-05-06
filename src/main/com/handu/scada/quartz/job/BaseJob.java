@@ -9,10 +9,25 @@ public interface BaseJob extends Job {
     /**
      * 是否启用
      */
-    void isEnable(boolean isEnable);
+    default boolean isEnable() {
+        return true;
+    }
 
-    String jobName();
+    /**
+     * job名称
+     *
+     * @return
+     */
+    default String jobName() {
+        return this.getClass().getName();
+    }
 
-    String cronExpression();
-
+    /**
+     * job表达式
+     *
+     * @return
+     */
+    default String cronExpression() {
+        return "0 0/5 * * * ?";
+    }
 }

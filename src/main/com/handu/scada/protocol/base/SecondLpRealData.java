@@ -1,7 +1,6 @@
 package main.com.handu.scada.protocol.base;
 
 import main.com.handu.scada.db.bean.DeviceRcd;
-import main.com.handu.scada.db.bean.RelationDtuDevice;
 
 import java.util.List;
 
@@ -9,6 +8,15 @@ import java.util.List;
  * Created by 柳梦 on 2018/03/08.
  */
 public class SecondLpRealData {
+
+    private String dtuAddress;
+    private String dtuId;
+    private List<SecondLpRecord> secondLpRecords;
+    private String daId;
+    private String daName;
+    private String deviceId;
+    private String terminalId;
+    private DeviceRcd deviceRcd;
 
     public String getDtuAddress() {
         return dtuAddress;
@@ -42,25 +50,6 @@ public class SecondLpRealData {
         this.daId = daId;
     }
 
-    private String dtuAddress;
-    private String dtuId;
-    private List<SecondLpRecord> secondLpRecords;
-    private String daId;
-    private String daName;
-    //一级漏保Id
-    private String deviceId;
-    private String terminalId;
-    private DeviceRcd deviceRcd;
-    private RelationDtuDevice relationDtuDevice;
-
-    public RelationDtuDevice getRelationDtuDevice() {
-        return relationDtuDevice;
-    }
-
-    public void setRelationDtuDevice(RelationDtuDevice relationDtuDevice) {
-        this.relationDtuDevice = relationDtuDevice;
-    }
-
     public String getDaName() {
         return daName;
     }
@@ -69,12 +58,12 @@ public class SecondLpRealData {
         this.daName = daName;
     }
 
-    public DeviceRcd getDeviceRcd() {
-        return deviceRcd;
+    public String getDeviceId() {
+        return deviceId;
     }
 
-    public void setDeviceRcd(DeviceRcd deviceRcd) {
-        this.deviceRcd = deviceRcd;
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 
     public String getTerminalId() {
@@ -85,11 +74,11 @@ public class SecondLpRealData {
         this.terminalId = terminalId;
     }
 
-    public String getDeviceId() {
-        return deviceId;
+    public DeviceRcd getDeviceRcd() {
+        return deviceRcd;
     }
 
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
+    public void setDeviceRcd(DeviceRcd deviceRcd) {
+        this.deviceRcd = deviceRcd;
     }
 }

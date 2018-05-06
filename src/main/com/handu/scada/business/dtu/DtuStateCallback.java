@@ -1,6 +1,7 @@
 package main.com.handu.scada.business.dtu;
 
 import main.com.handu.scada.MainServer;
+import main.com.handu.scada.cache.MyCacheManager;
 import main.com.handu.scada.event.EventManager;
 import main.com.handu.scada.event.events.DBEvent;
 import main.com.handu.scada.netty.listener.DtuStateCallbackListener;
@@ -17,17 +18,15 @@ public class DtuStateCallback implements DtuStateCallbackListener {
 
     @Override
     public void online(String clientId, String dtuAddress, MsgType type) {
+        if (dtuAddress == null) return;
         if (type == MsgType.LOGIN) {
             LogUtils.info("dtu login:clientId----" + clientId + "---dtuAddress " + dtuAddress + "---dtuNum=" + DtuChannelManager.getDtuMapCount(), true);
         } else if (type == MsgType.HEARTBEAT) {
             LogUtils.info("dtu heartbeat:clientId----" + clientId + "---dtuAddress " + dtuAddress);
-            return;
-        } else if (type == MsgType.ONLINE) {
-            LogUtils.info("dtu online:clientId----" + clientId);
-            return;
         }
+        MyCacheManager.updateDtuOnlineState(dtuAddress, true);
         if (MainServer.START_TYPE == MainServer.START_NO_SQL) return;
-        if (dtuAddress == null) return;
+        //如果收到心跳和登录则更新dtu上线时间
         ProtocolLayerData protocolLayerData = new ProtocolLayerData();
         protocolLayerData.clientId = clientId;
         protocolLayerData.dtuAddress = dtuAddress;
@@ -39,6 +38,7 @@ public class DtuStateCallback implements DtuStateCallbackListener {
     public void offline(String clientId, String dtuAddress) {
         if (dtuAddress == null) return;
         LogUtils.error("dtu offline:clientId----" + clientId + "---dtuAddress " + dtuAddress, true);
+        MyCacheManager.updateDtuOnlineState(dtuAddress, false);
         if (MainServer.START_TYPE == MainServer.START_NO_SQL) return;
         ProtocolLayerData protocolLayerData = new ProtocolLayerData();
         protocolLayerData.clientId = clientId;

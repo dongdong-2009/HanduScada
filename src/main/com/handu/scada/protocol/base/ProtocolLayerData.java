@@ -1,9 +1,9 @@
 package main.com.handu.scada.protocol.base;
 
+import main.com.handu.scada.enums.DeviceTypeEnum;
 import main.com.handu.scada.protocol.enums.DeviceCmdTypeEnum;
-import main.com.handu.scada.protocol.enums.DeviceTypeEnum;
 import main.com.handu.scada.protocol.protocol.DLT645.LP2007.DltControlWord;
-import main.com.handu.scada.protocol.protocol.DLT645.LP2007.TripEventRecord;
+import main.com.handu.scada.protocol.protocol.DLT645.TripEventRecord;
 import main.com.handu.scada.protocol.protocol.Data.DataAttr;
 
 import java.util.List;
@@ -56,10 +56,6 @@ public class ProtocolLayerData {
      */
     public String dtuAddress;
 
-    public ProtocolLayerData(String postalAddress, String clientId) {
-        PostalAddress = postalAddress;
-        this.clientId = clientId;
-    }
 
     public ProtocolLayerData() {
     }

@@ -1,17 +1,17 @@
 package main.com.handu.scada.cache;
 
 import main.com.handu.scada.config.Config;
-import main.com.handu.scada.db.bean.*;
-import main.com.handu.scada.db.bean.common.DeviceDtuCacheResult;
-import main.com.handu.scada.db.mapper.DeviceDtuMapper;
-import main.com.handu.scada.db.mapper.DeviceRealRemotesignallingMapper;
-import main.com.handu.scada.db.mapper.DeviceRealRemotetelemetryMapper;
-import main.com.handu.scada.db.mapper.DeviceRemoteindexsMapper;
+import main.com.handu.scada.db.bean.common.AdditionProperty;
+import main.com.handu.scada.db.bean.common.DeviceCacheResult;
+import main.com.handu.scada.db.bean.common.DtuCacheResult;
 import main.com.handu.scada.db.mapper.common.CommonMapper;
+import main.com.handu.scada.db.service.BaseDBService;
 import main.com.handu.scada.db.utils.MyBatisUtil;
+import main.com.handu.scada.enums.DeviceGroup;
+import main.com.handu.scada.enums.DeviceTableEnum;
 import main.com.handu.scada.exception.ExceptionHandler;
-import main.com.handu.scada.utils.DateUtils;
 import main.com.handu.scada.utils.LogUtils;
+import main.com.handu.scada.utils.StringsUtils;
 import org.apache.ibatis.session.SqlSession;
 
 import java.util.*;
@@ -21,17 +21,12 @@ import java.util.stream.Collectors;
 /**
  * Created by 柳梦 on 2017/12/19.
  */
-public class MyCacheManager implements ICacheManager {
+public class MyCacheManager extends BaseDBService implements ICacheManager {
 
-    //试跳记录
-    public static final String DEVICE_RCD_TRIAL_SWITCH_LOG = "DEVICE_RCD_TRIAL_SWITCH_LOG";
     private long start = 0;
     private long end = 0;
-    private final ConcurrentHashMap<String, DeviceRemoteindexs> remoteIndexesMap = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, DeviceRealRemotetelemetry> deviceRealRemoteTelemeTriesMap = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, DeviceRealRemotesignalling> deviceRealRemoteSignallingsMap = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, DeviceDtuCacheResult> deviceDtuCache = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, String> trialswitchlogCache = new ConcurrentHashMap<>();
+    private final static ConcurrentHashMap<String, DtuCacheResult> dtuCacheResultMap = new ConcurrentHashMap<>();
+    private final static ConcurrentHashMap<String, DeviceCacheResult> deviceCacheResultMap = new ConcurrentHashMap<>();
 
     private static MyCacheManager singleton;
 
@@ -193,11 +188,9 @@ public class MyCacheManager implements ICacheManager {
         SqlSession sqlSession = null;
         try {
             sqlSession = MyBatisUtil.getSqlSession();
-            initDeviceAndDtu(sqlSession);
+            initDtuInfo(sqlSession);
+            initDeviceInfo(sqlSession);
             updateDtuState(sqlSession);
-            initDeviceRemoteIndexes(sqlSession);
-            initDeviceRealData(sqlSession);
-            //initDeviceRcdTrialSwitchLog();
             return true;
         } catch (Exception e) {
             ExceptionHandler.handle(e);
@@ -214,183 +207,263 @@ public class MyCacheManager implements ICacheManager {
      */
     private void updateDtuState(SqlSession sqlSession) {
         start = System.currentTimeMillis();
-        DeviceDtuMapper dtuMapper = sqlSession.getMapper(DeviceDtuMapper.class);
+        CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
         String[] dtuPorts = Config.getDtuPorts().split(",");
-        List<Integer> list = Arrays.stream(dtuPorts).map(Integer::parseInt).collect(Collectors.toList());
+        List<Integer> list = Arrays
+                .stream(dtuPorts)
+                .map(Integer::parseInt)
+                .collect(Collectors.toList());
         if (list.size() > 0) {
             StringBuilder sb = new StringBuilder();
-            sb.append(" insert into device_staterecord(RecordId,DeviceTableName,DeviceId,state,description,UnLineTime) values ");
+            sb.append(" insert into device_staterecord(RecordId,DeviceTableName,DeviceId,state,description) values ");
             final int[] i = {0};
-            deviceDtuCache.entrySet().stream().filter(entry -> list.contains(entry.getValue().getPort())).forEach(entry -> {
-                DeviceDtuCacheResult cacheResult = entry.getValue();
-                if (i[0] != 0) sb.append(",");
-                sb.append("('").append(cacheResult.getDtuId()).append("','device_dtu','").append(cacheResult.getDtuId()).append("',2,'已离线','").append(DateUtils.getNowSqlDateTime()).append("')");
-                i[0]++;
-            });
-            sb.append(" on duplicate key update RecordId=values(RecordId),DeviceTableName=values(DeviceTableName),DeviceId=values(DeviceId),State=values(State),Description=values(Description),UnLineTime=values(UnLineTime)");
+            dtuCacheResultMap
+                    .entrySet()
+                    .stream()
+                    .filter(entry -> list.contains(entry.getValue().getDtuPort()))
+                    .forEach(entry -> {
+                        DtuCacheResult cacheResult = entry.getValue();
+                        if (i[0] != 0) sb.append(",");
+                        sb.append("('")
+                                .append(cacheResult.getDtuId())
+                                .append("','device_dtu','")
+                                .append(cacheResult.getDtuId())
+                                .append("',2,'离线'")
+                                .append(")");
+                        i[0]++;
+                    });
+            sb.append(" on duplicate key update RecordId=values(RecordId)," +
+                    "DeviceTableName=values(DeviceTableName),DeviceId=values(DeviceId),State=values(State)," +
+                    "Description=values(Description)");
             if (i[0] > 0) {
-                int result = dtuMapper.updateBySql(sb.toString());
+                commonMapper.updateBySql(sb.toString());
                 end = System.currentTimeMillis();
-                LogUtils.error("init dtu state info ----->" + result + " take " + (end - start) + " ms", true);
+                LogUtils.error("init dtu state info ----->" + i[0] + " take " + (end - start) + " ms", true);
             }
         }
     }
 
     /**
-     * 缓存实时库数据
+     * 根据 设备地址 dtu地址 设备类型 获取缓存
      *
-     * @param sqlSession
-     */
-    private void initDeviceRealData(SqlSession sqlSession) {
-        start = System.currentTimeMillis();
-        DeviceRealRemotetelemetryMapper deviceRealRemotetelemetryMapper = sqlSession.getMapper(DeviceRealRemotetelemetryMapper.class);
-        List<DeviceRealRemotetelemetry> records = deviceRealRemotetelemetryMapper.selectDeviceRealRemoteTelemetry(Arrays.asList(Config.getDtuPorts().split(",")));
-        if (records != null && records.size() > 0) {
-            for (DeviceRealRemotetelemetry record : records) {
-                deviceRealRemoteTelemeTriesMap.put(record.getRemoteindexsid(), record);
-            }
-            end = System.currentTimeMillis();
-            LogUtils.error("init device real remotetelemetry info ----->" + records.size() + " take " + (end - start) + " ms", true);
-        }
-        start = System.currentTimeMillis();
-        DeviceRealRemotesignallingMapper deviceRealRemotesignallingMapper = sqlSession.getMapper(DeviceRealRemotesignallingMapper.class);
-        List<DeviceRealRemotesignalling> deviceRealRemotesignallingList = deviceRealRemotesignallingMapper.selectDeviceRealRemoteSignalling(Arrays.asList(Config.getDtuPorts().split(",")));
-        if (deviceRealRemotesignallingList != null && deviceRealRemotesignallingList.size() > 0) {
-            for (DeviceRealRemotesignalling remotesignalling : deviceRealRemotesignallingList) {
-                deviceRealRemoteSignallingsMap.put(remotesignalling.getRemoteindexsid(), remotesignalling);
-            }
-            end = System.currentTimeMillis();
-            LogUtils.error("init device real remotesignalling info----->" + deviceRealRemotesignallingList.size() + " take " + (end - start) + " ms", true);
-        }
-    }
-
-    /**
-     * @param remoteindexsid
-     * @return
-     */
-    public DeviceRealRemotetelemetry getDeviceRealRemotetelemetry(String remoteindexsid) {
-        return deviceRealRemoteTelemeTriesMap.get(remoteindexsid);
-    }
-
-    /**
-     * @param remoteindexsid
-     * @param deviceRealRemotetelemetry
-     */
-    public void putDeviceRealRemotetelemetry(String remoteindexsid, DeviceRealRemotetelemetry deviceRealRemotetelemetry) {
-        deviceRealRemoteTelemeTriesMap.put(remoteindexsid, deviceRealRemotetelemetry);
-    }
-
-    /**
-     * @param remoteindexsid
-     * @return
-     */
-    public DeviceRealRemotesignalling getDeviceRealRemotesignalling(String remoteindexsid) {
-        return deviceRealRemoteSignallingsMap.get(remoteindexsid);
-    }
-
-    /**
-     * @param remoteindexsid
-     * @param deviceRealRemotesignalling
-     */
-    public void putDeviceRealRemotesignalling(String remoteindexsid, DeviceRealRemotesignalling deviceRealRemotesignalling) {
-        deviceRealRemoteSignallingsMap.put(remoteindexsid, deviceRealRemotesignalling);
-    }
-
-    /**
-     * 初始化设备和dtu
-     *
-     * @param sqlSession
-     */
-    private void initDeviceAndDtu(SqlSession sqlSession) {
-        start = System.currentTimeMillis();
-        //初始化设备相关
-        CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
-        List<DeviceDtuCacheResult> cacheResults = commonMapper.selectDeviceDtuCacheResult(Arrays.asList(Config.getDtuPorts().split(",")));
-        if (cacheResults != null && cacheResults.size() > 0) {
-            putDeviceDtuCacheResult(cacheResults);
-            end = System.currentTimeMillis();
-            LogUtils.error("init device dtu info ----->" + cacheResults.size() + " take " + (end - start) + " ms", true);
-        }
-    }
-
-    /**
      * @param deviceTableName
      * @param dtuAddress
      * @param deviceAddress
      * @return
      */
-    public DeviceDtuCacheResult getDeviceDtuCacheResult(String dtuAddress, String deviceTableName, String deviceAddress) {
-        if (deviceDtuCache.containsKey(dtuAddress + deviceTableName.toLowerCase() + deviceAddress))
-            return deviceDtuCache.get(dtuAddress + deviceTableName.toLowerCase() + deviceAddress);
-        return null;
+    public static DeviceCacheResult getDeviceCacheResult(String dtuAddress, String deviceTableName, String deviceAddress) {
+        return deviceCacheResultMap.get(dtuAddress + deviceTableName.toLowerCase() + deviceAddress);
     }
 
     /**
+     * @param dtuAddress
+     * @return
+     */
+    public static DtuCacheResult getDtuCacheResult(String dtuAddress) {
+        return dtuCacheResultMap.get(dtuAddress);
+    }
+
+    /**
+     * 获取dtu在线状态
+     *
+     * @param dtuAddress
+     * @return
+     */
+    public static boolean isDtuOnline(String dtuAddress) {
+        return getDtuCacheResult(dtuAddress) != null && getDtuCacheResult(dtuAddress).isDtuIsOnline();
+    }
+
+    /**
+     * 根据dtu地址更新缓存在线状态
+     *
+     * @param dtuAddress dtu地址
+     * @param isOnline   是否在线
+     */
+    public static void updateDtuOnlineState(String dtuAddress, boolean isOnline) {
+        synchronized (dtuCacheResultMap) {
+            DtuCacheResult result = dtuCacheResultMap.get(dtuAddress);
+            if (result != null) result.setDtuIsOnline(isOnline);
+        }
+    }
+
+    /**
+     * 更新DTU缓存
+     *
      * @param cacheResults
      */
-    public void putDeviceDtuCacheResult(List<DeviceDtuCacheResult> cacheResults) {
-        synchronized (deviceDtuCache) {
-            for (DeviceDtuCacheResult cacheResult : cacheResults) {
-                deviceDtuCache.put(cacheResult.getDtuAddress() + cacheResult.getDeviceTableName().toLowerCase() + cacheResult.getDeviceAddress(), cacheResult);
+    public static void updateDtuCacheResult(List<DtuCacheResult> cacheResults) {
+        if (cacheResults != null) {
+            synchronized (dtuCacheResultMap) {
+                for (DtuCacheResult cacheResult : cacheResults) {
+                    if (cacheResult != null && cacheResult.getCmdType() != CacheCmdType.DEFAULT) {
+                        switch (cacheResult.getCmdType()) {
+                            case DELETE:
+                                break;
+                            default:
+                                dtuCacheResultMap.put(cacheResult.getDtuAddress(), cacheResult);
+                                break;
+                        }
+                    }
+                }
             }
         }
     }
 
     /**
+     * 根据dtuId移除dtu缓存
+     *
+     * @param dtuId
+     */
+    public static void removeDtuCacheByDtuId(String dtuId) {
+        synchronized (dtuCacheResultMap) {
+            dtuCacheResultMap
+                    .entrySet()
+                    .stream()
+                    .filter(e -> Objects.equals(e.getValue().getDtuId(), dtuId))
+                    .map(Map.Entry::getValue)
+                    .forEach(e -> deviceCacheResultMap.remove(e.getDtuAddress()));
+        }
+    }
+
+    /**
+     * 更新设备缓存
+     *
+     * @param cacheResults
+     */
+    public static void updateDeviceCacheResult(List<DeviceCacheResult> cacheResults) {
+        if (cacheResults != null) {
+            synchronized (deviceCacheResultMap) {
+                for (DeviceCacheResult cacheResult : cacheResults) {
+                    if (cacheResult != null && cacheResult.getCmdType() != CacheCmdType.DEFAULT) {
+                        switch (cacheResult.getCmdType()) {
+                            case DELETE:
+                                break;
+                            default:
+                                deviceCacheResultMap.put(cacheResult.getDtuAddress() + cacheResult.getDeviceTableName().toLowerCase() + cacheResult.getDeviceAddress(), cacheResult);
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 根据设备id移除设备缓存
+     *
+     * @param deviceId
+     */
+    public static void removeDeviceCacheByDeviceId(String deviceId) {
+        synchronized (deviceCacheResultMap) {
+            deviceCacheResultMap
+                    .entrySet()
+                    .stream()
+                    .filter(e -> Objects.equals(e.getValue().getDeviceId(), deviceId))
+                    .map(Map.Entry::getValue)
+                    .forEach(e -> deviceCacheResultMap.remove(e.getDtuAddress() + e.getDeviceTableName().toLowerCase() + e.getDeviceAddress()));
+        }
+    }
+
+    /**
+     * 获取设备缓存
+     *
      * @return
      */
-    public ConcurrentHashMap<String, DeviceDtuCacheResult> getDeviceDtuCache() {
-        return deviceDtuCache;
+    public static ConcurrentHashMap<String, DeviceCacheResult> getDeviceCacheMap() {
+        return deviceCacheResultMap;
     }
 
     /**
-     * 初始化试跳记录
+     * 获取dtu缓存
+     *
+     * @return
      */
-    private void initDeviceRcdTrialSwitchLog() {
-        putCache(DEVICE_RCD_TRIAL_SWITCH_LOG, trialswitchlogCache);
-        LogUtils.error("init device rcd trial switch log ----->", true);
+    public static ConcurrentHashMap<String, DtuCacheResult> getDtuCacheMap() {
+        return dtuCacheResultMap;
     }
 
     /**
-     * 初始化设备索引表
+     * 初始化dtu信息
      *
      * @param sqlSession
      */
-    private void initDeviceRemoteIndexes(SqlSession sqlSession) {
+    private void initDtuInfo(SqlSession sqlSession) {
         start = System.currentTimeMillis();
-        DeviceRemoteindexsMapper mapper = sqlSession.getMapper(DeviceRemoteindexsMapper.class);
-        List<DeviceRemoteindexs> list = mapper.selectDeviceRemoteIndexes(Arrays.asList(Config.getDtuPorts().split(",")));
-        if (list != null) {
-            String key;
-            for (DeviceRemoteindexs remoteindexs : list) {
-                key = remoteindexs.getDeviceid() + remoteindexs.getDevicetablename().toLowerCase() + remoteindexs.getDataitem();
-                remoteIndexesMap.put(key, remoteindexs);
+        //初始化设备相关
+        CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+        List<DtuCacheResult> dtuCacheResults = commonMapper.selectDtuCacheResult(Arrays.asList(Config.getDtuPorts().split(",")), null);
+        if (dtuCacheResults != null && dtuCacheResults.size() > 0) {
+            synchronized (dtuCacheResultMap) {
+                dtuCacheResults
+                        .stream()
+                        .filter(e -> StringsUtils.isNotEmpty(e.getDtuAddress()))
+                        .forEach(dtuCacheResult -> dtuCacheResultMap.put(dtuCacheResult.getDtuAddress(), dtuCacheResult));
+                end = System.currentTimeMillis();
+                LogUtils.error("init dtu info ----->" + dtuCacheResultMap.size() + " take " + (end - start) + " ms", true);
             }
-            end = System.currentTimeMillis();
-            LogUtils.error("init device remote indexes ----->" + list.size() + " take " + (end - start) + " ms", true);
         }
     }
 
     /**
-     * @param deviceId
-     * @param deviceTableName
-     * @param dataItem
-     * @return
+     * 初始化设备信息
+     *
+     * @param sqlSession
      */
-    public DeviceRemoteindexs getDeviceRemoteindexes(String deviceId, String deviceTableName, String dataItem) {
-        if (remoteIndexesMap.containsKey(deviceId + deviceTableName + dataItem))
-            return remoteIndexesMap.get(deviceId + deviceTableName + dataItem);
-        return null;
+    private void initDeviceInfo(SqlSession sqlSession) {
+        start = System.currentTimeMillis();
+        //初始化设备相关
+        CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+        List<DeviceCacheResult> deviceCacheResults = commonMapper.selectDeviceCacheResult(Arrays.asList(Config.getDtuPorts().split(",")), null);
+        if (deviceCacheResults != null && deviceCacheResults.size() > 0) {
+            deviceCacheResults = initAdditionProperty(deviceCacheResults, commonMapper);
+            synchronized (deviceCacheResultMap) {
+                deviceCacheResults
+                        .stream()
+                        .filter(e -> StringsUtils.isNotEmpty(e.getDeviceAddress()))
+                        .forEach(deviceCacheResult -> deviceCacheResultMap.put(deviceCacheResult.getDtuAddress() + deviceCacheResult.getDeviceTableName().toLowerCase() + deviceCacheResult.getDeviceAddress(), deviceCacheResult));
+                end = System.currentTimeMillis();
+                LogUtils.error("init device info ----->" + deviceCacheResultMap.size() + " take " + (end - start) + " ms", true);
+            }
+        }
     }
 
     /**
-     * @param deviceId
-     * @param deviceTableName
-     * @param dataItem
-     * @param item
-     * @return
+     * 初始化附属信息
+     *
+     * @param deviceCacheResults
+     * @param commonMapper
      */
-    public void putDeviceRemoteindexes(String deviceId, String deviceTableName, String dataItem, DeviceRemoteindexs item) {
-        remoteIndexesMap.put(deviceId + deviceTableName + dataItem, item);
+    public List<DeviceCacheResult> initAdditionProperty(List<DeviceCacheResult> deviceCacheResults, CommonMapper commonMapper) {
+        List<DeviceTableEnum> tableEnums = DeviceTableEnum.getDeviceByGroup(DeviceGroup.DTU_DEVICE);
+        tableEnums
+                .stream()
+                .filter(tableEnum -> tableEnum != null)
+                .forEach(tableEnum -> {
+                    List<DeviceCacheResult> deviceList = deviceCacheResults
+                            .stream()
+                            .filter(e -> Objects.equals(e.getDeviceTableName(), tableEnum.getTableName()))
+                            .collect(Collectors.toList());
+                    if (deviceList.size() > 0) {
+                        StringBuilder builder = new StringBuilder();
+                        String sql = tableEnum.getSqlAdditionProperty();
+                        if (StringsUtils.isNotEmpty(sql)) {
+                            builder.append(tableEnum.getSqlAdditionProperty());
+                            deviceList.forEach(s -> builder.append(getColumn(s.getDeviceId())));
+                            builder.deleteCharAt(builder.lastIndexOf(",")).append(")");
+                            List<AdditionProperty> additionProperties = commonMapper.selectDeviceAdditionProperty(builder.toString());
+                            if (additionProperties != null) {
+                                Map<String, List<AdditionProperty>> map = additionProperties
+                                        .stream()
+                                        .collect(Collectors.groupingBy(AdditionProperty::getDeviceId, Collectors.toList()));
+                                deviceList.forEach(e -> {
+                                    String deviceId = e.getDeviceId();
+                                    List<AdditionProperty> a = map.get(deviceId);
+                                    e.setAdditionProperties(a);
+                                });
+                            }
+                        }
+                    }
+                });
+        return deviceCacheResults;
     }
 }

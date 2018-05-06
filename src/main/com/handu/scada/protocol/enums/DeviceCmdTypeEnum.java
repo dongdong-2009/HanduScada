@@ -275,7 +275,7 @@ public enum DeviceCmdTypeEnum {
     /// 三相电压电流和剩余电流
     /// </summary>
     /// [Description("三相电压电流和剩余电流")]
-    VoltageCurrentAndResidualcurrent(54, "三相电压电流和剩余电流"),
+    VoltageCurrentAndResidualCurrent(54, "三相电压电流和剩余电流"),
 
     /// [Description("读时钟")]
     ReadClock(55, "读时钟"),
@@ -459,11 +459,17 @@ public enum DeviceCmdTypeEnum {
     /// [Description("C相最小电流及发生的时刻")]
     MinCC(90, "C相最小电流及发生的时刻"),
     Residual(91, "剩余电流"),
+
     SecondLpUploadDateTime(92, "二级漏保整点数据上报时间"),
     SecondLpCollectDateTime(93, "二级漏保整点数据采样时间"),
     SecondLpRecord(94, "二级漏保档案上报"),
     ConcentratorHeartbeatTime(95, "集中器最后一次心跳时间"),
-    
+
+    CapacitorControlParams(96, "无功设备电容器控制参数查询"),
+    SecondSideSamplingInfo(97, "无功设备查询二次侧采样信息"),
+
+    HM_AFN0C25(98, "台区总表AFN0C25采集"),
+
     DTU_LOGIN(10000001, "DTU上线登录"),
     DTU_OFF_LINE(10000002, "DTU下线"),
     SWITCH_ON_LINE(10000003, "开关上线"),
@@ -471,7 +477,8 @@ public enum DeviceCmdTypeEnum {
     DTU_RESTART(10000005, "重启DTU"),
     READ_DTU_SIGNAL_STRENGTH(10000006, "读取DTU信号强度"),
     COLLECT_DTU_SIGNAL_STRENGTH(10000007, "采集DTU信号强度"),
-    DTU_INFO(10000008, "查询dtu参数信息");
+    DTU_INFO(10000008, "查询dtu参数信息"),
+    COMMUNICATION_MODEL(10000009, "模块信号模式");
 
     private String name = "";
     private int value;

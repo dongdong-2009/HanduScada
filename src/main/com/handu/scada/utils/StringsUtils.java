@@ -1,5 +1,7 @@
 package main.com.handu.scada.utils;
 
+import java.util.stream.IntStream;
+
 /**
  * Created by 柳梦 on 2017/12/24.
  */
@@ -55,5 +57,24 @@ public class StringsUtils {
      */
     public static boolean isEmpty(CharSequence str) {
         return str == null || str.length() == 0 || str == "";
+    }
+
+    /**
+     * @param str
+     * @return
+     */
+    public static boolean isNotEmpty(CharSequence str) {
+        return !isEmpty(str);
+    }
+
+    /**
+     * 判断字符串不为空并且长度验证
+     *
+     * @param str
+     * @param length
+     * @return
+     */
+    public static boolean isNotEmptyAndValidLength(CharSequence str, int... length) {
+        return isNotEmpty(str) && IntStream.of(length).anyMatch(x -> x == str.length());
     }
 }

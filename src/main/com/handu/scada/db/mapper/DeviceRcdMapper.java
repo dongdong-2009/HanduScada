@@ -21,9 +21,9 @@ public interface DeviceRcdMapper extends CommonMapper {
 
     DeviceRcd selectByPrimaryKey(String oid);
 
-    int updateByExampleSelective(@Param("tripEventRecord") DeviceRcd record, @Param("example") DeviceRcdExample example);
+    int updateByExampleSelective(@Param("record") DeviceRcd record, @Param("example") DeviceRcdExample example);
 
-    int updateByExample(@Param("tripEventRecord") DeviceRcd record, @Param("example") DeviceRcdExample example);
+    int updateByExample(@Param("record") DeviceRcd record, @Param("example") DeviceRcdExample example);
 
     int updateByPrimaryKeySelective(DeviceRcd record);
 

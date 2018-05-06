@@ -74,6 +74,8 @@ public class DeviceRcd implements Serializable {
 
     private Double io;
 
+    private String dtuid;
+
     private static final long serialVersionUID = 1L;
 
     public String getOid() {
@@ -356,6 +358,14 @@ public class DeviceRcd implements Serializable {
         this.io = io;
     }
 
+    public String getDtuid() {
+        return dtuid;
+    }
+
+    public void setDtuid(String dtuid) {
+        this.dtuid = dtuid == null ? null : dtuid.trim();
+    }
+
     @Override
     public boolean equals(Object that) {
         if (this == that) {
@@ -402,7 +412,8 @@ public class DeviceRcd implements Serializable {
             && (this.getIa() == null ? other.getIa() == null : this.getIa().equals(other.getIa()))
             && (this.getIb() == null ? other.getIb() == null : this.getIb().equals(other.getIb()))
             && (this.getIc() == null ? other.getIc() == null : this.getIc().equals(other.getIc()))
-            && (this.getIo() == null ? other.getIo() == null : this.getIo().equals(other.getIo()));
+            && (this.getIo() == null ? other.getIo() == null : this.getIo().equals(other.getIo()))
+            && (this.getDtuid() == null ? other.getDtuid() == null : this.getDtuid().equals(other.getDtuid()));
     }
 
     @Override
@@ -444,6 +455,7 @@ public class DeviceRcd implements Serializable {
         result = prime * result + ((getIb() == null) ? 0 : getIb().hashCode());
         result = prime * result + ((getIc() == null) ? 0 : getIc().hashCode());
         result = prime * result + ((getIo() == null) ? 0 : getIo().hashCode());
+        result = prime * result + ((getDtuid() == null) ? 0 : getDtuid().hashCode());
         return result;
     }
 }

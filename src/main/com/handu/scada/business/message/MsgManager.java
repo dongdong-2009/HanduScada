@@ -130,7 +130,7 @@ public class MsgManager {
 
     public void putMsg(Msg message) {
         try {
-            LogUtils.info(message.toString());
+            LogUtils.error(message.toString());
             queue.put(message);
         } catch (InterruptedException e) {
             ExceptionHandler.handle(e);
@@ -251,8 +251,8 @@ public class MsgManager {
                 sqlSession = MyBatisUtil.getSqlSession(false);
                 BaseSmssendMapper mapper = sqlSession.getMapper(BaseSmssendMapper.class);
                 BaseSmssendExample example = new BaseSmssendExample();
-                example.createCriteria().andPhonenoIsNotNull().andIssendIsNull();
-                example.or(example.createCriteria().andPhonenoIsNotNull().andIssendEqualTo(0));
+                example.createCriteria().andPhonenoIsNotNull().andSmscontentIsNotNull().andIssendIsNull();
+                example.or(example.createCriteria().andPhonenoIsNotNull().andSmscontentIsNotNull().andIssendEqualTo(0));
                 example.setOrderByClause(" RecordTime desc,Priority desc ");
                 List<BaseSmssend> smssends = mapper.selectByExample(example);
                 if (smssends != null) {

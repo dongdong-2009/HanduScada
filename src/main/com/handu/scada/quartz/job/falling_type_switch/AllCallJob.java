@@ -1,7 +1,7 @@
 package main.com.handu.scada.quartz.job.falling_type_switch;
 
 import main.com.handu.scada.protocol.enums.DeviceCmdTypeEnum;
-import main.com.handu.scada.protocol.enums.DeviceTypeEnum;
+import main.com.handu.scada.enums.DeviceTypeEnum;
 import main.com.handu.scada.quartz.job.BaseJob;
 import main.com.handu.scada.quartz.job.CommonJob;
 import main.com.handu.scada.utils.DateUtils;
@@ -16,10 +16,9 @@ public class AllCallJob extends CommonJob implements BaseJob {
 
     private DeviceCmdTypeEnum cmdType = DeviceCmdTypeEnum.ALL_CALL;
 
-
     @Override
-    public void isEnable(boolean isEnable) {
-        enable = isEnable;
+    public boolean isEnable() {
+        return false;
     }
 
     @Override
@@ -29,14 +28,12 @@ public class AllCallJob extends CommonJob implements BaseJob {
 
     @Override
     public String cronExpression() {
-        return "30 0/5 * * * ?";
+        return "50 4/5 * * * ?";
     }
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        if (enable) {
-            LogUtils.error(DateUtils.dateToStr(DateUtils.getNowSqlDateTime()) + "-->" + jobName());
-            send(DeviceTypeEnum.SWITCH, cmdType);
-        }
+        LogUtils.error(DateUtils.dateToStr(DateUtils.getNowSqlDateTime()) + "-->" + jobName());
+        send(DeviceTypeEnum.FALL_TYPE_SWITCH, cmdType);
     }
 }

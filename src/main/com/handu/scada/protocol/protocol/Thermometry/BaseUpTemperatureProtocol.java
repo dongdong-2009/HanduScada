@@ -23,10 +23,7 @@ public abstract class BaseUpTemperatureProtocol implements IProtocol {
     public byte[] telltableAddress;
     public byte[] telltableCount;
     public byte address;
-    public DirectionType Direct;
     public Map<Byte, Double> probedic;
     public String dtuAddress;
     public List<DataAttr> values;
-    public TemperatureExtern TemperatureItem;
-
 }

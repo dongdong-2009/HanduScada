@@ -132,7 +132,7 @@ public abstract class BaseAnalysis implements IAnalysis {
             if (file.exists()) {
                 try {
                     String content = FileUtils.readFileToString(file, "UTF-8");
-                    if (!StringsUtils.isEmpty(content)) {
+                    if (StringsUtils.isNotEmpty(content)) {
                         return gson.fromJson(content, new TypeToken<List<PointJsonData>>() {
                         }.getType());
                     }

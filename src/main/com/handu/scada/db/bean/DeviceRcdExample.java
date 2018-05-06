@@ -2404,6 +2404,76 @@ public class DeviceRcdExample {
             addCriterion("Io not between", value1, value2, "io");
             return (Criteria) this;
         }
+
+        public Criteria andDtuidIsNull() {
+            addCriterion("DtuId is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andDtuidIsNotNull() {
+            addCriterion("DtuId is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andDtuidEqualTo(String value) {
+            addCriterion("DtuId =", value, "dtuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDtuidNotEqualTo(String value) {
+            addCriterion("DtuId <>", value, "dtuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDtuidGreaterThan(String value) {
+            addCriterion("DtuId >", value, "dtuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDtuidGreaterThanOrEqualTo(String value) {
+            addCriterion("DtuId >=", value, "dtuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDtuidLessThan(String value) {
+            addCriterion("DtuId <", value, "dtuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDtuidLessThanOrEqualTo(String value) {
+            addCriterion("DtuId <=", value, "dtuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDtuidLike(String value) {
+            addCriterion("DtuId like", value, "dtuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDtuidNotLike(String value) {
+            addCriterion("DtuId not like", value, "dtuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDtuidIn(List<String> values) {
+            addCriterion("DtuId in", values, "dtuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDtuidNotIn(List<String> values) {
+            addCriterion("DtuId not in", values, "dtuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDtuidBetween(String value1, String value2) {
+            addCriterion("DtuId between", value1, value2, "dtuid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDtuidNotBetween(String value1, String value2) {
+            addCriterion("DtuId not between", value1, value2, "dtuid");
+            return (Criteria) this;
+        }
     }
 
     public static class Criteria extends GeneratedCriteria {

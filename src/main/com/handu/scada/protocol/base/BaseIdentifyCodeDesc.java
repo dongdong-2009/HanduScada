@@ -15,18 +15,18 @@ public abstract class BaseIdentifyCodeDesc {
     public String unit;
     public int length;
     public String address;
-    public byte[] Dicode;
+    public byte[] DiCode;
     public byte[] data;
-    public byte[] sourcedata;
+    public byte[] sourceData;
     //一级漏保数据
     public List<DataAttr> values;
     //二级漏保数据
     public List<List<DataAttr>> secondValues;
-    public BaseDataAnalyze dataanalyze;
+    public BaseDataAnalyze dataAnalyze;
     public AnswerControlCodeEnum controlCode;
-    public DeviceCmdTypeEnum cmdtype;
-    public CodeSysEnum codesystem;
-    public Date dtime;
+    public DeviceCmdTypeEnum cmdType;
+    public CodeSysEnum codeSystem;
+    public Date dTime;
 
     /**
      * 开始解析

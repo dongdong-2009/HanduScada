@@ -18,21 +18,15 @@ public interface DeviceHistoryRemotesignallingMapper extends CommonMapper {
 
     int insertSelective(DeviceHistoryRemotesignalling record);
 
-    List<DeviceHistoryRemotesignalling> selectByExampleWithBLOBs(DeviceHistoryRemotesignallingExample example);
-
     List<DeviceHistoryRemotesignalling> selectByExample(DeviceHistoryRemotesignallingExample example);
 
     DeviceHistoryRemotesignalling selectByPrimaryKey(@Param("remotesignallingid") String remotesignallingid, @Param("recordtime") Date recordtime);
 
     int updateByExampleSelective(@Param("record") DeviceHistoryRemotesignalling record, @Param("example") DeviceHistoryRemotesignallingExample example);
 
-    int updateByExampleWithBLOBs(@Param("record") DeviceHistoryRemotesignalling record, @Param("example") DeviceHistoryRemotesignallingExample example);
-
     int updateByExample(@Param("record") DeviceHistoryRemotesignalling record, @Param("example") DeviceHistoryRemotesignallingExample example);
 
     int updateByPrimaryKeySelective(DeviceHistoryRemotesignalling record);
-
-    int updateByPrimaryKeyWithBLOBs(DeviceHistoryRemotesignalling record);
 
     int updateByPrimaryKey(DeviceHistoryRemotesignalling record);
 }

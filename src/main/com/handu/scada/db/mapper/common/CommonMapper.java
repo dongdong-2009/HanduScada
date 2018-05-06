@@ -1,9 +1,8 @@
 package main.com.handu.scada.db.mapper.common;
 
-import main.com.handu.scada.db.bean.DeviceRealRemotesignalling;
-import main.com.handu.scada.db.bean.DeviceRealRemotetelemetry;
-import main.com.handu.scada.db.bean.DeviceRemoteindexs;
-import main.com.handu.scada.db.bean.common.DeviceDtuCacheResult;
+import main.com.handu.scada.db.bean.common.AdditionProperty;
+import main.com.handu.scada.db.bean.common.DeviceCacheResult;
+import main.com.handu.scada.db.bean.common.DtuCacheResult;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -24,35 +23,34 @@ public interface CommonMapper {
 
     Map<String, Object> selectOneBySql(String sql);
 
-    /**
-     * 查询设备，dtu关联缓存
-     *
-     * @param ports
-     * @return
-     */
-    List<DeviceDtuCacheResult> selectDeviceDtuCacheResult(@Param("ports") List<String> ports);
 
     /**
-     * 设备索引缓存
-     *
      * @param ports
      * @return
      */
-    List<DeviceRemoteindexs> selectDeviceRemoteIndexes(@Param("ports") List<String> ports);
+    List<DtuCacheResult> selectDtuCacheResult(@Param("ports") List<String> ports, @Param("dtuIds") List<String> dtuIds);
+
 
     /**
-     * 设备遥测缓存
-     *
      * @param ports
      * @return
      */
-    List<DeviceRealRemotetelemetry> selectDeviceRealRemoteTelemetry(@Param("ports") List<String> ports);
+    List<DeviceCacheResult> selectDeviceCacheResult(@Param("ports") List<String> ports, @Param("deviceIds") List<String> deviceIds);
+
 
     /**
-     * 设备遥信缓存
+     * 根据id删除infoChanges
      *
-     * @param ports
      * @return
      */
-    List<DeviceRealRemotesignalling> selectDeviceRealRemoteSignalling(@Param("ports") List<String> ports);
+    int deleteInfoChanges(@Param("ids") List<String> ids);
+
+
+    /**
+     * 查询设备附加属性
+     *
+     * @param sql
+     * @return
+     */
+    List<AdditionProperty> selectDeviceAdditionProperty(@Param("sql") String sql);
 }

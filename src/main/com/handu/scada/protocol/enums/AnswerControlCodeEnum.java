@@ -35,14 +35,11 @@ public enum AnswerControlCodeEnum {
     }
 
     public static AnswerControlCodeEnum getControlCode(byte b) {
-
         for (AnswerControlCodeEnum controlCodeEnum : AnswerControlCodeEnum.values()) {
             if ((byte) controlCodeEnum.getValue() == b) {
-
                 return controlCodeEnum;
             }
         }
         return null;
     }
-
 }

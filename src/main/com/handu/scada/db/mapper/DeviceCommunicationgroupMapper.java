@@ -1,11 +1,10 @@
 package main.com.handu.scada.db.mapper;
 
+import java.util.List;
 import main.com.handu.scada.db.bean.DeviceCommunicationgroup;
 import main.com.handu.scada.db.bean.DeviceCommunicationgroupExample;
 import main.com.handu.scada.db.mapper.common.CommonMapper;
 import org.apache.ibatis.annotations.Param;
-
-import java.util.List;
 
 public interface DeviceCommunicationgroupMapper extends CommonMapper {
     long countByExample(DeviceCommunicationgroupExample example);

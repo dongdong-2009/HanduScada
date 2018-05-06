@@ -105,6 +105,7 @@ public class TcpServer {
                 }
             }
             for (Channel channel : channels) {
+                // 等待服务器 socket 关闭
                 channel.closeFuture().sync();
             }
         } catch (InterruptedException e) {

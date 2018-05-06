@@ -519,4 +519,16 @@ public class HexUtils {
         low = (data & 0x0f);
         return low;
     }
+
+    /**
+     * 判断是否为BCD码
+     *
+     * @param b
+     * @return
+     */
+    public static boolean isBCD(byte b) {
+        int h =getByteHigh4(b);
+        int l = getByteLow4(b);
+        return h >= 0 && h <= 9 && l >= 0 && l <= 9;
+    }
 }
