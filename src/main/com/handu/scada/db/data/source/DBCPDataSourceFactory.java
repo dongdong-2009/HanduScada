@@ -29,10 +29,10 @@ public class DBCPDataSourceFactory implements DataSourceFactory {
         dataSource.setDefaultAutoCommit(Boolean.parseBoolean(ps.getProperty("autoCommit", "false")));
 
         dataSource.setInitialSize(Integer.parseInt(ps.getProperty("initialSize", "5")));
-        dataSource.setMaxActive(Integer.parseInt(ps.getProperty("maxActive", "30")));
-        dataSource.setMaxIdle(Integer.parseInt(ps.getProperty("maxIdle", "20")));
+        dataSource.setMaxActive(Integer.parseInt(ps.getProperty("maxActive", "8")));
+        dataSource.setMaxIdle(Integer.parseInt(ps.getProperty("maxIdle", "8")));
         dataSource.setMinIdle(Integer.parseInt(ps.getProperty("minIdle", "5")));
-        dataSource.setMaxWait(Long.parseLong(ps.getProperty("maxWait", "60000")));
+        dataSource.setMaxWait(Long.parseLong(ps.getProperty("maxWait", "10000")));
 
         dataSource.setRemoveAbandoned(Boolean.parseBoolean(ps.getProperty("removeAbandoned", "true")));
         dataSource.setRemoveAbandonedTimeout(Integer.parseInt(ps.getProperty("removeAbandonedTimeout", "60")));

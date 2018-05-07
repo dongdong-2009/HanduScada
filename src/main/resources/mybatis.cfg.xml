@@ -17,7 +17,6 @@
         <setting name="defaultFetchSize" value="100"/>
     </settings>
 
-
     <!-- 配置mybatis运行环境 -->
     <typeAliases>
         <typeAlias type="main.com.handu.scada.db.data.source.DBCPDataSourceFactory" alias="DBCP"/>
@@ -60,29 +59,29 @@
                 <!--是否自动提交-->
                 <property name="autoCommit" value="false"/>
                 <!--initialSize: 初始化连接-->
-                <property name="initialSize" value="20"/>
+                <property name="initialSize" value="5"/>
                 <!--maxActive: 最大连接数量-->
-                <property name="maxActive" value="200"/>
+                <property name="maxActive" value="50"/>
                 <!--minIdle: 最小空闲连接-->
                 <property name="minIdle" value="10"/>
                 <!--maxIdle: 最大空闲连接-->
-                <property name="maxIdle" value="20"/>
-                <!--maxWait: 超时等待时间以毫秒为单位-->
-                <property name="maxWait" value="900000"/>
+                <property name="maxIdle" value="30"/>
+                <!--maxWait:当连接池资源耗尽时，调用者最大阻塞的时间，超时将抛出异常。单位，毫秒数;默认为-1.表示永不超时-->
+                <property name="maxWait" value="30000"/>
                 <!--removeAbandoned:
                  标记是否删除泄露的连接,如果他们超过了removeAbandonedTimout的限制.如果设置为true,
                  连接被认为是被泄露并且可以被删除,如果空闲时间超过removeAbandonedTimeout.
                  设置为true可以为写法糟糕的没有关闭连接的程序修复数据库连接-->
                 <property name="removeAbandoned" value="true"/>
                 <!--removeAbandonedTimeout:泄露的连接可以被删除的超时值, 单位秒-->
-                <property name="removeAbandonedTimeout" value="900"/>
+                <property name="removeAbandonedTimeout" value="180"/>
 
                 <!-- 在空闲连接回收器线程运行期间休眠的时间值,以毫秒为单位. -->
                 <property name="timeBetweenEvictionRunsMillis" value="30000"/>
                 <!--池中的连接空闲x毫秒后被回收，默认30分钟-->
                 <property name="minEvictableIdleTimeMillis" value="1800000"/>
                 <!--在每次空闲连接回收器线程(如果有)运行时检查的连接数量，默认值是3 -->
-                <property name="numTestsPerEvictionRun" value="10"/>
+                <property name="numTestsPerEvictionRun" value="3"/>
 
                 <!--连接是否被空闲连接回收器(如果有)进行检验.如果检测失败,则连接将被从池中去除-->
                 <property name="testWhileIdle" value="true"/>

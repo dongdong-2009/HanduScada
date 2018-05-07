@@ -229,9 +229,10 @@ public class DtuCommand extends CommonJob {
      * @param sql
      */
     public void executeSql(String sql) {
+        SqlSession sqlSession = null;
         try {
             JsonArray array = new JsonArray();
-            SqlSession sqlSession = MyBatisUtil.getSqlSession();
+            sqlSession = MyBatisUtil.getSqlSession();
             CommonMapper mapper = sqlSession.getMapper(CommonMapper.class);
             List<Map<String, Object>> list = mapper.selectListBySql(sql);
             for (Map<String, Object> map : list) {
@@ -244,6 +245,8 @@ public class DtuCommand extends CommonJob {
             LogUtils.info("sql execute success---" + (array.size() > 0 ? array.toString() : ""), true);
         } catch (Exception e) {
             LogUtils.error(" sql execute error!");
+        } finally {
+            if (sqlSession != null) sqlSession.close();
         }
     }
 

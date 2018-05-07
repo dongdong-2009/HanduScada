@@ -105,20 +105,18 @@ public class SubscribePublish {
         @Override
         public void run() {
             Msg m;
-            while (true) {
-                try {
-                    if ((m = queue.take()) != null) {
-                        for (ISubscriber subscriber : subscribers) {
-                            try {
-                                subscriber.onEvent(m.getPublisher(), m.getMsg());
-                            } catch (Exception e) {
-                                ExceptionHandler.print(e);
-                            }
+            try {
+                while ((m = queue.take()) != null) {
+                    for (ISubscriber subscriber : subscribers) {
+                        try {
+                            subscriber.onEvent(m.getPublisher(), m.getMsg());
+                        } catch (Exception e) {
+                            ExceptionHandler.print(e);
                         }
                     }
-                } catch (InterruptedException e) {
-                    ExceptionHandler.print(e);
                 }
+            } catch (InterruptedException e) {
+                ExceptionHandler.handle(e);
             }
         }
     }

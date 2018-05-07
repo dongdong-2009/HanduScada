@@ -60,8 +60,10 @@ public class DtuTcpClient implements ISubscriber, IClient {
                 String clientId = DtuChannelManager.getClientId(protocolLayerData.DTUString);
                 if (clientId != null) {
                     DtuNetworkConnection state = DtuChannelManager.getNetworkState(clientId);
-                    if (state != null && state.getChannel().isActive()) {
-                        state.notifyDownParse(protocolLayerData, priority);
+                    if (state != null) {
+                        if (state.getChannel().isActive()) {
+                            state.notifyDownParse(protocolLayerData, priority);
+                        }
                     }
                 } else {
                     LogUtils.error("dtuAddress " + protocolLayerData.DTUString + " is not connection!");

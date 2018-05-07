@@ -650,106 +650,113 @@ public class DBService extends BaseDBService implements ISubscriber {
          * @return
          */
         private void saveDeviceAlarm(TripEventRecord record) {
-            if (record != null) {
-                int value = record.deviceGroup == DeviceGroup.LP1997 ? record.tripReason1997.getValue() : record.tripReason2007.getValue();
-                LogUtils.info("TripEventRecord:" + record.toString1());
-                SqlSession sqlSession = MyBatisUtil.getSqlSession(true);
-                DeviceAlarmMapper deviceAlarmMapper = sqlSession.getMapper(DeviceAlarmMapper.class);
-                //分闸报文
-                if (record.State == LPState.OFF) {
-                    DeviceCacheResult result = MyCacheManager.getDeviceCacheResult(protocolLayerData.DTUString, DeviceTableEnum.Device_Rcd.getTableName().toLowerCase(), protocolLayerData.PostalAddress);
-                    if (result != null) {
-                        String deviceId = result.getDeviceId();
-                        String tableName = DeviceTableEnum.Device_Rcd.getTableName().toLowerCase();
-                        Date alarmTime = DateUtils.strToDate(DateUtils.dateToStr(record.AlarmTime));
-                        DeviceAlarmExample deviceAlarmExample = new DeviceAlarmExample();
-                        deviceAlarmExample
-                                .createCriteria()
-                                .andDeviceidEqualTo(deviceId)
-                                .andDevicetablenameEqualTo(tableName)
-                                .andAlarmtimeEqualTo(alarmTime);
-                        Optional<DeviceAlarm> optional = deviceAlarmMapper
-                                .selectByExample(deviceAlarmExample)
-                                .stream()
-                                .findFirst();
-                        if (!optional.isPresent()) {
-                            DeviceAlarm item = new DeviceAlarm();
-                            item.setAlarmid(UUIDUtils.getUUId());
-                            item.setDeviceid(deviceId);
-                            item.setState(LPState.OFF.getValue());
-                            item.setUa((double) record.APhaseVoltage);
-                            item.setUb((double) record.BPhaseVoltage);
-                            item.setUc((double) record.CPhaseVoltage);
-                            item.setIa((double) record.APhaseCurrent);
-                            item.setIb((double) record.BPhaseCurrent);
-                            item.setIc((double) record.CPhaseCurrent);
-                            item.setIo((double) record.ResidualCurrent);
-                            item.setAlarmphase(record.AlarmPhase);
-                            item.setAlarmcontent(record.AlarmReason);
-                            item.setAlarmtime(alarmTime);
-                            item.setAlarmtype(value);
-                            item.setCreatedate(DateUtils.getNowSqlDateTime());
-                            item.setDevicetablename(tableName);
-                            item.setOutagetime(alarmTime);
-                            item.setIsdeal(0);
-                            item.setAlarmlevel(1);
-                            item.setIssendworkorder(0);
-                            item.setSortcode(0);
-                            DtuDBService.getInstance().push(new DeviceData(DataType.ALARM, item));
+            SqlSession sqlSession = null;
+            try {
+                if (record != null) {
+                    int value = record.deviceGroup == DeviceGroup.LP1997 ? record.tripReason1997.getValue() : record.tripReason2007.getValue();
+                    LogUtils.info("TripEventRecord:" + record.toString1());
+                    sqlSession = MyBatisUtil.getSqlSession();
+                    DeviceAlarmMapper deviceAlarmMapper = sqlSession.getMapper(DeviceAlarmMapper.class);
+                    //分闸报文
+                    if (record.State == LPState.OFF) {
+                        DeviceCacheResult result = MyCacheManager.getDeviceCacheResult(protocolLayerData.DTUString, DeviceTableEnum.Device_Rcd.getTableName().toLowerCase(), protocolLayerData.PostalAddress);
+                        if (result != null) {
+                            String deviceId = result.getDeviceId();
+                            String tableName = DeviceTableEnum.Device_Rcd.getTableName().toLowerCase();
+                            Date alarmTime = DateUtils.strToDate(DateUtils.dateToStr(record.AlarmTime));
+                            DeviceAlarmExample deviceAlarmExample = new DeviceAlarmExample();
+                            deviceAlarmExample
+                                    .createCriteria()
+                                    .andDeviceidEqualTo(deviceId)
+                                    .andDevicetablenameEqualTo(tableName)
+                                    .andAlarmtimeEqualTo(alarmTime);
+                            Optional<DeviceAlarm> optional = deviceAlarmMapper
+                                    .selectByExample(deviceAlarmExample)
+                                    .stream()
+                                    .findFirst();
+                            if (!optional.isPresent()) {
+                                DeviceAlarm item = new DeviceAlarm();
+                                item.setAlarmid(UUIDUtils.getUUId());
+                                item.setDeviceid(deviceId);
+                                item.setState(LPState.OFF.getValue());
+                                item.setUa((double) record.APhaseVoltage);
+                                item.setUb((double) record.BPhaseVoltage);
+                                item.setUc((double) record.CPhaseVoltage);
+                                item.setIa((double) record.APhaseCurrent);
+                                item.setIb((double) record.BPhaseCurrent);
+                                item.setIc((double) record.CPhaseCurrent);
+                                item.setIo((double) record.ResidualCurrent);
+                                item.setAlarmphase(record.AlarmPhase);
+                                item.setAlarmcontent(record.AlarmReason);
+                                item.setAlarmtime(alarmTime);
+                                item.setAlarmtype(value);
+                                item.setCreatedate(DateUtils.getNowSqlDateTime());
+                                item.setDevicetablename(tableName);
+                                item.setOutagetime(alarmTime);
+                                item.setIsdeal(0);
+                                item.setAlarmlevel(1);
+                                item.setIssendworkorder(0);
+                                item.setSortcode(0);
+                                DtuDBService.getInstance().push(new DeviceData(DataType.ALARM, item));
 
-                            //判断是否需要发短信
-                            Calendar cal = Calendar.getInstance();
-                            cal.setTime(record.getAlarmTime());
-                            cal.add(Calendar.HOUR, 1);
-                            String alarmDate = DateUtils.getDateStr(record.AlarmTime);
-                            String now = DateUtils.getDateStr(new Date());
-                            String temp = DateUtils.getDateStr(cal.getTime());
-                            //只报当天的告警，发送分闸短信
-                            if (Objects.equals(alarmDate, now) || Objects.equals(temp, now)) {
-                                String name = result.getDeviceName();
-                                String systemName = Config.getSystemName();
-                                String content = record.toString();
-                                String alarmTime1 = DateUtils.dateToStr(record.AlarmTime);
-                                String msgContent = String.format("%s,于时间%s,%s,%s", name, alarmTime1, content, "[" + systemName + "]");
-                                MsgManager.getInstance().putMsg(new Msg(deviceId, item.getAlarmtype(), msgContent));
+                                //判断是否需要发短信
+                                Calendar cal = Calendar.getInstance();
+                                cal.setTime(record.getAlarmTime());
+                                cal.add(Calendar.HOUR, 1);
+                                String alarmDate = DateUtils.getDateStr(record.AlarmTime);
+                                String now = DateUtils.getDateStr(new Date());
+                                String temp = DateUtils.getDateStr(cal.getTime());
+                                //只报当天的告警，发送分闸短信
+                                if (Objects.equals(alarmDate, now) || Objects.equals(temp, now)) {
+                                    String name = result.getDeviceName();
+                                    String systemName = Config.getSystemName();
+                                    String content = record.toString();
+                                    String alarmTime1 = DateUtils.dateToStr(record.AlarmTime);
+                                    String msgContent = String.format("%s,于时间%s,%s,%s", name, alarmTime1, content, "[" + systemName + "]");
+                                    MsgManager.getInstance().putMsg(new Msg(deviceId, item.getAlarmtype(), msgContent));
+                                }
                             }
                         }
                     }
-                }
-                //合闸报文
-                else if (record.getState() == LPState.ON) {
-                    DeviceCacheResult result = MyCacheManager.getDeviceCacheResult(protocolLayerData.DTUString, DeviceTableEnum.Device_Rcd.getTableName().toLowerCase(), protocolLayerData.PostalAddress);
-                    if (result != null) {
-                        DeviceAlarmExample deviceAlarmExample = new DeviceAlarmExample();
-                        deviceAlarmExample
-                                .createCriteria()
-                                .andDeviceidEqualTo(result.getDeviceId())
-                                .andDevicetablenameEqualTo(DeviceTableEnum.Device_Rcd.getTableName().toLowerCase())
-                                .andStateEqualTo(LPState.OFF.getValue());
+                    //合闸报文
+                    else if (record.getState() == LPState.ON) {
+                        DeviceCacheResult result = MyCacheManager.getDeviceCacheResult(protocolLayerData.DTUString, DeviceTableEnum.Device_Rcd.getTableName().toLowerCase(), protocolLayerData.PostalAddress);
+                        if (result != null) {
+                            DeviceAlarmExample deviceAlarmExample = new DeviceAlarmExample();
+                            deviceAlarmExample
+                                    .createCriteria()
+                                    .andDeviceidEqualTo(result.getDeviceId())
+                                    .andDevicetablenameEqualTo(DeviceTableEnum.Device_Rcd.getTableName().toLowerCase())
+                                    .andStateEqualTo(LPState.OFF.getValue());
 
-                        deviceAlarmMapper
-                                .selectByExample(deviceAlarmExample)
-                                .stream()
-                                .max((o1, o2) -> o1.getAlarmtime().getTime() < o2.getAlarmtime().getTime() ? -1 : o1.getAlarmtime().getTime() == o1.getAlarmtime().getTime() ? 0 : 1)
-                                .ifPresent(deviceAlarm -> {
+                            deviceAlarmMapper
+                                    .selectByExample(deviceAlarmExample)
+                                    .stream()
+                                    .max((o1, o2) -> o1.getAlarmtime().getTime() < o2.getAlarmtime().getTime() ? -1 : o1.getAlarmtime().getTime() == o1.getAlarmtime().getTime() ? 0 : 1)
+                                    .ifPresent(deviceAlarm -> {
 
-                                    deviceAlarm.setPowerontime(DateUtils.getNowSqlDateTime());
-                                    deviceAlarm.setDurationtime(DateUtils.getDiffMinutes(deviceAlarm.getOutagetime(), deviceAlarm.getPowerontime()));
-                                    deviceAlarm.setModifydate(DateUtils.getNowSqlDateTime());
-                                    deviceAlarm.setState(LPState.ON.getValue());
-                                    DtuDBService.getInstance().push(new DeviceData(DataType.ALARM, deviceAlarm));
+                                        deviceAlarm.setPowerontime(DateUtils.getNowSqlDateTime());
+                                        deviceAlarm.setDurationtime(DateUtils.getDiffMinutes(deviceAlarm.getOutagetime(), deviceAlarm.getPowerontime()));
+                                        deviceAlarm.setModifydate(DateUtils.getNowSqlDateTime());
+                                        deviceAlarm.setState(LPState.ON.getValue());
+                                        DtuDBService.getInstance().push(new DeviceData(DataType.ALARM, deviceAlarm));
 
-                                    //发送合闸短信
-                                    String name = result.getDeviceName();
-                                    String content = "合闸成功";
-                                    String systemName = Config.getSystemName();
-                                    String alarmTime = DateUtils.dateToStr(DateUtils.getNowSqlDateTime());
-                                    String deviceId = result.getDeviceId();
-                                    String msgContent = String.format("%s,于时间%s,%s,%s", name, alarmTime, content, "[" + systemName + "]");
-                                    MsgManager.getInstance().putMsg(new Msg(deviceId, deviceAlarm.getAlarmtype(), msgContent));
-                                });
+                                        //发送合闸短信
+                                        String name = result.getDeviceName();
+                                        String content = "合闸成功";
+                                        String systemName = Config.getSystemName();
+                                        String alarmTime = DateUtils.dateToStr(DateUtils.getNowSqlDateTime());
+                                        String deviceId = result.getDeviceId();
+                                        String msgContent = String.format("%s,于时间%s,%s,%s", name, alarmTime, content, "[" + systemName + "]");
+                                        MsgManager.getInstance().putMsg(new Msg(deviceId, deviceAlarm.getAlarmtype(), msgContent));
+                                    });
+                        }
                     }
                 }
+            } catch (Exception e) {
+                ExceptionHandler.handle(e);
+            } finally {
+                if (sqlSession != null) sqlSession.close();
             }
         }
 

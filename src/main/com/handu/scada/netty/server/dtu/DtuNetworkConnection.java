@@ -613,7 +613,7 @@ public class DtuNetworkConnection {
             }
             //如果不忙或者上一次发送时间已超时,设备还未回复则直接发送
             if (!isBusy() || System.currentTimeMillis() - getLastSendTime() > timeoutTime) {
-                setBusy(true);
+                setBusy(data.isWaitReceive);
                 sendCommand(context, data, "send");
             } else {
                 if (priority == MsgPriority.HIGH) {
