@@ -379,7 +379,7 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
     private void printReceiveMsg(DtuNetworkConnection connection, byte[] bytes, String type) {
         if (Config.isDebug) {
             String resultStr = HexUtils.byteArrayToHexStr(bytes);
-            LogUtils.info(connection == null ? "" : connection.getDtuAddress() + " " + type + " receive-->" + resultStr);
+            LogUtils.info((connection == null ? "" : connection.getDtuAddress()) + " " + type + " receive-->" + resultStr);
         }
     }
 }

@@ -1,4 +1,4 @@
-package main.com.handu.scada.netty.server.switch101;
+package main.com.handu.scada.netty.util;
 
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
@@ -10,20 +10,20 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by 柳梦 on 2018/04/25.
  */
-public class TimeoutManager {
+public class TimerManager {
 
     /**
      * 创建一个全局的timer，每一秒tick一次，长度为60
      */
     private HashedWheelTimer timer = new HashedWheelTimer(1, TimeUnit.SECONDS, 60);
     private ConcurrentHashMap<Integer, Timeout> hashMap = new ConcurrentHashMap<>();
-    private static TimeoutManager ourInstance = new TimeoutManager();
+    private static TimerManager ourInstance = new TimerManager();
 
-    public static TimeoutManager getInstance() {
+    public static TimerManager getInstance() {
         return ourInstance;
     }
 
-    private TimeoutManager() {
+    private TimerManager() {
     }
 
 

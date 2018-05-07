@@ -10,6 +10,7 @@ import main.com.handu.scada.db.utils.MyBatisUtil;
 import main.com.handu.scada.enums.DeviceTypeEnum;
 import main.com.handu.scada.event.EventManager;
 import main.com.handu.scada.event.events.DownProtocolEvent;
+import main.com.handu.scada.exception.ExceptionHandler;
 import main.com.handu.scada.netty.client.dtu.MsgPriority;
 import main.com.handu.scada.netty.server.dtu.DtuChannelManager;
 import main.com.handu.scada.netty.server.dtu.DtuNetworkConnection;
@@ -133,6 +134,7 @@ public class DtuCommand extends CommonJob {
                 break;
             case 1007:
                 readPostalAddress();
+                break;
             case 1008:
                 sendTo4g(DeviceCmdTypeEnum.HM_AFN0C25);
                 break;
@@ -249,20 +251,21 @@ public class DtuCommand extends CommonJob {
      * 获取客户端数量
      */
     public void getClientNumber() {
-        LogUtils.info("client number:" + DtuChannelManager.getNetworkStateMapCount() + "--dtu number:" + DtuChannelManager.getDtuMapCount(), true);
-        if (Config.isDebug) {
-            ConcurrentHashMap<String, DtuNetworkConnection> map = DtuChannelManager.getNetworkStateMap();
-            synchronized (map) {
-                for (Map.Entry<String, DtuNetworkConnection> entry : map.entrySet()) {
-                    String dtuAddress = entry.getValue().getDtuAddress();
-                    if (dtuAddress != null) {
-                        DtuCacheResult dtuCacheResult = MyCacheManager.getDtuCacheResult(dtuAddress);
-                        if (dtuCacheResult != null) {
-                            LogUtils.error(entry.getKey() + "--" + entry.getValue().getDtuAddress() + "--" + dtuCacheResult.isDtuIsOnline(), true);
+        try {
+            LogUtils.info("client number:" + DtuChannelManager.getNetworkStateMapCount() + "--dtu number:" + DtuChannelManager.getDtuMapCount(), true);
+            if (Config.isDebug) {
+                ConcurrentHashMap<String, DtuNetworkConnection> map = DtuChannelManager.getNetworkStateMap();
+                synchronized (map) {
+                    for (Map.Entry<String, DtuNetworkConnection> entry : map.entrySet()) {
+                        String dtuAddress = entry.getValue().getDtuAddress();
+                        if (dtuAddress != null) {
+                            LogUtils.error(entry.getKey() + "--" + entry.getValue().getDtuAddress(), true);
                         }
                     }
                 }
             }
+        } catch (Exception e) {
+            ExceptionHandler.handle(e);
         }
     }
 
@@ -270,34 +273,38 @@ public class DtuCommand extends CommonJob {
      * 导出dtu上线情况到txt文件
      */
     public void exportDtuOnline2Txt() {
-        ConcurrentHashMap<String, DtuNetworkConnection> onlineMap = DtuChannelManager.getNetworkStateMap();
-        ConcurrentHashMap<String, DtuCacheResult> dtuCacheMap = MyCacheManager.getDtuCacheMap();
-        List<String> onlineDtu = null;
-        List<String> dtuRecords = null;
-        if (onlineMap != null) {
-            synchronized (onlineMap) {
-                onlineDtu = onlineMap.entrySet().stream().map(e -> e.getValue().getDtuAddress()).sorted().collect(Collectors.toList());
+        try {
+            ConcurrentHashMap<String, DtuNetworkConnection> onlineMap = DtuChannelManager.getNetworkStateMap();
+            ConcurrentHashMap<String, DtuCacheResult> dtuCacheMap = MyCacheManager.getDtuCacheMap();
+            List<String> onlineDtu = null;
+            List<String> dtuRecords = null;
+            if (onlineMap != null) {
+                synchronized (onlineMap) {
+                    onlineDtu = onlineMap.entrySet().stream().map(e -> e.getValue().getDtuAddress()).sorted().collect(Collectors.toList());
+                }
             }
-        }
-        if (dtuCacheMap != null) {
-            synchronized (dtuCacheMap) {
-                dtuRecords = dtuCacheMap.entrySet().stream().map(e -> e.getValue().getDtuAddress()).sorted().collect(Collectors.toList());
+            if (dtuCacheMap != null) {
+                synchronized (dtuCacheMap) {
+                    dtuRecords = dtuCacheMap.entrySet().stream().map(e -> e.getValue().getDtuAddress()).sorted().collect(Collectors.toList());
+                }
             }
-        }
-        StringBuilder sb = new StringBuilder();
-        if (dtuRecords != null) {
-            sb.append("records list--->\n");
-            for (String record : dtuRecords) {
-                sb.append(record).append("\n");
+            StringBuilder sb = new StringBuilder();
+            if (dtuRecords != null) {
+                sb.append("records list--->\n");
+                for (String record : dtuRecords) {
+                    sb.append(record).append("\n");
+                }
             }
-        }
-        if (onlineDtu != null) {
-            sb.append("online list--->\n");
-            for (String dtuAddress : onlineDtu) {
-                sb.append(dtuAddress).append("\n");
+            if (onlineDtu != null) {
+                sb.append("online list--->\n");
+                for (String dtuAddress : onlineDtu) {
+                    sb.append(dtuAddress).append("\n");
+                }
             }
+            TxtUtils.exportDtuOnline(sb.toString());
+        } catch (Exception e) {
+            ExceptionHandler.handle(e);
         }
-        TxtUtils.exportDtuOnline(sb.toString());
     }
 
     /**

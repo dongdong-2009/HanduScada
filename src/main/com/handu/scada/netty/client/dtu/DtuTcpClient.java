@@ -66,6 +66,8 @@ public class DtuTcpClient implements ISubscriber, IClient {
                 } else {
                     LogUtils.error("dtuAddress " + protocolLayerData.DTUString + " is not connection!");
                 }
+            } else {
+                LogUtils.error("dtuAddress " + protocolLayerData.DTUString + " is not correct!");
             }
         }
     }

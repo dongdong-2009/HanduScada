@@ -19,6 +19,7 @@ import main.com.handu.scada.protocol.base.ProtocolLayerData;
 import main.com.handu.scada.protocol.protocol.DLT645.LP2007.impl.SecondLpRecordCreate;
 import main.com.handu.scada.protocol.protocol.Data.DataAttr;
 import main.com.handu.scada.quartz.utils.DtuCommand;
+import main.com.handu.scada.thread.MyThreadPoolExecutor;
 import main.com.handu.scada.utils.*;
 
 import java.lang.annotation.Annotation;
@@ -229,7 +230,7 @@ public class DtuNetworkConnection {
     /**
      * 如果是二级漏保档案上报,创建二级漏保档案
      */
-    void createSecondLpRecord(byte[] bytes) {
+    public void createSecondLpRecord(byte[] bytes) {
         MediaData mediaData = new MediaData();
         mediaData.DTUString = getDtuAddress();
         mediaData.CommandData = bytes;
@@ -241,78 +242,6 @@ public class DtuNetworkConnection {
             }
         } catch (Exception e) {
             ExceptionHandler.print(e);
-        }
-    }
-
-    /**
-     * 通知相应的解析类开始解析
-     *
-     * @param bytes 数据源
-     */
-    void notifyUpParse(byte[] bytes) {
-        MediaData mediaData = new MediaData();
-        mediaData.CommandData = bytes;
-        mediaData.DTUString = getDtuAddress();
-        for (IProtocol protocol : iUpProtocols) {
-            try {
-                ProtocolLayerData protocolLayerData = protocol.parse(mediaData);
-                if (protocolLayerData != null) {
-                    //如果是二级漏保的整点遥测上报
-                    List<List<DataAttr>> list = protocolLayerData.secondAttrList;
-                    if (list != null && list.size() > 0) {
-                        for (List<DataAttr> dataAttrs : list) {
-                            ProtocolLayerData p = new ProtocolLayerData();
-                            p.CommandData = protocolLayerData.CommandData;
-                            p.CommandName = protocolLayerData.CommandName;
-                            p.DLT645Address = protocolLayerData.DLT645Address;
-                            p.PostalAddress = protocolLayerData.PostalAddress;
-                            p.DTUString = protocolLayerData.DTUString;
-                            p.attrList = dataAttrs;
-                            p.TabName = protocolLayerData.TabName;
-                            p.CmdType = protocolLayerData.CmdType;
-                            p.tripEventRecord = protocolLayerData.tripEventRecord;
-                            p.controlWord = protocolLayerData.controlWord;
-                            EventManager.getInstance().publish(new DBEvent(p));
-                        }
-                    } else {
-                        //其他的漏保数据上则通知入库
-                        EventManager.getInstance().publish(new DBEvent(protocolLayerData));
-                    }
-                    return;
-                }
-            } catch (Exception e) {
-                ExceptionHandler.print(e);
-            }
-        }
-    }
-
-    /**
-     * 通知下行解析
-     */
-    public synchronized void notifyDownParse(ProtocolLayerData protocolLayerData, MsgPriority priority) {
-        MediaData data = special(protocolLayerData);
-        if (data == null) {
-            for (IProtocol protocol : iDownParseProtocols) {
-                try {
-                    data = protocol.sendCommand(protocolLayerData);
-                    if (data != null) {
-                        if (data.CommandData != null) {
-                            byte[] bytes = new byte[data.CommandData.length + 1];
-                            bytes[0] = 0x5A;
-                            System.arraycopy(data.CommandData, 0, bytes, 1, data.CommandData.length);
-                            data.CommandData = bytes;
-                        }
-                    }
-                } catch (Exception e) {
-                    ExceptionHandler.print(e);
-                }
-            }
-        }
-        if (data != null && data.CommandData != null) {
-            data.isWaitReceive = protocolLayerData.isWaitReceive;
-            data.cmdTypeEnum = protocolLayerData.CmdType;
-            data.deviceTypeEnum = protocolLayerData.deviceTypeEnum;
-            sendOrIntoQueue(data, priority);
         }
     }
 
@@ -447,7 +376,7 @@ public class DtuNetworkConnection {
     /**
      * 更新错误
      */
-    void updateError() {
+    public void updateError() {
         progress = 0;
         isUpdating = false;
         LogUtils.error(dtuAddress + " update error...", true);
@@ -467,26 +396,13 @@ public class DtuNetworkConnection {
     /**
      * 更新成功
      */
-    void updateSuccess() {
+    public void updateSuccess() {
         progress = 0;
         isUpdating = false;
         this.updateBuffList = null;
         LogUtils.info(dtuAddress + " update success...", true);
         TxtUtils.updateSuccess(dtuAddress);
         DtuCommand.getInstance().restartDtu(dtuAddress);
-    }
-
-    /**
-     * 发送
-     *
-     * @param mediaData
-     */
-    private void sendUpdateCommand(MediaData mediaData) {
-        ChannelHandlerContext context = this.getContext();
-        if (context == null) return;
-        ByteBuf byteBuf = context.alloc().buffer(mediaData.CommandData.length);
-        byteBuf.writeBytes(mediaData.CommandData);
-        context.writeAndFlush(byteBuf);
     }
 
     /**
@@ -506,82 +422,82 @@ public class DtuNetworkConnection {
      * @param bytes
      */
     private void sendUpdateCommand(byte[] bytes) {
-        MediaData mediaData = new MediaData() {{
-            DTUString = dtuAddress;
-            CommandData = bytes;
-            HasDTUHead = false;
-        }};
-        sendUpdateCommand(mediaData);
+        if (context == null) return;
+        ByteBuf byteBuf = context.alloc().buffer(bytes.length);
+        byteBuf.writeBytes(bytes);
+        context.writeAndFlush(byteBuf).addListener(future -> setLastSendTime(System.currentTimeMillis()));
     }
 
     /**
-     * 开始正式升级
+     * 开始正式升级,将升级过程放到线程池
      */
     public void update() {
-        progress = 0;
-        LogUtils.info(dtuAddress + " start update...", true);
-        try {
-            int frameNo = 0;
-            byte[] bytes;
-            int count = getUpdateBuffList().size();
-            List<byte[]> firstList = new ArrayList<>();
-            List<byte[]> secondList = new ArrayList<>();
+        MyThreadPoolExecutor.getInstance().execute(() -> {
+            progress = 0;
+            LogUtils.info(dtuAddress + " start update...", true);
+            try {
+                int frameNo = 0;
+                byte[] bytes;
+                int count = getUpdateBuffList().size();
+                List<byte[]> firstList = new ArrayList<>();
+                List<byte[]> secondList = new ArrayList<>();
 
-            while (isUpdating) {
-                if (frameNo < count) {
-                    //等于64K时,暂停3秒,等待DTU写入
-                    if (frameNo == 0x40) {
-                        try {
-                            Thread.sleep(3000);
-                        } catch (InterruptedException ignored) {
+                while (isUpdating) {
+                    if (frameNo < count) {
+                        //等于64K时,暂停3秒,等待DTU写入
+                        if (frameNo == 0x40) {
+                            try {
+                                Thread.sleep(3000);
+                            } catch (InterruptedException ignored) {
+                            }
                         }
+                        if (frameNo < 0x40) {
+                            firstList.add(getUpdateBuffList().get(frameNo));
+                        } else {
+                            secondList.add(getUpdateBuffList().get(frameNo));
+                        }
+                        bytes = getSendCmd(getUpdateBuffList().get(frameNo), (byte) 0x5e, (byte) 0x02, frameNo);
+                        sendUpdateCommand(bytes);
+                        frameNo++;
+                        progress = frameNo * 1f / (count + 1);
+                        Thread.sleep(DtuUpdateUtil.interval);
                     }
-                    if (frameNo < 0x40) {
-                        firstList.add(getUpdateBuffList().get(frameNo));
-                    } else {
-                        secondList.add(getUpdateBuffList().get(frameNo));
-                    }
-                    bytes = getSendCmd(getUpdateBuffList().get(frameNo), (byte) 0x5e, (byte) 0x02, frameNo);
-                    sendUpdateCommand(bytes);
-                    frameNo++;
-                    progress = frameNo * 1f / (count + 1);
-                    Thread.sleep(DtuUpdateUtil.interval);
-                }
-                //已发送完毕,暂停2秒等待写入,发送校验位
-                else {
-                    Thread.sleep(2000);
-                    byte[] cs = new byte[4];
-                    cs[0] = 0x00;
-                    cs[1] = 0x00;
-                    cs[2] = 0x00;
-                    cs[3] = 0x00;
-                    byte[] allBytes1 = getAllBytes(firstList);
-                    int crc = Crc16Utils.calcCrc16(allBytes1, 0, 65535);
-                    cs[1] = (byte) (crc & 0xFF);
-                    cs[0] = (byte) (crc >> 0x08);
-                    if (secondList.size() > 0) {
-                        byte[] allBytes2 = getAllBytes(secondList);
-                        crc = Crc16Utils.calcCrc16(allBytes2, 0, 65535);
-                        cs[3] = (byte) (crc & 0xFF);
-                        cs[2] = (byte) (crc >> 0x08);
-                    } else {
+                    //已发送完毕,暂停2秒等待写入,发送校验位
+                    else {
+                        Thread.sleep(2000);
+                        byte[] cs = new byte[4];
+                        cs[0] = 0x00;
+                        cs[1] = 0x00;
+                        cs[2] = 0x00;
                         cs[3] = 0x00;
-                        cs[2] = (byte) 0xFF;
+                        byte[] allBytes1 = getAllBytes(firstList);
+                        int crc = Crc16Utils.calcCrc16(allBytes1, 0, 65535);
+                        cs[1] = (byte) (crc & 0xFF);
+                        cs[0] = (byte) (crc >> 0x08);
+                        if (secondList.size() > 0) {
+                            byte[] allBytes2 = getAllBytes(secondList);
+                            crc = Crc16Utils.calcCrc16(allBytes2, 0, 65535);
+                            cs[3] = (byte) (crc & 0xFF);
+                            cs[2] = (byte) (crc >> 0x08);
+                        } else {
+                            cs[3] = 0x00;
+                            cs[2] = (byte) 0xFF;
+                        }
+                        bytes = getSendCmd(cs, (byte) 0x5e, (byte) 0x02, frameNo);
+                        sendUpdateCommand(bytes);
+                        frameNo++;
+                        progress = 1f;
+                        isUpdating = false;
                     }
-                    bytes = getSendCmd(cs, (byte) 0x5e, (byte) 0x02, frameNo);
-                    sendUpdateCommand(bytes);
-                    frameNo++;
-                    progress = 1f;
-                    isUpdating = false;
+                    if ((progress * 100) % 20 == 0) {
+                        String p = String.format("%.2f", progress * 100) + "%";
+                        LogUtils.info(dtuAddress + "  update progress--" + p, true);
+                    }
                 }
-                if ((progress * 100) % 20 == 0) {
-                    String p = String.format("%.2f", progress * 100) + "%";
-                    LogUtils.info(dtuAddress + "  update progress--" + p, true);
-                }
+            } catch (Exception e) {
+                ExceptionHandler.handle(e);
             }
-        } catch (Exception e) {
-            ExceptionHandler.handle(e);
-        }
+        });
     }
 
     /**
@@ -682,50 +598,13 @@ public class DtuNetworkConnection {
     }
 
     /**
-     * 读数据超时
-     */
-    public void readTimeout() {
-        nextSend();
-    }
-
-    /**
-     * 写数据超时
-     */
-    public void writeTimeout() {
-        nextSend();
-    }
-
-    /**
-     * 触发下一次发送
-     */
-    public synchronized void nextSend() {
-        if (context == null) return;
-        MediaData data;
-        Queue<MediaData> highQueue = getHighQueue();
-        Queue<MediaData> lowQueue = getLowQueue();
-        if (highQueue.size() > 0) {
-            data = highQueue.poll();
-            if (data != null) {
-                sendCommand(context, data);
-            }
-        } else if (lowQueue.size() > 0) {
-            data = lowQueue.poll();
-            if (data != null) {
-                sendCommand(context, data);
-            }
-        } else {
-            setBusy(false);
-        }
-    }
-
-    /**
      * 发送或加入队列
      * 需要同步，保证多线程安全
      *
      * @param data
      * @param priority
      */
-    public void sendOrIntoQueue(MediaData data, MsgPriority priority) {
+    private void sendOrIntoQueue(MediaData data, MsgPriority priority) {
         if (context == null) return;
         try {
             //如果上一次发送时间大于1倍心跳并且队列数量不为0，清空队列避免发送重复命令
@@ -734,7 +613,8 @@ public class DtuNetworkConnection {
             }
             //如果不忙或者上一次发送时间已超时,设备还未回复则直接发送
             if (!isBusy() || System.currentTimeMillis() - getLastSendTime() > timeoutTime) {
-                sendCommand(context, data);
+                setBusy(true);
+                sendCommand(context, data, "send");
             } else {
                 if (priority == MsgPriority.HIGH) {
                     Queue<MediaData> highQueue = getHighQueue();
@@ -751,19 +631,125 @@ public class DtuNetworkConnection {
     }
 
     /**
+     * 读数据超时
+     */
+    public void readTimeout() {
+        nextSend();
+    }
+
+    /**
+     * 写数据超时
+     */
+    public void writeTimeout() {
+        nextSend();
+    }
+
+    /**
+     * 触发下一次发送
+     */
+    public void nextSend() {
+        if (context == null) return;
+        MediaData data;
+        Queue<MediaData> highQueue = getHighQueue();
+        Queue<MediaData> lowQueue = getLowQueue();
+        if (highQueue.size() > 0) {
+            data = highQueue.poll();
+            if (data != null) {
+                sendCommand(context, data, "next send high");
+            }
+        } else if (lowQueue.size() > 0) {
+            data = lowQueue.poll();
+            if (data != null) {
+                sendCommand(context, data, "next send low");
+            }
+        } else {
+            setBusy(false);
+        }
+    }
+
+    /**
      * 发送命令
      *
      * @param ctx
      * @param data
      */
-    private synchronized void sendCommand(ChannelHandlerContext ctx, MediaData data) {
-        isBusy = true;
+    private void sendCommand(ChannelHandlerContext ctx, MediaData data, String str) {
+        if (context == null) return;
         ByteBuf byteBuf = context.alloc().buffer(data.CommandData.length);
         byteBuf.writeBytes(data.CommandData);
-        ctx.writeAndFlush(byteBuf).addListener(future -> {
-            setLastSendTime(System.currentTimeMillis());
-            printCommand(data, "send");
-        });
+        setLastSendTime(System.currentTimeMillis());
+        ctx.writeAndFlush(byteBuf).addListener(future -> printCommand(data, str));
+    }
+
+    /**
+     * 通知相应的解析类开始解析
+     *
+     * @param bytes 数据源
+     */
+    public void notifyUpParse(byte[] bytes) {
+        MediaData mediaData = new MediaData();
+        mediaData.CommandData = bytes;
+        mediaData.DTUString = getDtuAddress();
+        for (IProtocol protocol : iUpProtocols) {
+            try {
+                ProtocolLayerData protocolLayerData = protocol.parse(mediaData);
+                if (protocolLayerData != null) {
+                    //如果是二级漏保的整点遥测上报
+                    List<List<DataAttr>> list = protocolLayerData.secondAttrList;
+                    if (list != null && list.size() > 0) {
+                        for (List<DataAttr> dataAttrs : list) {
+                            ProtocolLayerData p = new ProtocolLayerData();
+                            p.CommandData = protocolLayerData.CommandData;
+                            p.CommandName = protocolLayerData.CommandName;
+                            p.DLT645Address = protocolLayerData.DLT645Address;
+                            p.PostalAddress = protocolLayerData.PostalAddress;
+                            p.DTUString = protocolLayerData.DTUString;
+                            p.attrList = dataAttrs;
+                            p.TabName = protocolLayerData.TabName;
+                            p.CmdType = protocolLayerData.CmdType;
+                            p.tripEventRecord = protocolLayerData.tripEventRecord;
+                            p.controlWord = protocolLayerData.controlWord;
+                            EventManager.getInstance().publish(new DBEvent(p));
+                        }
+                    } else {
+                        //其他的漏保数据上则通知入库
+                        EventManager.getInstance().publish(new DBEvent(protocolLayerData));
+                    }
+                    return;
+                }
+            } catch (Exception e) {
+                ExceptionHandler.print(e);
+            }
+        }
+    }
+
+    /**
+     * 通知下行解析
+     */
+    public synchronized void notifyDownParse(ProtocolLayerData protocolLayerData, MsgPriority priority) {
+        MediaData data = special(protocolLayerData);
+        if (data == null) {
+            for (IProtocol protocol : iDownParseProtocols) {
+                try {
+                    data = protocol.sendCommand(protocolLayerData);
+                    if (data != null && data.CommandData != null) {
+                        byte[] bytes = new byte[data.CommandData.length + 1];
+                        bytes[0] = 0x5A;
+                        System.arraycopy(data.CommandData, 0, bytes, 1, data.CommandData.length);
+                        data.CommandData = bytes;
+                        break;
+                    }
+                } catch (Exception e) {
+                    ExceptionHandler.print(e);
+                }
+            }
+        }
+        if (data != null && data.CommandData != null) {
+            data.isWaitReceive = protocolLayerData.isWaitReceive;
+            data.cmdTypeEnum = protocolLayerData.CmdType;
+            data.deviceTypeEnum = protocolLayerData.deviceTypeEnum;
+            sendOrIntoQueue(data, priority);
+        }
     }
 
     /**
