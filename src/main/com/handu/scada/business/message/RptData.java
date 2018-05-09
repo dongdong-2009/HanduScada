@@ -13,9 +13,27 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class RptData {
 
+    private String ErrorCode;
+    private String ErrorInfo;
     private String State;
     private String RetCount;
     private RPTList RPTList;
+
+    public String getErrorCode() {
+        return ErrorCode;
+    }
+
+    public void setErrorCode(String errorCode) {
+        ErrorCode = errorCode;
+    }
+
+    public String getErrorInfo() {
+        return ErrorInfo;
+    }
+
+    public void setErrorInfo(String errorInfo) {
+        ErrorInfo = errorInfo;
+    }
 
     public String getState() {
         return State;

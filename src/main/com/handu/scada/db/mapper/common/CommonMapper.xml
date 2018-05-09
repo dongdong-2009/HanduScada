@@ -159,4 +159,22 @@
         </if>
     </select>
 
+    <resultMap id="msgAdditionPropertyMap" type="main.com.handu.scada.business.message.MsgAdditionProperty"/>
+    <select id="selectMsgAdditionProperty" parameterType="java.lang.String"
+            resultMap="msgAdditionPropertyMap">
+        <if test="deviceIds != null">
+            SELECT
+            a.DeviceId as deviceId,
+            a.DeviceAlarms as alarms,
+            b.RealName as name,
+            b.Mobile  as phone
+            FROM
+            device_communicationgroup a
+            LEFT JOIN base_user b
+            ON a.UserId = b.UserId
+            where a.DeviceId in
+            <foreach collection="deviceIds" index="index" item="item" open="(" separator="," close=")">#{item}</foreach>
+        </if>
+    </select>
+
 </mapper>

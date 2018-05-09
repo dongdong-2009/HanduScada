@@ -6,17 +6,12 @@ import main.com.handu.scada.business.message.client.send.Scdl_sms_send_wsLocator
 import main.com.handu.scada.business.message.client.send.Scdl_sms_send_wsSoap_BindingStub;
 import main.com.handu.scada.db.bean.BaseSmssend;
 import main.com.handu.scada.db.bean.BaseSmssendExample;
-import main.com.handu.scada.db.bean.BaseUser;
-import main.com.handu.scada.db.bean.DeviceCommunicationgroupExample;
 import main.com.handu.scada.db.mapper.BaseSmssendMapper;
-import main.com.handu.scada.db.mapper.BaseUserMapper;
-import main.com.handu.scada.db.mapper.DeviceCommunicationgroupMapper;
+import main.com.handu.scada.db.mapper.common.CommonMapper;
+import main.com.handu.scada.db.service.BaseDBService;
 import main.com.handu.scada.db.utils.MyBatisUtil;
 import main.com.handu.scada.exception.ExceptionHandler;
-import main.com.handu.scada.utils.DateUtils;
-import main.com.handu.scada.utils.LogUtils;
-import main.com.handu.scada.utils.StringsUtils;
-import main.com.handu.scada.utils.UUIDUtils;
+import main.com.handu.scada.utils.*;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.dom4j.DocumentHelper;
@@ -37,21 +32,23 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.stream.Collectors;
 
+import static main.com.handu.scada.utils.LogUtils.error;
+
 /**
  * Created by 柳梦 on 2017/12/29.
  * 短信发送
  */
-public class MsgManager {
+public class MsgManager extends BaseDBService {
 
     private BlockingQueue<Msg> queue;
     private static MsgManager singleton;
     private Timer timer;
 
     private MsgManager(boolean isLoop) {
-        timer = new Timer();
         //开始循环短信入库
         if (isLoop) {
-            queue = new LinkedBlockingDeque<>(1000);
+            timer = new Timer();
+            queue = new LinkedBlockingDeque<>();
             //每一段时间从队列中读取
             timer.schedule(new LoopThread(), 5000, 10000);
         }
@@ -76,6 +73,7 @@ public class MsgManager {
      * 启动短信发送任务定时发送短信
      */
     public void startSendMsg() {
+        timer = new Timer();
         final String[] msgUrls = {"", ""};
         final String[] user = {"", ""};
         final int[] intervals = {5000, 5000};
@@ -130,7 +128,7 @@ public class MsgManager {
 
     public void putMsg(Msg message) {
         try {
-            LogUtils.error(message.toString());
+            error(message.toString());
             queue.put(message);
         } catch (InterruptedException e) {
             ExceptionHandler.handle(e);
@@ -163,7 +161,7 @@ public class MsgManager {
                 //每次取1000条短信
                 int m = queue.drainTo(msgList, 1000);
                 if (m > 0) {
-                    msgList.forEach(this::getPhoneNumbers);
+                    insertMsg(msgList);
                 }
             } catch (Exception e) {
                 ExceptionHandler.handle(e);
@@ -172,57 +170,54 @@ public class MsgManager {
 
         /**
          * 获取发送手机号码
+         * 并存入短信代发库
          *
-         * @param message
+         * @param messages
          */
-        private void getPhoneNumbers(Msg message) {
+        private void insertMsg(List<Msg> messages) {
             try {
-                sqlSession = MyBatisUtil.getSqlSession(false);
-
-                DeviceCommunicationgroupMapper deviceCommunicationgroupMapper = sqlSession.getMapper(DeviceCommunicationgroupMapper.class);
-                BaseUserMapper baseUserMapper = sqlSession.getMapper(BaseUserMapper.class);
-                DeviceCommunicationgroupExample example = new DeviceCommunicationgroupExample();
-                example.createCriteria().andDeviceidEqualTo(message.getDeviceId());
-                List<String> phoneNumbers = new ArrayList<>();
-                deviceCommunicationgroupMapper.selectByExample(example).forEach(model -> {
-                    if (!StringsUtils.isEmpty(model.getDevicealarms())) {
-                        String arr[] = model.getDevicealarms().split(",");
-                        if (arr.length > 0 && Arrays.asList(arr).contains(message.getDeviceAlarms() + "")) {
-                            BaseUser baseUser = baseUserMapper.selectByPrimaryKey(model.getUserid());
-                            if (baseUser != null) {
-                                phoneNumbers.add(baseUser.getMobile());
-                            }
-                        }
+                sqlSession = MyBatisUtil.getSqlSession();
+                CommonMapper mapper = sqlSession.getMapper(CommonMapper.class);
+                //取出设备id
+                List<String> deviceIds = messages
+                        .stream()
+                        .collect(Collectors.groupingBy(Msg::getDeviceId, Collectors.toList()))
+                        .entrySet().stream().map(Map.Entry::getKey).collect(Collectors.toList());
+                //找到通讯分组和短信发送人和电话号码
+                List<MsgAdditionProperty> propertyList = mapper.selectMsgAdditionProperty(deviceIds);
+                //过滤掉告警类型为空短信号码不符合规范的按照设备id分组
+                Map<String, List<MsgAdditionProperty>> propertyMap = propertyList
+                        .stream()
+                        .filter(e -> e.getAlarms() != null && StringsUtils.isNotEmptyAndValidLength(e.getPhone(), 11))
+                        .collect(Collectors.groupingBy(MsgAdditionProperty::getDeviceId, Collectors.toList()));
+                StringBuilder sb = new StringBuilder();
+                sb.append("INSERT INTO base_smssend( Oid, PhoneNo, SmsContent, RecordTime, IsSend ) VALUES ");
+                int i[] = {0};
+                messages.forEach(msg -> {
+                    String deviceId = msg.getDeviceId();
+                    List<MsgAdditionProperty> p = propertyMap.get(deviceId);
+                    TxtUtils.alarm(msg.getDeviceId() + "--" + msg.getMsgContent() + "--" + p.stream().map(e -> e.getName() + "--" + e.getPhone()).collect(Collectors.joining(",")));
+                    if (p.size() > 0) {
+                        p.stream()
+                                .filter(e -> Arrays.stream(e.getAlarms().split(",")).anyMatch(s -> Objects.equals(s, msg.getDeviceAlarms() + "")))
+                                .forEach(property -> sb.append(getStartColumn(UUIDUtils.getUUId()))
+                                        .append(getColumn(property.getPhone()))
+                                        .append(getColumn(msg.getMsgContent()))
+                                        .append(getColumn(DateUtils.dateToStr(DateUtils.getNowSqlDateTime())))
+                                        .append(getEndColumn(0))
+                                        .append(",")
+                                );
+                        i[0]++;
                     }
                 });
-                insertMsg(phoneNumbers, message.getMsgContent());
-                if (sqlSession != null) sqlSession.commit(true);
+                if (i[0] > 0) {
+                    sb.deleteCharAt(sb.lastIndexOf(","));
+                    mapper.insertBySql(sb.toString());
+                }
             } catch (Exception e) {
                 ExceptionHandler.handle(e);
-                if (sqlSession != null) sqlSession.rollback(true);
             } finally {
                 if (sqlSession != null) sqlSession.close();
-            }
-        }
-
-        /**
-         * 将短信存入待发库
-         *
-         * @param phoneNumbers
-         * @param msgContent
-         */
-        private void insertMsg(List<String> phoneNumbers, String msgContent) {
-            if (phoneNumbers.size() > 0) {
-                BaseSmssendMapper baseSmssendMapper = sqlSession.getMapper(BaseSmssendMapper.class);
-                for (String phoneNumber : phoneNumbers) {
-                    BaseSmssend baseSmssend = new BaseSmssend();
-                    baseSmssend.setOid(UUIDUtils.getUUId());
-                    baseSmssend.setPhoneno(phoneNumber);
-                    baseSmssend.setSmscontent(msgContent);
-                    baseSmssend.setRecordtime(DateUtils.getNowSqlDateTime());
-                    baseSmssend.setIssend(0);
-                    baseSmssendMapper.insert(baseSmssend);
-                }
             }
         }
     }
@@ -248,7 +243,7 @@ public class MsgManager {
         @Override
         public void run() {
             try {
-                sqlSession = MyBatisUtil.getSqlSession(false);
+                sqlSession = MyBatisUtil.getSqlSession();
                 BaseSmssendMapper mapper = sqlSession.getMapper(BaseSmssendMapper.class);
                 BaseSmssendExample example = new BaseSmssendExample();
                 example.createCriteria().andPhonenoIsNotNull().andSmscontentIsNotNull().andIssendIsNull();
@@ -263,6 +258,9 @@ public class MsgManager {
                     if (smssends.size() == 0) return;
                     List<List<BaseSmssend>> lists = splitMsg(smssends, maxSendCount);
                     if (lists != null) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("insert into base_smssend( Oid, IsSend, SendTime, Result, MsgSendId ) values ");
+                        int i = 0;
                         for (List<BaseSmssend> list : lists) {
                             RetInfo retInfo = sendMsg(list.toArray(new BaseSmssend[list.size()]));
                             if (retInfo != null) {
@@ -271,29 +269,32 @@ public class MsgManager {
                                     for (RetInfo.MSGID msgid : msgids) {
                                         String msgId = msgid.getMSG_ID();
                                         if (msgId != null) {
-                                            BaseSmssend smssend = mapper.selectByPrimaryKey(msgId);
-                                            smssend.setSendtime(DateUtils.getNowSqlDateTime());
-                                            smssend.setIssend(1);
-                                            smssend.setResult(0);
-                                            smssend.setMsgsendid(msgId);
-                                            mapper.updateByPrimaryKeySelective(smssend);
+                                            sb.append(getStartColumn(msgId))
+                                                    .append(getColumn(1))
+                                                    .append(getColumn(DateUtils.dateToStr(DateUtils.getNowSqlDateTime())))
+                                                    .append(0)
+                                                    .append(getEndColumn(msgid))
+                                                    .append(",");
+                                            i++;
                                         }
                                     }
+
                                 } else {
-                                    LogUtils.error(retInfo.getErrorCode() + "--" + retInfo.getErrorInfo(), true);
+                                    TxtUtils.error(retInfo.getErrorCode() + "--" + retInfo.getErrorInfo());
                                 }
                             }
                         }
+                        if (i > 0) {
+                            sb.deleteCharAt(sb.lastIndexOf(","));
+                            sb.append(" on duplicate key update Oid=values(Oid),IsSend=values(IsSend),SendTime=values(SendTime),Result=values(Result),MsgSendId=values(MsgSendId) ");
+                            mapper.insertBySql(sb.toString());
+                        }
                     }
                 }
-                if (sqlSession != null) sqlSession.commit(true);
             } catch (Exception e) {
                 ExceptionHandler.handle(e);
-                if (sqlSession != null) sqlSession.rollback(true);
             } finally {
-                if (sqlSession != null) {
-                    sqlSession.close();
-                }
+                if (sqlSession != null) sqlSession.close();
             }
         }
 
@@ -362,7 +363,7 @@ public class MsgManager {
         @Override
         public void run() {
             try {
-                sqlSession = MyBatisUtil.getSqlSession(false);
+                sqlSession = MyBatisUtil.getSqlSession();
                 BaseSmssendMapper mapper = sqlSession.getMapper(BaseSmssendMapper.class);
                 BaseSmssendExample example = new BaseSmssendExample();
                 example.createCriteria().andResultIsNotNull().andResultEqualTo(0);
@@ -370,6 +371,9 @@ public class MsgManager {
                 if (smssends != null && smssends.size() > 0) {
                     List<List<BaseSmssend>> lists = splitMsg(smssends, maxSendCount);
                     if (lists != null) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("insert into base_smssend (Oid, Result, ResultContent) values ");
+                        int i = 0;
                         for (List<BaseSmssend> list : lists) {
                             RptData rptData = sendMsgResult(list);
                             if (rptData != null) {
@@ -380,25 +384,29 @@ public class MsgManager {
                                         String statusId = subData.getSTATUS_ID();
                                         String sendResult = statusId.equals("0") ? subData.getERR_CONTENT() : "发送成功";
                                         if (msgId != null) {
-                                            BaseSmssend smssend = mapper.selectByPrimaryKey(msgId);
-                                            smssend.setResult(Integer.valueOf(statusId));
-                                            smssend.setResultcontent(sendResult);
-                                            mapper.updateByPrimaryKeySelective(smssend);
+                                            sb.append(getStartColumn(msgId))
+                                                    .append(getColumn(Integer.valueOf(statusId)))
+                                                    .append(getEndColumn(sendResult))
+                                                    .append(",");
+                                            i++;
                                         }
                                     }
+                                } else {
+                                    TxtUtils.error(rptData.getErrorCode() + "--" + rptData.getErrorInfo());
                                 }
                             }
                         }
+                        if (i > 0) {
+                            sb.deleteCharAt(sb.lastIndexOf(","));
+                            sb.append(" on duplicate key update Oid=values(Oid),Result=values(Result),ResultContent=values(ResultContent)");
+                            mapper.insertBySql(sb.toString());
+                        }
                     }
                 }
-                if (sqlSession != null) sqlSession.commit(true);
             } catch (Exception e) {
                 ExceptionHandler.handle(e);
-                if (sqlSession != null) sqlSession.rollback(true);
             } finally {
-                if (sqlSession != null) {
-                    sqlSession.close();
-                }
+                if (sqlSession != null) sqlSession.close();
             }
         }
 

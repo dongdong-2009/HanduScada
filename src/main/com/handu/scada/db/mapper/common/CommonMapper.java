@@ -1,5 +1,6 @@
 package main.com.handu.scada.db.mapper.common;
 
+import main.com.handu.scada.business.message.MsgAdditionProperty;
 import main.com.handu.scada.db.bean.common.AdditionProperty;
 import main.com.handu.scada.db.bean.common.DeviceCacheResult;
 import main.com.handu.scada.db.bean.common.DtuCacheResult;
@@ -53,4 +54,13 @@ public interface CommonMapper {
      * @return
      */
     List<AdditionProperty> selectDeviceAdditionProperty(@Param("sql") String sql);
+
+
+    /**
+     * 获取短信发送附加信息
+     *
+     * @param deviceIds
+     * @return
+     */
+    List<MsgAdditionProperty> selectMsgAdditionProperty(@Param("deviceIds") List<String> deviceIds);
 }
