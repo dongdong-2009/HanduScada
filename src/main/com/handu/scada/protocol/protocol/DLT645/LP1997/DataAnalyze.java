@@ -7,6 +7,8 @@ import main.com.handu.scada.protocol.base.BaseIdentifyCodeDesc;
 import main.com.handu.scada.protocol.enums.DeviceCmdTypeEnum;
 import main.com.handu.scada.protocol.enums.LPState;
 import main.com.handu.scada.protocol.enums.RemoteType;
+import main.com.handu.scada.protocol.protocol.DLT645.CommonTripReasonEnum;
+import main.com.handu.scada.protocol.protocol.DLT645.LP2007.DltControlWord;
 import main.com.handu.scada.protocol.protocol.DLT645.TripEventRecord;
 import main.com.handu.scada.protocol.protocol.Data.DataAttr;
 import main.com.handu.scada.utils.DateUtils;
@@ -60,7 +62,7 @@ public class DataAnalyze extends BaseDataAnalyze {
                     break;
             }
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return dataAttrs;
     }
@@ -290,7 +292,7 @@ public class DataAnalyze extends BaseDataAnalyze {
             int m = HexUtils.bcdByteToInt(data[index]);
             Calendar calendar = Calendar.getInstance();
             int y = calendar.get(Calendar.YEAR);
-            calendar.set(y, m, d, h, mm, 0);
+            calendar.set(y, m - 1, d, h, mm, 0);
             Date alarmTime = calendar.getTime();
             tripEventRecord.setAlarmTime(alarmTime);
         }
@@ -302,22 +304,13 @@ public class DataAnalyze extends BaseDataAnalyze {
     private void parseReadControlWordParameterModule() {
         byte[] data = identifyCodeDesc.data;
         if (data != null && identifyCodeDesc.length != 0) {
-            itemNames = new String[]{"content", "ReadControlWordParameterModule"};
-            itemCnNames = new String[]{"内容", "控制字参数"};
             int index = 0;
             int state = data[index++];
             lpState = getLpState(state);
             byte[] params = new byte[11];
             System.arraycopy(data, index, params, 0, params.length);
-            dataAttr = new DataAttr() {{
-                setCnname(itemCnNames[1]);
-                setName(itemNames[1]);
-                setUnit("");
-                setDtime(identifyCodeDesc.dTime);
-                setDateType(RemoteType.YC);
-                setValue(params);
-            }};
-            dataAttrs.add(dataAttr);
+            controlWord = new DltControlWord(params, DeviceGroup.LP1997);
+            dataAttrs = controlWord.parseControlWord();
         }
     }
 
@@ -333,8 +326,9 @@ public class DataAnalyze extends BaseDataAnalyze {
         } else {
             tripEventRecord = new TripEventRecord();
             tripEventRecord.setState(LPState.ON);
-            tripEventRecord.deviceGroup = DeviceGroup.LP1997;
-            tripEventRecord.tripReason1997 = TripReason1997Enum.NORMAL;
+            tripEventRecord.setAlarmReason("合闸成功");
+            tripEventRecord.setAlarmPhase("未知相");
+            tripEventRecord.tripReason = CommonTripReasonEnum.Normal;
             return LPState.ON;
         }
     }
@@ -349,13 +343,12 @@ public class DataAnalyze extends BaseDataAnalyze {
     private TripEventRecord parseEventContent(int state, float actionValue) {
 
         tripEventRecord = new TripEventRecord();
-        tripEventRecord.deviceGroup = DeviceGroup.LP1997;
         tripEventRecord.setAddress(getAddress());
 
-        TripReason1997Enum e = TripReason1997Enum.getTripReasonEnumByValue(HexUtils.byteToInt((byte) (state & 0x1f)));
-        if (e != null) {
-            tripEventRecord.tripReason1997 = e;
-            tripEventRecord.setAlarmReason(e.getName());
+        CommonTripReasonEnum reasonEnum = CommonTripReasonEnum.getTripReasonEnumByValue(HexUtils.byteToInt((byte) (state & 0x1f)), DeviceGroup.LP1997);
+        if (reasonEnum != null) {
+            tripEventRecord.tripReason = reasonEnum;
+            tripEventRecord.setAlarmReason(reasonEnum.getName());
         }
         tripEventRecord.setState(LPState.OFF);
         if ((state & 0x40) >> 6 == 0x01) {

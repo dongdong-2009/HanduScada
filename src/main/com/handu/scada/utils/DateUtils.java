@@ -140,7 +140,15 @@ public class DateUtils {
     }
 
     public static String getTimeStr(Date date) {
-        return new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+        return new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(date);
+    }
+
+    public static String getFileTimeStr(Date date, String format) {
+        try {
+            return new SimpleDateFormat(format, Locale.getDefault()).format(date);
+        } catch (Exception e) {
+            return getTimeStr(new Date());
+        }
     }
 
     /**
@@ -165,7 +173,7 @@ public class DateUtils {
         try {
             strToDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(strDate);
         } catch (ParseException e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return strToDate;
     }

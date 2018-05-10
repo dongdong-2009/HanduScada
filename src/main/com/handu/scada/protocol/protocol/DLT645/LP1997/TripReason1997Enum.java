@@ -5,6 +5,8 @@ package main.com.handu.scada.protocol.protocol.DLT645.LP1997;
  */
 public enum TripReason1997Enum {
 
+    OTHER(0xff, "未知类型"),
+
     LeakageTrip(0x00, "漏电跳闸"),
 
     MutationTrip(0x01, "突变跳闸"),

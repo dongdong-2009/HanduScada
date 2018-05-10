@@ -1,10 +1,12 @@
 package main.com.handu.scada.protocol.protocol.DLT645.LP2007;
 
+import main.com.handu.scada.enums.DeviceGroup;
 import main.com.handu.scada.exception.ExceptionHandler;
 import main.com.handu.scada.protocol.base.BaseDataAnalyze;
 import main.com.handu.scada.protocol.base.BaseIdentifyCodeDesc;
 import main.com.handu.scada.protocol.enums.LPState;
 import main.com.handu.scada.protocol.enums.RemoteType;
+import main.com.handu.scada.protocol.protocol.DLT645.CommonTripReasonEnum;
 import main.com.handu.scada.protocol.protocol.DLT645.TripEventRecord;
 import main.com.handu.scada.protocol.protocol.Data.DataAttr;
 import main.com.handu.scada.utils.DateUtils;
@@ -234,7 +236,9 @@ public class DataAnalyze extends BaseDataAnalyze {
                             dataAttrs.add(dataAttr);
                             tripEventRecord = new TripEventRecord();
                             tripEventRecord.setState(LPState.ON);
-                            tripEventRecord.tripReason2007 = TripReason2007Enum.Normal;
+                            tripEventRecord.setAlarmReason("合闸成功");
+                            tripEventRecord.setAlarmPhase("未知相");
+                            tripEventRecord.tripReason = CommonTripReasonEnum.Normal;
                             tripEventRecord.setAddress(getAddress());
                         }
                     }
@@ -315,8 +319,8 @@ public class DataAnalyze extends BaseDataAnalyze {
 
                 case ReadControlWordParameterModule://region 读控制字参数模块
                 {
-                    this.controlWord = new DltControlWord(item.data);
-                    return null;
+                    this.controlWord = new DltControlWord(item.data, DeviceGroup.LP2007);
+                    return controlWord.parseControlWord();
                 }
                 case WriteControlWordParameterModule:
                 case WriteControlWordParameterModule1:
@@ -1079,7 +1083,7 @@ public class DataAnalyze extends BaseDataAnalyze {
                     return null;
             }
         } catch (Exception ex) {
-            ExceptionHandler.print(ex);
+            ExceptionHandler.handle(ex);
         }
         return null;
     }

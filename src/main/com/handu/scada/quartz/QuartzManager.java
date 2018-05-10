@@ -98,9 +98,10 @@ public class QuartzManager {
                     BaseJob job = (BaseJob) aClass.newInstance();
                     //表达式
                     String cron = job.cronExpression();
-                    if (cron == null) {
-                        addOnceJob(job.jobName(), DEFAULT_JOB_GROUP_NAME, aClass);
-                    } else {
+                    try {
+                        int seconds = Integer.parseInt(cron);
+                        addOnceJob(job.jobName(), DEFAULT_JOB_GROUP_NAME, aClass, seconds * 60);
+                    } catch (Exception e) {
                         //是否启用
                         boolean isEnable = job.isEnable();
                         if (!props.containsKey(aClass.getName() + ".enable")) {
@@ -174,14 +175,15 @@ public class QuartzManager {
      * @param jobId
      * @param jobGroupName
      * @param cls
+     * @param delayed
      */
-    public void addOnceJob(String jobId, String jobGroupName, Class<? extends Job> cls) {
+    public void addOnceJob(String jobId, String jobGroupName, Class<? extends Job> cls, int delayed) {
         try {
             //定义一个Trigger
-            Trigger trigger = newTrigger().withIdentity(jobId, jobGroupName) //定义name/group
-                    .startAt(DateUtils.getDelayedDateBySeconds(300))//一旦加入scheduler，5分钟后执行
+            Trigger trigger = newTrigger()
+                    .withIdentity(jobId, jobGroupName) //定义name/group
+                    .startAt(DateUtils.getDelayedDateBySeconds(delayed))//一旦加入scheduler，30分钟后执行
                     .withSchedule(simpleSchedule() //使用SimpleTrigger
-                            //.withIntervalInSeconds(300) //程序启动5分钟后执行一次
                             .withRepeatCount(0)) //只执行一次,重复0次
                     .build();
             if (!scheduler.checkExists(new TriggerKey(jobId, jobGroupName))) {

@@ -1,5 +1,7 @@
 package main.com.handu.scada.protocol.protocol.DLT645.LP2007;
 
+import main.com.handu.scada.enums.DeviceGroup;
+import main.com.handu.scada.protocol.protocol.DLT645.CommonTripReasonEnum;
 import main.com.handu.scada.protocol.protocol.DLT645.TripEventRecord;
 import main.com.handu.scada.utils.HexUtils;
 
@@ -22,9 +24,9 @@ public class TripEventRecordAnalyze {
         tripEventRecord = new TripEventRecord();
         int index = 0;
         byte reason = data[index];
-        TripReason2007Enum tripReasonEnum = TripReason2007Enum.getTripReasonEnumByValue(HexUtils.byteToInt((byte) (reason & 0x1f)));
+        CommonTripReasonEnum tripReasonEnum = CommonTripReasonEnum.getTripReasonEnumByValue(HexUtils.byteToInt((byte) (reason & 0x1f)), DeviceGroup.LP2007);
         if (tripReasonEnum != null) {
-            tripEventRecord.tripReason2007 = tripReasonEnum;
+            tripEventRecord.tripReason = tripReasonEnum;
             tripEventRecord.setAlarmReason(tripReasonEnum.getName());
         }
         index++;

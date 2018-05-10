@@ -19,9 +19,8 @@ public class UpLeakageProtectorDLT6451997 extends BaseDLT645 {
 
     @Override
     public boolean valid(byte[] buff) {
-
-        if (buff.length < 10) return false;
         try {
+            if (buff.length < 10) return false;
             //针头针尾校验
             if (buff[0] == 0x68 && buff[7] == 0x68 && buff[buff.length - 1] == 0x16) {
                 byte blen = (byte) (buff[9] + 0x0C);
@@ -106,7 +105,7 @@ public class UpLeakageProtectorDLT6451997 extends BaseDLT645 {
                 }
             }
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return null;
     }

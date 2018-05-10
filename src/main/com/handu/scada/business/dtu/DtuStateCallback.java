@@ -30,7 +30,7 @@ public class DtuStateCallback implements DtuStateCallbackListener {
         ProtocolLayerData protocolLayerData = new ProtocolLayerData();
         protocolLayerData.clientId = clientId;
         protocolLayerData.dtuAddress = dtuAddress;
-        protocolLayerData.CmdType = DeviceCmdTypeEnum.DTU_LOGIN;
+        protocolLayerData.CmdType = type == MsgType.LOGIN ? DeviceCmdTypeEnum.DTU_LOGIN : DeviceCmdTypeEnum.DTU_HEARTBEAT;
         EventManager.getInstance().publish(new DBEvent(protocolLayerData));
     }
 

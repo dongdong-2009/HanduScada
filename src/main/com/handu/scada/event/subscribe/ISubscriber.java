@@ -25,5 +25,5 @@ public interface ISubscriber {
      * @param: publisher 发布者
      * @param: message 消息
      */
-    void onEvent(String publisher, BaseEvent event);
+    void onEvent(String publisher, BaseEvent event) throws Exception;
 }

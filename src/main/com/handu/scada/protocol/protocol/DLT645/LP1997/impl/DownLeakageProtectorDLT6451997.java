@@ -51,7 +51,7 @@ public class DownLeakageProtectorDLT6451997 extends BaseDLT645 {
                     return data;
             }
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return null;
     }

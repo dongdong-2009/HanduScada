@@ -158,6 +158,8 @@ public class DeviceCacheResult {
 
     public void setAdditionProperties(List<AdditionProperty> additionProperties) {
         this.additionProperties = new HashMap<>();
-        additionProperties.forEach(e -> this.additionProperties.put(e.getName(), e));
+        if (additionProperties != null) {
+            additionProperties.forEach(e -> this.additionProperties.put(e.getName(), e));
+        }
     }
 }

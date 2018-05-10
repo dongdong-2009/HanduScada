@@ -58,7 +58,7 @@ public class HD4GUp implements IProtocol {
                 }};
             }
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return null;
     }
@@ -73,7 +73,7 @@ public class HD4GUp implements IProtocol {
             int Crc = Crc16Utils.calcCrc16(bytes, 4, 9);
             return (byte) (Crc & 0xFF) == bytes[bytes.length - 2] && (byte) (Crc >> 8) == bytes[bytes.length - 3];
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return false;
     }

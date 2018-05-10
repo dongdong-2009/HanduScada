@@ -471,6 +471,7 @@ public enum DeviceCmdTypeEnum {
     HM_AFN0C25(98, "台区总表AFN0C25采集"),
 
     DTU_LOGIN(10000001, "DTU上线登录"),
+    DTU_HEARTBEAT(10000010, "DTU心跳"),
     DTU_OFF_LINE(10000002, "DTU下线"),
     SWITCH_ON_LINE(10000003, "开关上线"),
     SWITCH_OFF_LINE(10000004, "开关下线"),

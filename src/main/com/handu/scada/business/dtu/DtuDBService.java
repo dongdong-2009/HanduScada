@@ -94,7 +94,7 @@ public class DtuDBService extends BaseDBService {
         try {
             this.dtuStateQueue.put(result);
         } catch (InterruptedException e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
     }
 
@@ -108,7 +108,7 @@ public class DtuDBService extends BaseDBService {
         try {
             this.dataQueue.put(result);
         } catch (InterruptedException e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
     }
 
@@ -171,12 +171,13 @@ public class DtuDBService extends BaseDBService {
                     results.stream()
                             .filter(result -> StringsUtils.isNotEmpty(result.getDtuId()))
                             .forEach(result -> {
-                                if (result.getState() == DtuState.ONLINE) {
+                                if (result.getState() == DtuState.ONLINE || result.getState() == DtuState.HEARTBEAT) {
                                     if (i[0] != 0) sb1.append(",");
+                                    String msg = result.getState() == DtuState.ONLINE ? "上线登录" : "心跳";
                                     sb1.append(getStartColumn(result.getDtuId()))
                                             .append(getColumn(DeviceTableEnum.Device_Dtu.getTableName().toLowerCase()))
                                             .append(getColumn(result.getDtuId()))
-                                            .append("'1','在线',")
+                                            .append("'1','").append(msg).append("',")
                                             .append(getEndColumn(DateUtils.dateToStr(result.getTime())));
                                     i[0]++;
                                 } else if (result.getState() == DtuState.OFFLINE) {
@@ -789,7 +790,6 @@ public class DtuDBService extends BaseDBService {
                                 " ModifyDate = values(ModifyDate ), ModifyUserId = values(ModifyUserId ), " +
                                 "ModifyUserName = values(ModifyUserName )");
                         mapper.updateBySql(sb9.toString());
-                        LogUtils.info("insert or update device_alarm " + i[8], true);
                     }
                     if (i[9] > 0) {
                         sb10.append(" on duplicate key update Oid =values(Oid ) , DaId =values(DaId ) , Name =values(Name ) ," +
@@ -798,7 +798,6 @@ public class DtuDBService extends BaseDBService {
                                 " DtuId =values(DtuId ),Ua=values(Ua),Ub=values(Ub),Uc=values(Uc)," +
                                 "Ia=values(Ia),Ib=values(Ib),Ic=values(Ic),Io=values(Io) ");
                         mapper.updateBySql(sb10.toString());
-                        LogUtils.info("insert or update device_rcd " + i[9], true);
                     }
                     if (i[10] > 0) {
                         sb_afn0c25_real.append(" on duplicate key update DtuAddress =values(DtuAddress), " +

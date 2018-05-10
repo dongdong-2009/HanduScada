@@ -66,7 +66,7 @@ public class UpWiredTemperatureProtocol extends BaseUpTemperatureProtocol {
                 TabName = DeviceTableEnum.Device_Temperature.getTableName();
             }};
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return protocolLayerData;
     }
@@ -82,7 +82,7 @@ public class UpWiredTemperatureProtocol extends BaseUpTemperatureProtocol {
             int Crc = Crc16Utils.calcCrc16(bytes, 0, bytes.length - 2);
             return (byte) (Crc & 0xFF) == bytes[13] && (byte) (Crc >> 8) == bytes[14];
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return false;
     }

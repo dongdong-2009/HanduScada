@@ -47,7 +47,7 @@ public class SecondLpRecordCreate implements IProtocol {
                 }
             }
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return protocolLayerData;
     }
@@ -98,7 +98,7 @@ public class SecondLpRecordCreate implements IProtocol {
             byte b2 = bytes[arrLength - 2];
             return b1 == CS[0] && b2 == CS[1];
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return false;
     }

@@ -21,7 +21,7 @@ public class UpGDW3761 implements IProtocol {
     public boolean valid(byte[] bytes) {
         try {
             if (bytes == null) return false;
-            if (bytes.length < 9) return false;
+            if (bytes.length < 10) return false;
             //台表
             if (bytes[0] == (byte) 0xFF && bytes[3] == 0x25 && bytes[6] == 0x68
                     && bytes[bytes.length - 1] == (byte) 0xFE && bytes[bytes.length - 4] == 0x16) {
@@ -43,7 +43,7 @@ public class UpGDW3761 implements IProtocol {
                 return cs == buff[buff.length - 2];
             }
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return false;
     }
@@ -70,7 +70,7 @@ public class UpGDW3761 implements IProtocol {
                 }};
             }
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return null;
     }

@@ -80,6 +80,7 @@ public class DtuCommand extends CommonJob {
 
     private void readControlWordParameterModule() {
         send(MsgPriority.HIGH, DeviceTypeEnum.LP2007, DeviceCmdTypeEnum.ReadControlWordParameterModule);
+        send(MsgPriority.HIGH, DeviceTypeEnum.LP1997, DeviceCmdTypeEnum.ReadControlWordParameterModule);
     }
 
     /**
@@ -304,7 +305,7 @@ public class DtuCommand extends CommonJob {
                     sb.append(dtuAddress).append("\n");
                 }
             }
-            TxtUtils.exportDtuOnline(sb.toString());
+            TxtUtils.getInstance().exportDtuOnline(sb.toString());
         } catch (Exception e) {
             ExceptionHandler.handle(e);
         }
@@ -318,6 +319,14 @@ public class DtuCommand extends CommonJob {
             ProtocolLayerData data = new ProtocolLayerData();
             data.DTUString = dtuAddress;
             data.deviceTypeEnum = DeviceTypeEnum.LP2007;
+            data.HasDTUHead = true;
+            data.CmdType = DeviceCmdTypeEnum.BroadcastTime;
+            data.isWaitReceive = false;
+            EventManager.getInstance().publish(new DownProtocolEvent(MsgPriority.HIGH, data), MsgPriority.HIGH);
+
+            data = new ProtocolLayerData();
+            data.DTUString = dtuAddress;
+            data.deviceTypeEnum = DeviceTypeEnum.LP1997;
             data.HasDTUHead = true;
             data.CmdType = DeviceCmdTypeEnum.BroadcastTime;
             data.isWaitReceive = false;
@@ -338,7 +347,7 @@ public class DtuCommand extends CommonJob {
             data.deviceTypeEnum = DeviceTypeEnum.DTU4G;
             data.DTUString = dtuAddress;
             data.isWaitReceive = false;
-            EventManager.getInstance().publish(new DownProtocolEvent(MsgPriority.LOW, data), MsgPriority.LOW);
+            EventManager.getInstance().publish(new DownProtocolEvent(MsgPriority.LOW, data), MsgPriority.HIGH);
         }
     }
 }

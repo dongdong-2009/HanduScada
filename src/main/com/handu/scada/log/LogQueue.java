@@ -2,6 +2,7 @@ package main.com.handu.scada.log;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by 柳梦 on 2018/03/26.
@@ -11,7 +12,7 @@ public class LogQueue {
     //队列大小
     private static final int QUEUE_MAX_SIZE = 1000;
 
-    private static LogQueue queue = new LogQueue();
+    private static LogQueue singleton;
 
     //阻塞队列
     private BlockingQueue<Log> blockingQueue = new LinkedBlockingQueue<>(QUEUE_MAX_SIZE);
@@ -20,7 +21,14 @@ public class LogQueue {
     }
 
     public static LogQueue getInstance() {
-        return queue;
+        if (singleton == null) {
+            synchronized (LogQueue.class) {
+                if (singleton == null) {
+                    singleton = new LogQueue();
+                }
+            }
+        }
+        return singleton;
     }
 
     /**
@@ -30,7 +38,12 @@ public class LogQueue {
      * @return
      */
     public boolean push(Log log) {
-        return this.blockingQueue.add(log);//队列满了就抛出异常，不阻塞
+        try {
+            //队列满了10秒放不进去就丢弃,抛出异常，不阻塞
+            return this.blockingQueue.offer(log, 10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            return false;
+        }
     }
 
     /**
@@ -39,11 +52,11 @@ public class LogQueue {
      * @return
      */
     public Log poll() {
-        Log result = null;
+        Log result;
         try {
             result = this.blockingQueue.take();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            return null;
         }
         return result;
     }

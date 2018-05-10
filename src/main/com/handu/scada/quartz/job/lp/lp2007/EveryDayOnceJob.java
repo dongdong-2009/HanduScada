@@ -85,7 +85,7 @@ public class EveryDayOnceJob extends CommonJob implements BaseJob {
 
     @Override
     public String cronExpression() {
-        return "0 0 12 * * ?";
+        return "30 30 0/2 * * ?";
     }
 
     @Override

@@ -120,7 +120,7 @@ public class FallTypeSwitchUp implements IProtocol {
                 TabName = DeviceTableEnum.Device_Falling_Type_Switch.getTableName().toLowerCase();
             }};
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return null;
     }
@@ -137,10 +137,8 @@ public class FallTypeSwitchUp implements IProtocol {
             int Crc = Crc16Utils.calcCrc16(bytes, 0, bytes.length - 2);
             return (byte) (Crc & 0xFF) == bytes[4] && (byte) (Crc >> 8) == bytes[5];
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return false;
     }
-
-
 }

@@ -53,7 +53,7 @@ public class DownWiredTemperatureProtocol extends BaseDownStreamTemperature {
             cmdByte[arrLength - 1] = CS[0];
             cmdByte[arrLength - 2] = CS[1];
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
     }
 
@@ -79,7 +79,7 @@ public class DownWiredTemperatureProtocol extends BaseDownStreamTemperature {
                 return mediaData;
             }
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return null;
     }

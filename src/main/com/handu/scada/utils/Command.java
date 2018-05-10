@@ -90,9 +90,6 @@ public class Command {
     private static final String ENCRYPT = "enc --> enc-str";
     private static final String ENCRYPT_Y = "enc-*";
 
-    public static final String START_SQL = "s";
-    public static final String START_NOSQL = "n";
-
     private static final String RESTART = "restart --> rs-dtuAddress";
     private static final String DTU_RESTART_Y = "rs-*";
 

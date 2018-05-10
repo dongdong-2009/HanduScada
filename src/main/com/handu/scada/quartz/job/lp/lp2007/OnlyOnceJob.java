@@ -77,7 +77,7 @@ public class OnlyOnceJob extends CommonJob implements BaseJob {
     @Override
     public String cronExpression() {
         //表示只执行一次
-        return null;
+        return "30";
     }
 
     @Override

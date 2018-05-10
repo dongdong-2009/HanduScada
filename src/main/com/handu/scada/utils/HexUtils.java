@@ -527,8 +527,18 @@ public class HexUtils {
      * @return
      */
     public static boolean isBCD(byte b) {
-        int h =getByteHigh4(b);
+        int h = getByteHigh4(b);
         int l = getByteLow4(b);
         return h >= 0 && h <= 9 && l >= 0 && l <= 9;
+    }
+
+    /**
+     * 根据byte获取bit
+     *
+     * @param b
+     * @return
+     */
+    public static byte getBitFromByte(int di, byte b) {
+        return (byte) (b >> (di) & 0x01);
     }
 }

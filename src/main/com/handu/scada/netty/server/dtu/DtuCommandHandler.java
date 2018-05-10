@@ -96,7 +96,7 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
                     }
                 }
             } catch (Exception e) {
-                ExceptionHandler.print(e);
+                ExceptionHandler.handle(e);
             } finally {
                 //释放资源，这行很关键
                 ReferenceCountUtil.release(result);
@@ -110,7 +110,7 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable e) {
-        if (Config.isDebug) ExceptionHandler.print(e);
+        if (Config.isDebug) ExceptionHandler.handle(e);
         offline(ctx);
     }
 
@@ -130,7 +130,7 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
                 DtuChannelManager.removeClient(clientId, dtuAddress);
             }
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         } finally {
             ctx.close();
         }
@@ -364,7 +364,7 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
             System.arraycopy(bytes, 1, bDtuID, 0, dtuLength);
             return HexUtils.byteToString(bDtuID);
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return null;
     }

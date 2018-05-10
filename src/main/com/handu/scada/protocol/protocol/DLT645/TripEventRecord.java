@@ -1,46 +1,41 @@
 package main.com.handu.scada.protocol.protocol.DLT645;
 
-import main.com.handu.scada.enums.DeviceGroup;
 import main.com.handu.scada.protocol.enums.LPState;
-import main.com.handu.scada.protocol.protocol.DLT645.LP1997.TripReason1997Enum;
-import main.com.handu.scada.protocol.protocol.DLT645.LP2007.TripReason2007Enum;
+import main.com.handu.scada.utils.DateUtils;
 
 import java.util.Date;
 
 public class TripEventRecord {
     //锁死状态
     public String lock = "";
-    //漏保类型
-    public DeviceGroup deviceGroup = DeviceGroup.LP2007;
-    ///[Description("地址")]
-    public String Address;//状态
-    ///[Description("状态")]
-    public LPState State;//状态
-    ///[Description("跳闸原因")]
-    public TripReason1997Enum tripReason1997;//状态
-    public TripReason2007Enum tripReason2007;//状态
-    ///[Description("")]
-    public String AlarmReason = "";//故障原因
-    ///[Description("")]
-    public String AlarmPhase = "";//故障相别
-    ///[Description("")]
-    public Date AlarmTime;//跳闸发生时刻（6个字节）
-    ///[Description("mA")]
-    public float ResidualCurrent;//跳闸前剩余电流值（2个字节）
-    ///[Description("V")]
-    public float APhaseVoltage;//跳闸前A相电压（2个字节）
-    ///[Description("V")]
-    public float BPhaseVoltage;//跳闸前B相电压（2个字节）
-    ///[Description("V")]
-    public float CPhaseVoltage;//跳闸前C相电压（2个字节）
-    ///[Description("A")]
-    public float APhaseCurrent;//跳闸前A相电流（3个字节）
-    ///[Description("A")]
-    public float BPhaseCurrent;//跳闸前B相电流（3个字节）
-    ///[Description("A")]
-    public float CPhaseCurrent;//跳闸前C相电流（3个字节）
-    ///[Description("A")]
-    public float AlarmActionValue;//跳闸前动作电流（3个字节）
+    //地址
+    public String Address;
+    //状态
+    public LPState State = LPState.NONE;
+    //跳闸原因
+    public CommonTripReasonEnum tripReason = CommonTripReasonEnum.Other;
+    //故障原因
+    public String AlarmPhase = "";
+    //故障相别
+    public String AlarmReason = "";
+    //跳闸前剩余电流值（2个字节）
+    public float ResidualCurrent;
+    //跳闸发生时刻（6个字节）
+    public Date AlarmTime;
+    //跳闸前A相电压（2个字节）
+    public float APhaseVoltage;
+    //跳闸前B相电压（2个字节）
+    public float BPhaseVoltage;
+    //跳闸前C相电压（2个字节）
+    public float CPhaseVoltage;
+    //跳闸前A相电流（3个字节）
+    public float APhaseCurrent;
+    //跳闸前B相电流（3个字节）
+    public float BPhaseCurrent;
+    //跳闸前C相电流（3个字节）
+    public float CPhaseCurrent;
+    //跳闸前动作电流（3个字节）
+    public float AlarmActionValue;
 
     public String getAddress() {
         return Address;
@@ -63,9 +58,7 @@ public class TripEventRecord {
     }
 
     public void setAlarmReason(String alarmReason) {
-        if (AlarmReason == null) {
-            AlarmReason = "";
-        }
+        if (AlarmReason == null) AlarmReason = "";
         AlarmReason += alarmReason;
     }
 
@@ -189,6 +182,7 @@ public class TripEventRecord {
         return AlarmReason +
                 "," + AlarmPhase +
                 "," + State.name() +
+                ",告警时间=" + DateUtils.dateToStr(AlarmTime) +
                 ",跳闸前 Ua=" + APhaseVoltage + "V" +
                 ", Ub=" + BPhaseVoltage + "V" +
                 ", Uc=" + CPhaseVoltage + "V" +

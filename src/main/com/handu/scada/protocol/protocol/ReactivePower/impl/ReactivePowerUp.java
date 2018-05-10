@@ -18,9 +18,9 @@ public class ReactivePowerUp extends BaseUpReactivePower implements IProtocol {
 
     @Override
     public boolean valid(byte[] bytes) {
-        if (bytes == null) return false;
-        if (bytes.length < 16) return false;
         try {
+            if (bytes == null) return false;
+            if (bytes.length < 16) return false;
             //漏保以0x68开头，中间6位地址，加上0x68，最后以0x16结束
             if (bytes[0] == (byte) 0x68 && bytes[9] == 0x68 && bytes[bytes.length - 1] == 0x16) {
                 int blen = bytes[11] + 0x10;
@@ -36,7 +36,7 @@ public class ReactivePowerUp extends BaseUpReactivePower implements IProtocol {
                 return cs == bytes[len];
             }
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return false;
     }
@@ -55,7 +55,7 @@ public class ReactivePowerUp extends BaseUpReactivePower implements IProtocol {
                 System.arraycopy(bytes, 14, data, 0, dataLength);
                 dataAttrs = parse(data);
             } catch (Exception e) {
-                ExceptionHandler.print(e);
+                ExceptionHandler.handle(e);
             }
             protocolLayerData = new ProtocolLayerData() {{
                 deviceTypeEnum = DeviceTypeEnum.REACTIVE_POWER;

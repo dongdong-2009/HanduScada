@@ -458,7 +458,9 @@ public class MyCacheManager extends BaseDBService implements ICacheManager {
                                 deviceList.forEach(e -> {
                                     String deviceId = e.getDeviceId();
                                     List<AdditionProperty> a = map.get(deviceId);
-                                    e.setAdditionProperties(a);
+                                    if (a != null) {
+                                        e.setAdditionProperties(a);
+                                    }
                                 });
                             }
                         }

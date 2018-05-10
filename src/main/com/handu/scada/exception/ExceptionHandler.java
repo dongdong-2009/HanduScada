@@ -36,16 +36,7 @@ public class ExceptionHandler {
     public static void handle(Throwable e) {
         e.printStackTrace(printWriter);
         String exception = stringWriter.toString();
+        TxtUtils.getInstance().error(exception);
         if (Config.isDebug) LogUtils.error(exception);
-        TxtUtils.error(exception);
-    }
-
-    /**
-     * 打印错误日志
-     *
-     * @param e
-     */
-    public static void print(Throwable e) {
-        if (Config.isDebug) e.printStackTrace();
     }
 }

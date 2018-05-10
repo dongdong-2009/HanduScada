@@ -46,7 +46,7 @@ public class EventManager {
      * @param event
      */
     public void publish(BaseEvent event) {
-        publish(event, false, MsgPriority.NORMAL);
+        publish(event, MsgPriority.NORMAL);
     }
 
     /**

@@ -41,8 +41,8 @@ public class UpLeakageProtectorDLT6452007 extends BaseDLT645 {
 
     @Override
     public boolean valid(byte[] buff) {
-        if (buff.length < 10) return false;
         try {
+            if (buff.length < 10) return false;
             //漏保以0x68开头，中间6位地址，加上0x68，最后以0x16结束
             if (buff[0] == (byte) 0x68 && buff[7] == 0x68 && buff[buff.length - 1] == 0x16) {
                 byte blen = (byte) (buff[9] + (byte) 0x0c);
@@ -60,7 +60,7 @@ public class UpLeakageProtectorDLT6452007 extends BaseDLT645 {
                         || (controlCode >= (byte) 0xD1 && controlCode <= (byte) 0xDC));
             }
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return false;
     }
@@ -126,7 +126,7 @@ public class UpLeakageProtectorDLT6452007 extends BaseDLT645 {
                 }
             }
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return protocolLayerData;
     }

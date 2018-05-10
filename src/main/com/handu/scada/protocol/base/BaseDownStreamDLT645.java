@@ -79,7 +79,7 @@ public class BaseDownStreamDLT645 {
             cmdByte[cmdByte.length - 2] = HexUtils.getCheckCode(cmdByte);
             return true;
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return false;
     }

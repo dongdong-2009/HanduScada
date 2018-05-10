@@ -58,7 +58,7 @@ public class FallTypeSwitchDown implements IProtocol {
                 return allCall;
             }
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
         return null;
     }

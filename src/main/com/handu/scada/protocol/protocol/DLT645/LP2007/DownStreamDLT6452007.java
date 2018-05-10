@@ -351,7 +351,7 @@ public class DownStreamDLT6452007 extends DownStreamDLT645 {
                     break;
             }
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
     }
 }

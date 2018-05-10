@@ -19,7 +19,6 @@ import main.com.handu.scada.db.mapper.DeviceAlarmMapper;
 import main.com.handu.scada.db.service.BaseDBService;
 import main.com.handu.scada.db.utils.MyBatisUtil;
 import main.com.handu.scada.enums.DeviceTableEnum;
-import main.com.handu.scada.enums.DeviceGroup;
 import main.com.handu.scada.event.Subscriber;
 import main.com.handu.scada.event.events.BaseEvent;
 import main.com.handu.scada.event.events.DBEvent;
@@ -120,6 +119,10 @@ public class DBService extends BaseDBService implements ISubscriber {
                     else if (protocolLayerData.CmdType == DeviceCmdTypeEnum.DTU_LOGIN) {
                         online(protocolLayerData);
                     }
+                    //心跳
+                    else if (protocolLayerData.CmdType == DeviceCmdTypeEnum.DTU_HEARTBEAT) {
+                        heartbeat(protocolLayerData);
+                    }
                     //下线
                     else if (protocolLayerData.CmdType == DeviceCmdTypeEnum.DTU_OFF_LINE) {
                         offline(protocolLayerData);
@@ -132,7 +135,7 @@ public class DBService extends BaseDBService implements ISubscriber {
                     else if (protocolLayerData.CmdType == DeviceCmdTypeEnum.ReadControlWordParameterModule) {
                         if (!StringsUtils.isEmpty(protocolLayerData.PostalAddress) && !StringsUtils.isEmpty(protocolLayerData.TabName)) {
                             //找到设备的id
-                            DeviceCacheResult result = MyCacheManager.getDeviceCacheResult(protocolLayerData.dtuAddress, protocolLayerData.TabName.toLowerCase(), protocolLayerData.PostalAddress);
+                            DeviceCacheResult result = MyCacheManager.getDeviceCacheResult(protocolLayerData.DTUString, protocolLayerData.TabName.toLowerCase(), protocolLayerData.PostalAddress);
                             if (result != null && result.getDeviceId() != null) {
                                 saveControlWord(result.getDeviceId());
                             }
@@ -153,7 +156,7 @@ public class DBService extends BaseDBService implements ISubscriber {
                         }});
                     }
                 } catch (Exception e) {
-                    ExceptionHandler.print(e);
+                    ExceptionHandler.handle(e);
                 }
             }
         }
@@ -163,6 +166,7 @@ public class DBService extends BaseDBService implements ISubscriber {
          */
         private void saveHMAFN0C25() {
             if (protocolLayerData.attrList != null && StringsUtils.isNotEmpty(protocolLayerData.DTUString)) {
+                LogUtils.info(protocolLayerData.DTUString + " saveHMAFN0C25");
                 List<DataAttr> attrList = protocolLayerData.attrList;
                 if (attrList != null) {
                     //三相电流
@@ -324,6 +328,7 @@ public class DBService extends BaseDBService implements ISubscriber {
          */
         private void saveConcentratorState(ProtocolLayerData protocolLayerData) {
             if (protocolLayerData.attrList != null) {
+                LogUtils.info(protocolLayerData.DTUString + " saveConcentratorState");
                 protocolLayerData.attrList
                         .stream()
                         .findFirst()
@@ -343,40 +348,43 @@ public class DBService extends BaseDBService implements ISubscriber {
          * @param deviceId
          */
         private void saveControlWord(String deviceId) {
-
             if (protocolLayerData != null && protocolLayerData.controlWord != null) {
+                LogUtils.info(protocolLayerData.DTUString + " saveControlWord");
                 DltControlWord c = protocolLayerData.controlWord;
                 DeviceControlword w = new DeviceControlword();
-
                 w.setDeviceid(deviceId);
-
                 w.setDelaytimelevel(c.DelayTimeLevel);
                 w.setFlagallalarm(c.flagAllAlarm);
                 w.setFlagaudioalarm(c.flagAudioAlarm);
                 w.setFlaglevelreturn(c.flagLevelReturn);
                 w.setFlaglightalarm(c.flagLightAlarm);
-
                 w.setFlagmissearthlinealarm(c.flagMissEarthLineAlarm);
                 w.setFlagmissearthlinecontrol(c.flagMissEarthLineControl);
                 w.setFlagmissphasealarm(c.flagMissPhaseAlarm);
                 w.setFlagmissphasecontrol(c.flagMissPhaseControl);
                 w.setFlagovercurrentalarm(c.flagOverCurrentAlarm);
-
                 w.setFlagovercurrentcontrol(c.flagOverCurrentControl);
                 w.setFlagovervoltagealarm(c.flagOverVoltageAlarm);
                 w.setFlagovervoltagecontrol(c.flagOverVoltageControl);
-                w.setFlagreclosing(c.flagReclosing);
+                w.setFlagreclosing(c.flagReClosing);
                 w.setFlagtimelytrial(c.flagTimelyTrial);
-
                 w.setFlagtrialsource(c.flagTrialSource);
                 w.setFlagundervoltagealarm(c.flagUnderVoltageAlarm);
                 w.setFlagundervoltagecontrol(c.flagUnderVoltageControl);
                 w.setResidualalarmtimelevel(c.ResidualAlarmTimeLevel);
                 w.setResidualthresholdlevel(c.ResidualThresholdLevel);
-
                 w.setRecordtime(c.recordTime);
-
                 DtuDBService.getInstance().push(new DeviceData(DataType.CONTROL_WORD, w));
+                //如果是97漏保则存入遥测电流整定值
+                if (protocolLayerData.attrList != null) {
+                    saveDeviceTelemetering(new RealDataItem() {{
+                        this.address = protocolLayerData.DTUString;
+                        this.list = protocolLayerData.attrList;
+                        this.dtuAddress = protocolLayerData.DTUString;
+                        this.deviceTableName = protocolLayerData.TabName;
+                        this.postalAddress = protocolLayerData.PostalAddress;
+                    }});
+                }
             }
         }
 
@@ -653,14 +661,14 @@ public class DBService extends BaseDBService implements ISubscriber {
             SqlSession sqlSession = null;
             try {
                 if (record != null) {
-                    int value = record.deviceGroup == DeviceGroup.LP1997 ? record.tripReason1997.getValue() : record.tripReason2007.getValue();
-                    LogUtils.info("TripEventRecord:" + record.toString1());
+                    LogUtils.info(protocolLayerData.DTUString + " TripEventRecord--" + record.toString1());
                     sqlSession = MyBatisUtil.getSqlSession();
                     DeviceAlarmMapper deviceAlarmMapper = sqlSession.getMapper(DeviceAlarmMapper.class);
                     //分闸报文
                     if (record.State == LPState.OFF) {
                         DeviceCacheResult result = MyCacheManager.getDeviceCacheResult(protocolLayerData.DTUString, DeviceTableEnum.Device_Rcd.getTableName().toLowerCase(), protocolLayerData.PostalAddress);
                         if (result != null) {
+                            int value = record.tripReason.getValue();
                             String deviceId = result.getDeviceId();
                             String tableName = DeviceTableEnum.Device_Rcd.getTableName().toLowerCase();
                             Date alarmTime = DateUtils.strToDate(DateUtils.dateToStr(record.AlarmTime));
@@ -768,7 +776,7 @@ public class DBService extends BaseDBService implements ISubscriber {
         private void saveSecondLpRecord(SecondLpRealData data) {
             List<SecondLpRecord> records = data.getSecondLpRecords();
             if (records != null && records.size() > 0) {
-                LogUtils.info(records.toString());
+                LogUtils.info(protocolLayerData.DTUString + " saveConcentratorState " + records.toString());
                 ConcurrentHashMap<String, DeviceCacheResult> result = MyCacheManager.getDeviceCacheMap();
                 List<DeviceCacheResult> results = null;
                 if (result != null) {
@@ -858,6 +866,13 @@ public class DBService extends BaseDBService implements ISubscriber {
          */
         private void online(ProtocolLayerData protocolLayerData) {
             DtuDBService.getInstance().push(new DtuStateResult(DtuState.ONLINE, protocolLayerData.dtuAddress, DateUtils.getNowSqlDateTime()));
+        }
+
+        /**
+         * dtu心跳
+         */
+        private void heartbeat(ProtocolLayerData protocolLayerData) {
+            DtuDBService.getInstance().push(new DtuStateResult(DtuState.HEARTBEAT, protocolLayerData.dtuAddress, DateUtils.getNowSqlDateTime()));
         }
 
         /**

@@ -241,7 +241,7 @@ public class DtuNetworkConnection {
                 EventManager.getInstance().publish(new DBEvent(protocolLayerData));
             }
         } catch (Exception e) {
-            ExceptionHandler.print(e);
+            ExceptionHandler.handle(e);
         }
     }
 
@@ -380,7 +380,7 @@ public class DtuNetworkConnection {
         progress = 0;
         isUpdating = false;
         LogUtils.error(dtuAddress + " update error...", true);
-        TxtUtils.updateError(dtuAddress);
+        TxtUtils.getInstance().updateError(dtuAddress);
     }
 
     /**
@@ -401,7 +401,7 @@ public class DtuNetworkConnection {
         isUpdating = false;
         this.updateBuffList = null;
         LogUtils.info(dtuAddress + " update success...", true);
-        TxtUtils.updateSuccess(dtuAddress);
+        TxtUtils.getInstance().updateSuccess(dtuAddress);
         DtuCommand.getInstance().restartDtu(dtuAddress);
     }
 
@@ -718,7 +718,7 @@ public class DtuNetworkConnection {
                     return;
                 }
             } catch (Exception e) {
-                ExceptionHandler.print(e);
+                ExceptionHandler.handle(e);
             }
         }
     }
@@ -740,7 +740,7 @@ public class DtuNetworkConnection {
                         break;
                     }
                 } catch (Exception e) {
-                    ExceptionHandler.print(e);
+                    ExceptionHandler.handle(e);
                 }
             }
         }

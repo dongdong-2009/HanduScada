@@ -42,7 +42,7 @@ public class CommonJob {
                 data.PostalAddress = device.getDeviceAddress();
                 data.HasDTUHead = true;
                 data.CmdType = cmdType;
-                EventManager.getInstance().publish(new DownProtocolEvent(type, data), MsgPriority.HIGH);
+                EventManager.getInstance().publish(new DownProtocolEvent(type, data), MsgPriority.NORMAL);
             }
             //如果是其他漏保就只发送广播校时
             else {
@@ -54,7 +54,7 @@ public class CommonJob {
                     data.PostalAddress = device.getDeviceAddress();
                     data.HasDTUHead = true;
                     data.CmdType = cmdType;
-                    EventManager.getInstance().publish(new DownProtocolEvent(type, data), MsgPriority.HIGH);
+                    EventManager.getInstance().publish(new DownProtocolEvent(type, data), MsgPriority.NORMAL);
                 }
             }
         }
@@ -67,7 +67,7 @@ public class CommonJob {
             data.PostalAddress = device.getDeviceAddress();
             data.HasDTUHead = true;
             data.CmdType = cmdType;
-            EventManager.getInstance().publish(new DownProtocolEvent(type, data), MsgPriority.HIGH);
+            EventManager.getInstance().publish(new DownProtocolEvent(type, data), MsgPriority.NORMAL);
         }
     }
 
@@ -155,5 +155,4 @@ public class CommonJob {
             }
         }
     }
-
 }

@@ -32,8 +32,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.stream.Collectors;
 
-import static main.com.handu.scada.utils.LogUtils.error;
-
 /**
  * Created by 柳梦 on 2017/12/29.
  * 短信发送
@@ -128,7 +126,7 @@ public class MsgManager extends BaseDBService {
 
     public void putMsg(Msg message) {
         try {
-            error(message.toString());
+            LogUtils.error(message.toString());
             queue.put(message);
         } catch (InterruptedException e) {
             ExceptionHandler.handle(e);
@@ -196,18 +194,25 @@ public class MsgManager extends BaseDBService {
                 messages.forEach(msg -> {
                     String deviceId = msg.getDeviceId();
                     List<MsgAdditionProperty> p = propertyMap.get(deviceId);
-                    TxtUtils.alarm(msg.getDeviceId() + "--" + msg.getMsgContent() + "--" + p.stream().map(e -> e.getName() + "--" + e.getPhone()).collect(Collectors.joining(",")));
-                    if (p.size() > 0) {
-                        p.stream()
-                                .filter(e -> Arrays.stream(e.getAlarms().split(",")).anyMatch(s -> Objects.equals(s, msg.getDeviceAlarms() + "")))
-                                .forEach(property -> sb.append(getStartColumn(UUIDUtils.getUUId()))
-                                        .append(getColumn(property.getPhone()))
-                                        .append(getColumn(msg.getMsgContent()))
-                                        .append(getColumn(DateUtils.dateToStr(DateUtils.getNowSqlDateTime())))
-                                        .append(getEndColumn(0))
-                                        .append(",")
-                                );
-                        i[0]++;
+                    if (p != null) {
+                        TxtUtils.getInstance().alarm(msg.getDeviceId() + "--" + msg.getMsgContent() + "--" + p.stream().map(e -> e.getName() + "--" + e.getPhone()).collect(Collectors.joining(",")));
+                        if (p.size() > 0) {
+                            p.stream()
+                                    .filter(e -> Arrays.stream(e.getAlarms().split(",")).anyMatch(s -> Objects.equals(s, msg.getDeviceAlarms() + "")))
+                                    .forEach(property -> {
+                                                sb.append(getStartColumn(UUIDUtils.getUUId()))
+                                                        .append(getColumn(property.getPhone()))
+                                                        .append(getColumn(msg.getMsgContent()))
+                                                        .append(getColumn(DateUtils.dateToStr(DateUtils.getNowSqlDateTime())))
+                                                        .append(getEndColumn(0))
+                                                        .append(",");
+                                                i[0]++;
+                                            }
+                                    );
+
+                        }
+                    } else {
+                        TxtUtils.getInstance().alarm(msg.getDeviceId() + "--" + msg.getMsgContent() + "--未找到短信接收人和电话号码--");
                     }
                 });
                 if (i[0] > 0) {
@@ -280,7 +285,7 @@ public class MsgManager extends BaseDBService {
                                     }
 
                                 } else {
-                                    TxtUtils.error(retInfo.getErrorCode() + "--" + retInfo.getErrorInfo());
+                                    TxtUtils.getInstance().error(retInfo.getErrorCode() + "--" + retInfo.getErrorInfo());
                                 }
                             }
                         }
@@ -392,7 +397,7 @@ public class MsgManager extends BaseDBService {
                                         }
                                     }
                                 } else {
-                                    TxtUtils.error(rptData.getErrorCode() + "--" + rptData.getErrorInfo());
+                                    TxtUtils.getInstance().error(rptData.getErrorCode() + "--" + rptData.getErrorInfo());
                                 }
                             }
                         }
