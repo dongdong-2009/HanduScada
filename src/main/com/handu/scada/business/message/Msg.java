@@ -8,13 +8,23 @@ public class Msg {
     private String DeviceId;
     private int DeviceAlarms;
     private String msgContent;
+    private String deviceTableName;
     private int priority;
 
-    public Msg(String deviceId, int deviceAlarms, String msgContent) {
+    public Msg(String deviceId, String deviceTableName, int deviceAlarms, String msgContent) {
         DeviceId = deviceId;
+        this.deviceTableName = deviceTableName;
         DeviceAlarms = deviceAlarms;
         this.msgContent = msgContent;
         this.priority = 0;
+    }
+
+    public String getDeviceTableName() {
+        return deviceTableName;
+    }
+
+    public void setDeviceTableName(String deviceTableName) {
+        this.deviceTableName = deviceTableName;
     }
 
     public int getPriority() {
@@ -55,6 +65,7 @@ public class Msg {
                 "DeviceId='" + DeviceId + '\'' +
                 ", DeviceAlarms=" + DeviceAlarms +
                 ", msgContent='" + msgContent + '\'' +
+                ", deviceTableName='" + deviceTableName + '\'' +
                 ", priority=" + priority +
                 '}';
     }

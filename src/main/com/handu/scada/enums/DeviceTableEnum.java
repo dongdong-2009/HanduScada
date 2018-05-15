@@ -8,17 +8,17 @@ import java.util.Objects;
  * Created by 柳梦 on 2017/12/11.
  */
 public enum DeviceTableEnum {
-    Device_Dtu(1, "device_dtu", DeviceGroup.DTU),
-    Device_Rcd(2, "device_rcd", DeviceGroup.DTU_DEVICE, ""),
-    Device_Temperature(5, "device_temperature", DeviceGroup.DTU_DEVICE, " SELECT TemperatureId AS deviceId, Address AS name, LimitValue AS value, MountingPosition AS description, '°C' AS unit FROM device_temperatureprobe WHERE TemperatureId IN ( "),
-    Device_Falling_Type_Switch(7, "device_fallingtypeswitch", DeviceGroup.DTU_DEVICE, " SELECT DeviceId AS deviceId, DataItem AS name, Value AS value, Description AS description, Unit AS unit FROM device_real_remotesignalling WHERE DeviceId IN ( "),
-    Device_Reactive_Power(9, "device_reactive_power", DeviceGroup.DTU_DEVICE, ""),
-    Device_IntelligentSwitch(4, "device_intelligentswitch", DeviceGroup.SWITCH),
-    Device_HM(9, "device_hm", DeviceGroup.HM),
-    Device_TemperatureProbe(6, "device_temperatureprobe"),
-    Device_Terminal(8, "device_terminal");
 
-    private int tableType;
+    Device_NONE("未知设备", ""),
+    Device_Dtu("DTU", "device_dtu", DeviceGroup.DTU),
+    Device_Rcd("漏保", "device_rcd", DeviceGroup.DTU_DEVICE, ""),
+    Device_Temperature("测温装置", "device_temperature", DeviceGroup.DTU_DEVICE, " SELECT TemperatureId AS deviceId, Address AS name, LimitValue AS value, MountingPosition AS description, '°C' AS unit FROM device_temperatureprobe WHERE TemperatureId IN ( "),
+    Device_Falling_Type_Switch("跌落熔断器", "device_fallingtypeswitch", DeviceGroup.DTU_DEVICE, " SELECT DeviceId AS deviceId, DataItem AS name, Value AS value, Description AS description, Unit AS unit FROM device_real_remotesignalling WHERE DeviceId IN ( "),
+    Device_Reactive_Power("无功设备", "device_reactive_power", DeviceGroup.DTU_DEVICE, ""),
+    Device_IntelligentSwitch("开关", "device_intelligentswitch", DeviceGroup.SWITCH),
+    Device_HM("台区总表", "device_hm", DeviceGroup.HM);
+
+    private String deviceName;
     private String tableName;
     private DeviceGroup group;
     private String sqlAdditionProperty;
@@ -31,27 +31,28 @@ public enum DeviceTableEnum {
         return group;
     }
 
-    DeviceTableEnum(int tableType, String tableName, DeviceGroup group) {
-        this.tableType = tableType;
+    DeviceTableEnum(String deviceName, String tableName, DeviceGroup group) {
+        this.deviceName = deviceName;
         this.tableName = tableName;
         this.group = group;
 
     }
 
-    DeviceTableEnum(int tableType, String tableName, DeviceGroup group, String sqlAdditionProperty) {
-        this.tableType = tableType;
+    DeviceTableEnum(String deviceName, String tableName, DeviceGroup group, String sqlAdditionProperty) {
+        this.deviceName = deviceName;
+
         this.tableName = tableName;
         this.group = group;
         this.sqlAdditionProperty = sqlAdditionProperty;
     }
 
-    DeviceTableEnum(int tableType, String tableName) {
-        this.tableType = tableType;
+    DeviceTableEnum(String deviceName, String tableName) {
+        this.deviceName = deviceName;
         this.tableName = tableName;
     }
 
-    public int getTableType() {
-        return tableType;
+    public String getDeviceName() {
+        return deviceName;
     }
 
     public String getTableName() {
@@ -71,7 +72,7 @@ public enum DeviceTableEnum {
                 return c;
             }
         }
-        return null;
+        return Device_NONE;
     }
 
     public static List<DeviceTableEnum> getDeviceByGroup(DeviceGroup deviceGroup) {

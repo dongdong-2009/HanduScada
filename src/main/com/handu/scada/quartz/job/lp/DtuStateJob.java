@@ -1,10 +1,14 @@
 package main.com.handu.scada.quartz.job.lp;
 
-import main.com.handu.scada.business.dtu.DtuDBService;
+import main.com.handu.scada.business.device.DeviceData;
 import main.com.handu.scada.business.dtu.DtuState;
 import main.com.handu.scada.business.dtu.DtuStateResult;
 import main.com.handu.scada.cache.MyCacheManager;
 import main.com.handu.scada.db.bean.common.DtuCacheResult;
+import main.com.handu.scada.business.DBCmdTask;
+import main.com.handu.scada.db.service.impl.DeviceDtuHistoryOfflineDBService;
+import main.com.handu.scada.db.service.impl.DeviceDtuOfflineDBService;
+import main.com.handu.scada.db.service.impl.DeviceDtuOnlineDBService;
 import main.com.handu.scada.netty.server.dtu.DtuChannelManager;
 import main.com.handu.scada.quartz.job.BaseJob;
 import main.com.handu.scada.quartz.job.CommonJob;
@@ -55,15 +59,20 @@ public class DtuStateJob extends CommonJob implements BaseJob {
                 boolean isOnline2 = DtuChannelManager.getDeviceChannelIsActive(cacheResult.getDtuAddress());
                 //开始在线，现在掉线
                 if (isOnline1 && !isOnline2) {
-                    DtuStateResult result = new DtuStateResult(DtuState.OFFLINE, cacheResult.getDtuAddress(), DateUtils.getNowSqlDateTime());
-                    result.setDtuId(cacheResult.getDtuId());
-                    DtuDBService.getInstance().push(result);
+                    DtuStateResult result1 = new DtuStateResult(DtuState.OFFLINE, cacheResult.getDtuAddress(), DateUtils.getNowSqlDateTime());
+                    result1.setDtuId(cacheResult.getDtuId());
+                    DeviceData data1 = new DeviceData(result1, DeviceDtuOfflineDBService.class);
+                    DtuStateResult result2 = new DtuStateResult(DtuState.OFFLINE, cacheResult.getDtuAddress(), DateUtils.getNowSqlDateTime());
+                    result2.setDtuId(cacheResult.getDtuId());
+                    DeviceData data2 = new DeviceData(result2, DeviceDtuHistoryOfflineDBService.class);
+                    DBCmdTask.getInstance().push(data1, data2);
                 }
                 //开始不在线，现在在线
                 else if (!isOnline1 && isOnline2) {
                     DtuStateResult result = new DtuStateResult(DtuState.ONLINE, cacheResult.getDtuAddress(), DateUtils.getNowSqlDateTime());
                     result.setDtuId(cacheResult.getDtuId());
-                    DtuDBService.getInstance().push(result);
+                    DeviceData data = new DeviceData(result, DeviceDtuOnlineDBService.class);
+                    DBCmdTask.getInstance().push(data);
                 }
                 //更新缓存中dtu状态
                 cacheResult.setDtuIsOnline(isOnline2);

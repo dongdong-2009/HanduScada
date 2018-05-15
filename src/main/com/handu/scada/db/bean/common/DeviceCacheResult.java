@@ -47,7 +47,7 @@ public class DeviceCacheResult {
         isSendMsg = sendMsg;
     }
 
-    private CacheCmdType cmdType = CacheCmdType.DEFAULT;
+    private CacheCmdType cmdType = CacheCmdType.CREATE_OR_UPDATE;
 
     public CacheCmdType getCmdType() {
         return cmdType;

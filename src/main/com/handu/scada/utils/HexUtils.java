@@ -541,4 +541,24 @@ public class HexUtils {
     public static byte getBitFromByte(int di, byte b) {
         return (byte) (b >> (di) & 0x01);
     }
+
+    /**
+     * 获取int的高位
+     *
+     * @param i
+     * @return
+     */
+    public static byte getIntHigh(int i) {
+        return (byte) (i / 256);
+    }
+
+    /**
+     * 获取int的低位
+     *
+     * @param i
+     * @return
+     */
+    public static byte getIntLow(int i) {
+        return (byte) (i - 256 * byteToInt(getIntHigh(i)));
+    }
 }

@@ -39,4 +39,13 @@ public class ExceptionHandler {
         TxtUtils.getInstance().error(exception);
         if (Config.isDebug) LogUtils.error(exception);
     }
+
+    /**
+     * 打印错误日志
+     *
+     * @param e
+     */
+    public static void print(Throwable e) {
+        if (Config.isDebug) e.printStackTrace();
+    }
 }

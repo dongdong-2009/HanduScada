@@ -6,6 +6,10 @@ import java.util.Date;
 public class BaseSmssend implements Serializable {
     private String oid;
 
+    private String deviceid;
+
+    private String devicetablename;
+
     private String phoneno;
 
     private String smscontent;
@@ -34,6 +38,22 @@ public class BaseSmssend implements Serializable {
 
     public void setOid(String oid) {
         this.oid = oid == null ? null : oid.trim();
+    }
+
+    public String getDeviceid() {
+        return deviceid;
+    }
+
+    public void setDeviceid(String deviceid) {
+        this.deviceid = deviceid == null ? null : deviceid.trim();
+    }
+
+    public String getDevicetablename() {
+        return devicetablename;
+    }
+
+    public void setDevicetablename(String devicetablename) {
+        this.devicetablename = devicetablename == null ? null : devicetablename.trim();
     }
 
     public String getPhoneno() {
@@ -129,6 +149,8 @@ public class BaseSmssend implements Serializable {
         }
         BaseSmssend other = (BaseSmssend) that;
         return (this.getOid() == null ? other.getOid() == null : this.getOid().equals(other.getOid()))
+            && (this.getDeviceid() == null ? other.getDeviceid() == null : this.getDeviceid().equals(other.getDeviceid()))
+            && (this.getDevicetablename() == null ? other.getDevicetablename() == null : this.getDevicetablename().equals(other.getDevicetablename()))
             && (this.getPhoneno() == null ? other.getPhoneno() == null : this.getPhoneno().equals(other.getPhoneno()))
             && (this.getSmscontent() == null ? other.getSmscontent() == null : this.getSmscontent().equals(other.getSmscontent()))
             && (this.getRecordtime() == null ? other.getRecordtime() == null : this.getRecordtime().equals(other.getRecordtime()))
@@ -146,6 +168,8 @@ public class BaseSmssend implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getOid() == null) ? 0 : getOid().hashCode());
+        result = prime * result + ((getDeviceid() == null) ? 0 : getDeviceid().hashCode());
+        result = prime * result + ((getDevicetablename() == null) ? 0 : getDevicetablename().hashCode());
         result = prime * result + ((getPhoneno() == null) ? 0 : getPhoneno().hashCode());
         result = prime * result + ((getSmscontent() == null) ? 0 : getSmscontent().hashCode());
         result = prime * result + ((getRecordtime() == null) ? 0 : getRecordtime().hashCode());

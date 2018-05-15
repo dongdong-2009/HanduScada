@@ -7,7 +7,7 @@ import java.util.Objects;
  */
 public enum CacheCmdType {
 
-    DEFAULT("default"), CREATE("create"), DELETE("delete"), UPDATE("update");
+    DEFAULT("default"), CREATE("create"), DELETE("delete"), UPDATE("update"), CREATE_OR_UPDATE("create_or_update");
 
     private String type;
 
@@ -25,6 +25,6 @@ public enum CacheCmdType {
                 return cmdType;
             }
         }
-        return null;
+        return CREATE_OR_UPDATE;
     }
 }

@@ -1,5 +1,7 @@
 package main.com.handu.scada.business.device;
 
+import main.com.handu.scada.db.service.IDBService;
+
 /**
  * Created by 柳梦 on 2018/04/03.
  * 设备数据
@@ -7,15 +9,15 @@ package main.com.handu.scada.business.device;
 public class DeviceData {
 
     private Object data;
-    private DataType dataType;
+    private Class<? extends IDBService> clazz;
 
-    public DeviceData(DataType dataType, Object data) {
-        this.dataType = dataType;
+    public DeviceData(Object data, Class<? extends IDBService> clazz) {
         this.data = data;
+        this.clazz = clazz;
     }
 
-    public DataType getDataType() {
-        return dataType;
+    public Class<? extends IDBService> getClazz() {
+        return clazz;
     }
 
     public Object getData() {

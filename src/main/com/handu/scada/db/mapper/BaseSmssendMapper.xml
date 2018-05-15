@@ -3,6 +3,8 @@
 <mapper namespace="main.com.handu.scada.db.mapper.BaseSmssendMapper">
   <resultMap id="BaseResultMap" type="main.com.handu.scada.db.bean.BaseSmssend">
     <id column="Oid" jdbcType="VARCHAR" property="oid" />
+    <result column="DeviceId" jdbcType="VARCHAR" property="deviceid" />
+    <result column="DeviceTableName" jdbcType="VARCHAR" property="devicetablename" />
     <result column="PhoneNo" jdbcType="VARCHAR" property="phoneno" />
     <result column="SmsContent" jdbcType="VARCHAR" property="smscontent" />
     <result column="RecordTime" jdbcType="TIMESTAMP" property="recordtime" />
@@ -73,8 +75,8 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    Oid, PhoneNo, SmsContent, RecordTime, IsSend, SendTime, SendNo, Result, ResultContent, 
-    Priority, MsgSendId
+    Oid, DeviceId, DeviceTableName, PhoneNo, SmsContent, RecordTime, IsSend, SendTime, 
+    SendNo, Result, ResultContent, Priority, MsgSendId
   </sql>
   <select id="selectByExample" parameterType="main.com.handu.scada.db.bean.BaseSmssendExample" resultMap="BaseResultMap">
     select
@@ -107,20 +109,28 @@
     </if>
   </delete>
   <insert id="insert" parameterType="main.com.handu.scada.db.bean.BaseSmssend">
-    insert into base_smssend (Oid, PhoneNo, SmsContent, 
-      RecordTime, IsSend, SendTime, 
-      SendNo, Result, ResultContent, 
-      Priority, MsgSendId)
-    values (#{oid,jdbcType=VARCHAR}, #{phoneno,jdbcType=VARCHAR}, #{smscontent,jdbcType=VARCHAR}, 
-      #{recordtime,jdbcType=TIMESTAMP}, #{issend,jdbcType=INTEGER}, #{sendtime,jdbcType=TIMESTAMP}, 
-      #{sendno,jdbcType=VARCHAR}, #{result,jdbcType=INTEGER}, #{resultcontent,jdbcType=VARCHAR}, 
-      #{priority,jdbcType=INTEGER}, #{msgsendid,jdbcType=VARCHAR})
+    insert into base_smssend (Oid, DeviceId, DeviceTableName, 
+      PhoneNo, SmsContent, RecordTime, 
+      IsSend, SendTime, SendNo, 
+      Result, ResultContent, Priority, 
+      MsgSendId)
+    values (#{oid,jdbcType=VARCHAR}, #{deviceid,jdbcType=VARCHAR}, #{devicetablename,jdbcType=VARCHAR}, 
+      #{phoneno,jdbcType=VARCHAR}, #{smscontent,jdbcType=VARCHAR}, #{recordtime,jdbcType=TIMESTAMP}, 
+      #{issend,jdbcType=INTEGER}, #{sendtime,jdbcType=TIMESTAMP}, #{sendno,jdbcType=VARCHAR}, 
+      #{result,jdbcType=INTEGER}, #{resultcontent,jdbcType=VARCHAR}, #{priority,jdbcType=INTEGER}, 
+      #{msgsendid,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="main.com.handu.scada.db.bean.BaseSmssend">
     insert into base_smssend
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="oid != null">
         Oid,
+      </if>
+      <if test="deviceid != null">
+        DeviceId,
+      </if>
+      <if test="devicetablename != null">
+        DeviceTableName,
       </if>
       <if test="phoneno != null">
         PhoneNo,
@@ -156,6 +166,12 @@
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="oid != null">
         #{oid,jdbcType=VARCHAR},
+      </if>
+      <if test="deviceid != null">
+        #{deviceid,jdbcType=VARCHAR},
+      </if>
+      <if test="devicetablename != null">
+        #{devicetablename,jdbcType=VARCHAR},
       </if>
       <if test="phoneno != null">
         #{phoneno,jdbcType=VARCHAR},
@@ -201,6 +217,12 @@
       <if test="record.oid != null">
         Oid = #{record.oid,jdbcType=VARCHAR},
       </if>
+      <if test="record.deviceid != null">
+        DeviceId = #{record.deviceid,jdbcType=VARCHAR},
+      </if>
+      <if test="record.devicetablename != null">
+        DeviceTableName = #{record.devicetablename,jdbcType=VARCHAR},
+      </if>
       <if test="record.phoneno != null">
         PhoneNo = #{record.phoneno,jdbcType=VARCHAR},
       </if>
@@ -239,6 +261,8 @@
   <update id="updateByExample" parameterType="map">
     update base_smssend
     set Oid = #{record.oid,jdbcType=VARCHAR},
+      DeviceId = #{record.deviceid,jdbcType=VARCHAR},
+      DeviceTableName = #{record.devicetablename,jdbcType=VARCHAR},
       PhoneNo = #{record.phoneno,jdbcType=VARCHAR},
       SmsContent = #{record.smscontent,jdbcType=VARCHAR},
       RecordTime = #{record.recordtime,jdbcType=TIMESTAMP},
@@ -256,6 +280,12 @@
   <update id="updateByPrimaryKeySelective" parameterType="main.com.handu.scada.db.bean.BaseSmssend">
     update base_smssend
     <set>
+      <if test="deviceid != null">
+        DeviceId = #{deviceid,jdbcType=VARCHAR},
+      </if>
+      <if test="devicetablename != null">
+        DeviceTableName = #{devicetablename,jdbcType=VARCHAR},
+      </if>
       <if test="phoneno != null">
         PhoneNo = #{phoneno,jdbcType=VARCHAR},
       </if>
@@ -291,7 +321,9 @@
   </update>
   <update id="updateByPrimaryKey" parameterType="main.com.handu.scada.db.bean.BaseSmssend">
     update base_smssend
-    set PhoneNo = #{phoneno,jdbcType=VARCHAR},
+    set DeviceId = #{deviceid,jdbcType=VARCHAR},
+      DeviceTableName = #{devicetablename,jdbcType=VARCHAR},
+      PhoneNo = #{phoneno,jdbcType=VARCHAR},
       SmsContent = #{smscontent,jdbcType=VARCHAR},
       RecordTime = #{recordtime,jdbcType=TIMESTAMP},
       IsSend = #{issend,jdbcType=INTEGER},

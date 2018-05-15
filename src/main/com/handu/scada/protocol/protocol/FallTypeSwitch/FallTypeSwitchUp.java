@@ -131,7 +131,6 @@ public class FallTypeSwitchUp implements IProtocol {
             if (bytes == null) return false;
             //跌落开关的长度为6
             if (bytes.length != 6) return false;
-            if (bytes[0] != 0x01) return false;
             //跌落装置功能码是0x02
             if (bytes[1] != 0x02) return false;
             int Crc = Crc16Utils.calcCrc16(bytes, 0, bytes.length - 2);

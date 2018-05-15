@@ -8,7 +8,7 @@ import main.com.handu.scada.db.bean.BaseSmssend;
 import main.com.handu.scada.db.bean.BaseSmssendExample;
 import main.com.handu.scada.db.mapper.BaseSmssendMapper;
 import main.com.handu.scada.db.mapper.common.CommonMapper;
-import main.com.handu.scada.db.service.BaseDBService;
+import main.com.handu.scada.db.utils.DBServiceUtil;
 import main.com.handu.scada.db.utils.MyBatisUtil;
 import main.com.handu.scada.exception.ExceptionHandler;
 import main.com.handu.scada.utils.*;
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  * Created by 柳梦 on 2017/12/29.
  * 短信发送
  */
-public class MsgManager extends BaseDBService {
+public class MsgManager extends DBServiceUtil {
 
     private BlockingQueue<Msg> queue;
     private static MsgManager singleton;
@@ -189,7 +189,7 @@ public class MsgManager extends BaseDBService {
                         .filter(e -> e.getAlarms() != null && StringsUtils.isNotEmptyAndValidLength(e.getPhone(), 11))
                         .collect(Collectors.groupingBy(MsgAdditionProperty::getDeviceId, Collectors.toList()));
                 StringBuilder sb = new StringBuilder();
-                sb.append("INSERT INTO base_smssend( Oid, PhoneNo, SmsContent, RecordTime, IsSend ) VALUES ");
+                sb.append("INSERT INTO base_smssend( Oid, DeviceId, DeviceTableName, PhoneNo, SmsContent, RecordTime, IsSend ) VALUES ");
                 int i[] = {0};
                 messages.forEach(msg -> {
                     String deviceId = msg.getDeviceId();
@@ -201,9 +201,11 @@ public class MsgManager extends BaseDBService {
                                     .filter(e -> Arrays.stream(e.getAlarms().split(",")).anyMatch(s -> Objects.equals(s, msg.getDeviceAlarms() + "")))
                                     .forEach(property -> {
                                                 sb.append(getStartColumn(UUIDUtils.getUUId()))
+                                                        .append(getColumn(msg.getDeviceId()))
+                                                        .append(getColumn(msg.getDeviceTableName()))
                                                         .append(getColumn(property.getPhone()))
                                                         .append(getColumn(msg.getMsgContent()))
-                                                        .append(getColumn(DateUtils.dateToStr(DateUtils.getNowSqlDateTime())))
+                                                        .append(getColumn(DateUtils.getNowSqlDateTime()))
                                                         .append(getEndColumn(0))
                                                         .append(",");
                                                 i[0]++;
@@ -237,9 +239,9 @@ public class MsgManager extends BaseDBService {
         private int timeout = 15000;
 
         public MsgSendTask(String msgSendUrl, String username, String password, int maxSendCount, int timeout) {
-            this.msgSendUrl = msgSendUrl;
-            this.username = username;
-            this.password = password;
+            this.msgSendUrl = AesUtils.decrypt(msgSendUrl);
+            this.username = AesUtils.decrypt(username);
+            this.password = AesUtils.decrypt(password);
             this.maxSendCount = maxSendCount;
             this.timeout = timeout;
             LogUtils.info("2.---start msg rpt task---", true);
@@ -251,16 +253,39 @@ public class MsgManager extends BaseDBService {
                 sqlSession = MyBatisUtil.getSqlSession();
                 BaseSmssendMapper mapper = sqlSession.getMapper(BaseSmssendMapper.class);
                 BaseSmssendExample example = new BaseSmssendExample();
-                example.createCriteria().andPhonenoIsNotNull().andSmscontentIsNotNull().andIssendIsNull();
-                example.or(example.createCriteria().andPhonenoIsNotNull().andSmscontentIsNotNull().andIssendEqualTo(0));
+                example.createCriteria().andIssendIsNull();
+                example.or(example.createCriteria().andIssendEqualTo(0));
                 example.setOrderByClause(" RecordTime desc,Priority desc ");
                 List<BaseSmssend> smssends = mapper.selectByExample(example);
                 if (smssends != null) {
                     smssends = smssends.stream().
                             filter(smssend -> smssend.getPhoneno().length() == 11
-                                    && !StringsUtils.isEmpty(smssend.getSmscontent())
+                                    && StringsUtils.isNotEmpty(smssend.getSmscontent())
+                                    && StringsUtils.isNotEmpty(smssend.getDeviceid())
                             ).collect(Collectors.toList());
                     if (smssends.size() == 0) return;
+                    Map<String, String> map = new HashMap<>();
+                    for (Map.Entry<String, List<BaseSmssend>> e : smssends
+                            .stream()
+                            .collect(Collectors.groupingBy(BaseSmssend::getDevicetablename))
+                            .entrySet()) {
+                        String tableName = e.getKey();
+                        String str = e.getValue().stream().map(e1 -> "'" + e1.getDeviceid() + "'").collect(Collectors.joining(","));
+                        mapper.selectListBySql("select Oid as deviceId,Name as name from " + tableName + " where Oid in(" + str + ")")
+                                .forEach(e2 -> {
+                                    String deviceId = (String) e2.get("deviceId");
+                                    String name = (String) e2.get("name");
+                                    map.put(deviceId, name);
+                                });
+                    }
+                    smssends = smssends.stream().map(e -> {
+                        String content = e.getSmscontent();
+                        String name = map.get(e.getDeviceid());
+                        content = content.replace("[**]", "[" + name + "设备]");
+                        e.setSmscontent(content);
+                        return e;
+                    }).collect(Collectors.toList());
+
                     List<List<BaseSmssend>> lists = splitMsg(smssends, maxSendCount);
                     if (lists != null) {
                         StringBuilder sb = new StringBuilder();
@@ -357,9 +382,9 @@ public class MsgManager extends BaseDBService {
         private int timeout = 15000;
 
         public MsgCallBackTask(String msgCallbackUrl, String username, String password, int maxSendCount, int timeout) {
-            this.msgCallbackUrl = msgCallbackUrl;
-            this.username = username;
-            this.password = password;
+            this.msgCallbackUrl = AesUtils.decrypt(msgCallbackUrl);
+            this.username = AesUtils.decrypt(username);
+            this.password = AesUtils.decrypt(password);
             this.maxSendCount = maxSendCount;
             this.timeout = timeout;
             LogUtils.info("3.---start msg send task---", true);

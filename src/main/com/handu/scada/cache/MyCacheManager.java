@@ -5,7 +5,7 @@ import main.com.handu.scada.db.bean.common.AdditionProperty;
 import main.com.handu.scada.db.bean.common.DeviceCacheResult;
 import main.com.handu.scada.db.bean.common.DtuCacheResult;
 import main.com.handu.scada.db.mapper.common.CommonMapper;
-import main.com.handu.scada.db.service.BaseDBService;
+import main.com.handu.scada.db.utils.DBServiceUtil;
 import main.com.handu.scada.db.utils.MyBatisUtil;
 import main.com.handu.scada.enums.DeviceGroup;
 import main.com.handu.scada.enums.DeviceTableEnum;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 /**
  * Created by 柳梦 on 2017/12/19.
  */
-public class MyCacheManager extends BaseDBService implements ICacheManager {
+public class MyCacheManager extends DBServiceUtil implements ICacheManager {
 
     private long start = 0;
     private long end = 0;
@@ -295,7 +295,7 @@ public class MyCacheManager extends BaseDBService implements ICacheManager {
         if (cacheResults != null) {
             synchronized (dtuCacheResultMap) {
                 for (DtuCacheResult cacheResult : cacheResults) {
-                    if (cacheResult != null && cacheResult.getCmdType() != CacheCmdType.DEFAULT) {
+                    if (cacheResult != null) {
                         switch (cacheResult.getCmdType()) {
                             case DELETE:
                                 break;
@@ -334,7 +334,7 @@ public class MyCacheManager extends BaseDBService implements ICacheManager {
         if (cacheResults != null) {
             synchronized (deviceCacheResultMap) {
                 for (DeviceCacheResult cacheResult : cacheResults) {
-                    if (cacheResult != null && cacheResult.getCmdType() != CacheCmdType.DEFAULT) {
+                    if (cacheResult != null) {
                         switch (cacheResult.getCmdType()) {
                             case DELETE:
                                 break;

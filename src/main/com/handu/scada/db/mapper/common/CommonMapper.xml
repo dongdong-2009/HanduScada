@@ -167,7 +167,7 @@
             a.DeviceId as deviceId,
             a.DeviceAlarms as alarms,
             b.RealName as name,
-            b.Mobile  as phone
+            b.Mobile as phone
             FROM
             device_communicationgroup a
             LEFT JOIN base_user b

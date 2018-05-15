@@ -14,7 +14,7 @@ public class DtuCacheResult {
     private boolean dtuIsOnline;
     private String terminalId;
     private int dtuType;
-    private CacheCmdType cmdType = CacheCmdType.DEFAULT;
+    private CacheCmdType cmdType = CacheCmdType.CREATE_OR_UPDATE;
 
 
     public int getDtuType() {

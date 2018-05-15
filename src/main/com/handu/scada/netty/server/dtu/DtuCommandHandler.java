@@ -3,7 +3,6 @@ package main.com.handu.scada.netty.server.dtu;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.ReferenceCountUtil;
@@ -130,7 +129,7 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
                 DtuChannelManager.removeClient(clientId, dtuAddress);
             }
         } catch (Exception e) {
-            ExceptionHandler.handle(e);
+            ExceptionHandler.print(e);
         } finally {
             ctx.close();
         }
@@ -148,8 +147,7 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
      * @param data
      */
     private void sendCommand(ChannelHandlerContext ctx, ByteBuf data) {
-        ChannelFuture f = ctx.writeAndFlush(data);
-        //f.addListener(future -> data.release());
+        ctx.writeAndFlush(data);
     }
 
     /**

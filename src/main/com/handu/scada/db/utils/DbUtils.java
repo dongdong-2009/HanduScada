@@ -1,5 +1,9 @@
 package main.com.handu.scada.db.utils;
 
+import main.com.handu.scada.utils.DateUtils;
+
+import java.util.Date;
+
 /**
  * Created by 柳梦 on 2018/04/27.
  * 数据库sql工具类
@@ -26,6 +30,9 @@ public class DbUtils {
     public static <T> String getColumn(T t) {
         if (t instanceof String) {
             return getSqlStr((String) t) + ",";
+        } else if (t instanceof Date) {
+            String date = DateUtils.dateToStr((Date) t);
+            return getSqlStr(date) + ",";
         }
         return t + ",";
     }
@@ -40,6 +47,9 @@ public class DbUtils {
     public static <T> String getStartColumn(T t) {
         if (t instanceof String) {
             return "(" + getSqlStr((String) t) + ",";
+        } else if (t instanceof Date) {
+            String date = DateUtils.dateToStr((Date) t);
+            return "(" + getSqlStr(date) + ",";
         }
         return "(" + t + ",";
     }
@@ -54,6 +64,9 @@ public class DbUtils {
     public static <T> String getEndColumn(T t) {
         if (t instanceof String) {
             return getSqlStr((String) t) + ")";
+        } else if (t instanceof Date) {
+            String date = DateUtils.dateToStr((Date) t);
+            return getSqlStr(date) + ")";
         }
         return t + ")";
     }

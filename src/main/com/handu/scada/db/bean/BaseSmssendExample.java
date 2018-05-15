@@ -175,6 +175,146 @@ public class BaseSmssendExample {
             return (Criteria) this;
         }
 
+        public Criteria andDeviceidIsNull() {
+            addCriterion("DeviceId is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andDeviceidIsNotNull() {
+            addCriterion("DeviceId is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andDeviceidEqualTo(String value) {
+            addCriterion("DeviceId =", value, "deviceid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDeviceidNotEqualTo(String value) {
+            addCriterion("DeviceId <>", value, "deviceid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDeviceidGreaterThan(String value) {
+            addCriterion("DeviceId >", value, "deviceid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDeviceidGreaterThanOrEqualTo(String value) {
+            addCriterion("DeviceId >=", value, "deviceid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDeviceidLessThan(String value) {
+            addCriterion("DeviceId <", value, "deviceid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDeviceidLessThanOrEqualTo(String value) {
+            addCriterion("DeviceId <=", value, "deviceid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDeviceidLike(String value) {
+            addCriterion("DeviceId like", value, "deviceid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDeviceidNotLike(String value) {
+            addCriterion("DeviceId not like", value, "deviceid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDeviceidIn(List<String> values) {
+            addCriterion("DeviceId in", values, "deviceid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDeviceidNotIn(List<String> values) {
+            addCriterion("DeviceId not in", values, "deviceid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDeviceidBetween(String value1, String value2) {
+            addCriterion("DeviceId between", value1, value2, "deviceid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDeviceidNotBetween(String value1, String value2) {
+            addCriterion("DeviceId not between", value1, value2, "deviceid");
+            return (Criteria) this;
+        }
+
+        public Criteria andDevicetablenameIsNull() {
+            addCriterion("DeviceTableName is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andDevicetablenameIsNotNull() {
+            addCriterion("DeviceTableName is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andDevicetablenameEqualTo(String value) {
+            addCriterion("DeviceTableName =", value, "devicetablename");
+            return (Criteria) this;
+        }
+
+        public Criteria andDevicetablenameNotEqualTo(String value) {
+            addCriterion("DeviceTableName <>", value, "devicetablename");
+            return (Criteria) this;
+        }
+
+        public Criteria andDevicetablenameGreaterThan(String value) {
+            addCriterion("DeviceTableName >", value, "devicetablename");
+            return (Criteria) this;
+        }
+
+        public Criteria andDevicetablenameGreaterThanOrEqualTo(String value) {
+            addCriterion("DeviceTableName >=", value, "devicetablename");
+            return (Criteria) this;
+        }
+
+        public Criteria andDevicetablenameLessThan(String value) {
+            addCriterion("DeviceTableName <", value, "devicetablename");
+            return (Criteria) this;
+        }
+
+        public Criteria andDevicetablenameLessThanOrEqualTo(String value) {
+            addCriterion("DeviceTableName <=", value, "devicetablename");
+            return (Criteria) this;
+        }
+
+        public Criteria andDevicetablenameLike(String value) {
+            addCriterion("DeviceTableName like", value, "devicetablename");
+            return (Criteria) this;
+        }
+
+        public Criteria andDevicetablenameNotLike(String value) {
+            addCriterion("DeviceTableName not like", value, "devicetablename");
+            return (Criteria) this;
+        }
+
+        public Criteria andDevicetablenameIn(List<String> values) {
+            addCriterion("DeviceTableName in", values, "devicetablename");
+            return (Criteria) this;
+        }
+
+        public Criteria andDevicetablenameNotIn(List<String> values) {
+            addCriterion("DeviceTableName not in", values, "devicetablename");
+            return (Criteria) this;
+        }
+
+        public Criteria andDevicetablenameBetween(String value1, String value2) {
+            addCriterion("DeviceTableName between", value1, value2, "devicetablename");
+            return (Criteria) this;
+        }
+
+        public Criteria andDevicetablenameNotBetween(String value1, String value2) {
+            addCriterion("DeviceTableName not between", value1, value2, "devicetablename");
+            return (Criteria) this;
+        }
+
         public Criteria andPhonenoIsNull() {
             addCriterion("PhoneNo is null");
             return (Criteria) this;

@@ -31,8 +31,6 @@ import java.util.stream.Collectors;
  */
 public class DeviceInfoChangeJob extends CommonJob implements BaseJob {
 
-    private SqlSession sqlSession = null;
-
     @Override
     public String jobName() {
         return "DeviceInfoChangeJob";
@@ -46,6 +44,7 @@ public class DeviceInfoChangeJob extends CommonJob implements BaseJob {
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         LogUtils.error(DateUtils.dateToStr(DateUtils.getNowSqlDateTime()) + "-->" + jobName());
+        SqlSession sqlSession = null;
         try {
             sqlSession = MyBatisUtil.getSqlSession();
             String[] ports = Config.getDtuPorts().split(",");
@@ -55,39 +54,33 @@ public class DeviceInfoChangeJob extends CommonJob implements BaseJob {
             example.createCriteria().andPortIn(Arrays.stream(ports).map(Integer::parseInt).collect(Collectors.toList()));
             List<DeviceInfochanges> infoChanges = mapper.selectByExample(example);
 
-            //记录添加后修改的设备id
-            List<String> dtuOids = new ArrayList<>();
-            List<String> deviceOids = new ArrayList<>();
             if (infoChanges != null && infoChanges.size() > 0) {
+                //记录添加后修改的设备id
+                List<String> dtuOids = new ArrayList<>();
+                List<String> deviceOids = new ArrayList<>();
                 infoChanges.forEach(e -> {
                     DeviceTableEnum device = DeviceTableEnum.getDeviceByTableName(e.getTabname());
                     if (device != null) {
-                        CacheCmdType c;
+                        CacheCmdType c = CacheCmdType.get(e.getOptype());
                         switch (device.getGroup()) {
                             case DTU:
-                                c = CacheCmdType.get(e.getOptype());
-                                if (c != null) {
-                                    switch (c) {
-                                        case DELETE:
-                                            MyCacheManager.removeDeviceCacheByDeviceId(e.getKeyid());
-                                            break;
-                                        default:
-                                            dtuOids.add(e.getKeyid());
-                                            break;
-                                    }
+                                switch (c) {
+                                    case DELETE:
+                                        MyCacheManager.removeDeviceCacheByDeviceId(e.getKeyid());
+                                        break;
+                                    default:
+                                        dtuOids.add(e.getKeyid());
+                                        break;
                                 }
                                 break;
                             case DTU_DEVICE:
-                                c = CacheCmdType.get(e.getOptype());
-                                if (c != null) {
-                                    switch (c) {
-                                        case DELETE:
-                                            MyCacheManager.removeDtuCacheByDtuId(e.getKeyid());
-                                            break;
-                                        default:
-                                            deviceOids.add(e.getKeyid());
-                                            break;
-                                    }
+                                switch (c) {
+                                    case DELETE:
+                                        MyCacheManager.removeDtuCacheByDtuId(e.getKeyid());
+                                        break;
+                                    default:
+                                        deviceOids.add(e.getKeyid());
+                                        break;
                                 }
                                 break;
                             case SWITCH:
@@ -98,16 +91,24 @@ public class DeviceInfoChangeJob extends CommonJob implements BaseJob {
                 CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
                 if (dtuOids.size() > 0) {
                     //初始化dtu相关
-                    List<DtuCacheResult> dtuList = commonMapper.selectDtuCacheResult(Arrays.asList(ports), dtuOids);
-                    if (dtuList != null) {
-                        MyCacheManager.updateDtuCacheResult(dtuList);
-                        LogUtils.info("init dtu cache result count " + dtuList.size(), true);
+                    List<DtuCacheResult> dtuCacheResults = commonMapper.selectDtuCacheResult(Arrays.asList(ports), dtuOids);
+                    if (dtuCacheResults != null) {
+                        dtuCacheResults = dtuCacheResults.stream().map(e -> {
+                            e.setCmdType(CacheCmdType.CREATE_OR_UPDATE);
+                            return e;
+                        }).collect(Collectors.toList());
+                        MyCacheManager.updateDtuCacheResult(dtuCacheResults);
+                        LogUtils.info("init dtu cache result count " + dtuCacheResults.size(), true);
                     }
                 }
                 if (deviceOids.size() > 0) {
                     //初始化设备相关
                     List<DeviceCacheResult> deviceCacheResults = commonMapper.selectDeviceCacheResult(Arrays.asList(ports), deviceOids);
                     if (deviceCacheResults != null) {
+                        deviceCacheResults = deviceCacheResults.stream().map(e -> {
+                            e.setCmdType(CacheCmdType.CREATE_OR_UPDATE);
+                            return e;
+                        }).collect(Collectors.toList());
                         //初始化附属信息
                         deviceCacheResults = MyCacheManager.getInstance().initAdditionProperty(deviceCacheResults, commonMapper);
                         MyCacheManager.updateDeviceCacheResult(deviceCacheResults);

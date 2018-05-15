@@ -9,7 +9,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
 import main.com.handu.scada.netty.server.dtu.DtuChannelInitializer;
 import main.com.handu.scada.netty.server.dtu.DtuCmdChannelInitializer;
-import main.com.handu.scada.netty.server.switch101.SwitchChannelInitializer;
+import main.com.handu.scada.netty.server.protocol101.Protocol101ChannelInitializer;
 import main.com.handu.scada.utils.LogUtils;
 import main.com.handu.scada.utils.StringsUtils;
 
@@ -95,7 +95,7 @@ public class TcpServer {
                     } else if (type == PortType.DTU) {
                         serverBootstrap.childHandler(new DtuChannelInitializer());
                     } else if (type == PortType.SWITCH) {
-                        serverBootstrap.childHandler(new SwitchChannelInitializer());
+                        serverBootstrap.childHandler(new Protocol101ChannelInitializer());
                     }
                     if (!StringsUtils.isEmpty(p)) {
                         Channel serverChannel = serverBootstrap.bind(Integer.parseInt(p)).sync().channel();
