@@ -82,9 +82,6 @@ public class DltControlWord {
 
     private List<DataAttr> dataAttrs;
 
-    public DltControlWord() {
-    }
-
     public DltControlWord(byte[] word, DeviceGroup deviceGroup) {
         this.word = word;
         this.deviceGroup = deviceGroup;
@@ -95,6 +92,7 @@ public class DltControlWord {
         if (deviceGroup == null) return null;
         //设备分组，主要区分新老漏保
         if (deviceGroup == DeviceGroup.LP2007) {
+            if (word.length < 4) return null;
             byte controlWord = word[0];
             flagAllAlarm = (controlWord & 0x40) != 0;
             flagLightAlarm = (controlWord & 0x20) != 0;
@@ -124,6 +122,7 @@ public class DltControlWord {
             ResidualAlarmTimeLevel = controlWord & 0x03;
 
         } else if (deviceGroup == DeviceGroup.LP1997) {
+            if (word.length < 10) return null;
             //保护器型号ID
             byte controlWord = word[9];
             int id = HexUtils.byteToInt(controlWord);

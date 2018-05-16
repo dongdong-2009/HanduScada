@@ -56,7 +56,7 @@ public class UpWiredTemperatureProtocol extends BaseUpTemperatureProtocol {
                 values.add(dataAttr);
             }
             IsSuccess = true;
-            protocolLayerData = new ProtocolLayerData() {{
+            return new ProtocolLayerData() {{
                 CommandData = mediaData.CommandData;
                 CommandName = "优科测温遥测";
                 PostalAddress = addressStr;
@@ -68,7 +68,7 @@ public class UpWiredTemperatureProtocol extends BaseUpTemperatureProtocol {
         } catch (Exception e) {
             ExceptionHandler.handle(e);
         }
-        return protocolLayerData;
+        return null;
     }
 
     @Override

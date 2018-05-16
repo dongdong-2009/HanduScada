@@ -5,6 +5,6 @@ package main.com.handu.scada.log;
  */
 public enum LogType {
 
-    ERROR, ALARM, INFO, UPDATE_ERROR, UPDATE_SUCCESS, EXPORT_DTU_ONLINE
+    ERROR, ALARM, INFO, UPDATE_ERROR, UPDATE_SUCCESS, EXPORT_DTU_ONLINE, SQL
 
 }

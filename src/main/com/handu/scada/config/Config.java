@@ -2,8 +2,14 @@ package main.com.handu.scada.config;
 
 public class Config {
 
+    /**
+     * 系统名称
+     */
     private static String SystemName = "总漏保在线监测系统";
 
+    /**
+     * 超时时间
+     */
     private static int timeout = 60;
 
     /**
@@ -11,6 +17,9 @@ public class Config {
      */
     private static int heartBeat = 60 * 5;
 
+    /**
+     * IP地址
+     */
     private static String host = "127.0.0.1";
     /**
      * dtu端口
@@ -28,6 +37,11 @@ public class Config {
      * 是否处于debug模式
      */
     public static boolean isDebug = false;
+
+    /**
+     * 是否打印sql语句
+     */
+    public static boolean isSQLPrint = false;
 
     public static String getSwitchPorts() {
         return switchPorts;

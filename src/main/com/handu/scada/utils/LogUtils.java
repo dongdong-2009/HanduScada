@@ -13,11 +13,6 @@ import static main.com.handu.scada.config.Config.isDebug;
  */
 public class LogUtils {
 
-    /**
-     * 过滤地址
-     */
-    public static String filterAddress;
-
     public static void error(Object msg) {
         error(msg, isDebug);
     }
@@ -49,6 +44,16 @@ public class LogUtils {
             System.out.println(DateUtils.dateToStr(new Date()) + "--" + Thread.currentThread().getName() + "--" + msg);
             sendToClient(String.valueOf(msg));
         }
+    }
+
+    /**
+     * 打印并存储
+     *
+     * @param msg
+     */
+    public static void sql(String msg) {
+        System.err.println(DateUtils.dateToStr(new Date()) + "--" + Thread.currentThread().getName() + "--" + msg);
+        TxtUtils.getInstance().sql(msg);
     }
 
     private static void sendToClient(String msg) {

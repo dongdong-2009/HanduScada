@@ -24,7 +24,7 @@ public class SecondLpRecordCreate implements IProtocol {
         try {
             byte[] buff = mediaData.CommandData;
             if (buff != null) {
-                buff = HexUtils.cleanFE(buff);
+                buff = HexUtils.cleanFEAndFF(buff);
                 if (valid(buff)) {
                     protocolLayerData = new ProtocolLayerData();
                     String dtuAddress = mediaData.DTUString;

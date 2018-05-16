@@ -77,7 +77,13 @@ public class HexUtils {
         return new String(c);
     }
 
-    public static byte[] cleanFE(byte[] bytes) {
+    /**
+     * 去掉前导字节ff，fe
+     *
+     * @param bytes
+     * @return
+     */
+    public static byte[] cleanFEAndFF(byte[] bytes) {
         int index = 0;
         int firstFEFlag = 0;
         int lastFEFlag = 0;

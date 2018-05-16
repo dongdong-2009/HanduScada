@@ -61,7 +61,7 @@ public class UpLeakageProtectorDLT6451997 extends BaseDLT645 {
             byte[] buff = mediaData.CommandData;
             if (buff == null) return null;
             //去除前导字节
-            buff = HexUtils.cleanFE(buff);
+            buff = HexUtils.cleanFEAndFF(buff);
             if (valid(buff)) {
                 dtuAddress = mediaData.DTUString;
                 getAddress(buff);

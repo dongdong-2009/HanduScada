@@ -124,6 +124,11 @@ public class TxtUtils {
         LogQueue.getInstance().push(new Log(content, LogType.INFO));
     }
 
+    public void sql(String content) {
+        if (StringsUtils.isEmpty(content)) return;
+        LogQueue.getInstance().push(new Log(content, LogType.SQL));
+    }
+
     public void alarm(String content) {
         if (StringsUtils.isEmpty(content)) return;
         LogQueue.getInstance().push(new Log(content, LogType.ALARM));

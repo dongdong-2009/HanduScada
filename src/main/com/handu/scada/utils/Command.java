@@ -102,6 +102,8 @@ public class Command {
 
     private static final String SQL = "sql execute --> sql-*";
     private static final String SQL_Y = "sql-*";
+    private static final String SQL_P_O = "sqlp-o";
+    private static final String SQL_P_C = "sqlp-c";
 
     private static final String BROAD_CAST_TIME = "broadcastTime --> bt-dtuAddress";
     private static final String TIME = "bt-*";
@@ -151,6 +153,14 @@ public class Command {
                 return;
             case EXPORT_Y:
                 DtuCommand.getInstance().exportDtuOnline2Txt();
+                return;
+            case SQL_P_O:
+                Config.isSQLPrint = true;
+                LogUtils.info("sql print has " + (Config.isSQLPrint ? "opened" : "closed"), true);
+                return;
+            case SQL_P_C:
+                Config.isSQLPrint = false;
+                LogUtils.info("sql print has " + (Config.isSQLPrint ? "opened" : "closed"), true);
                 return;
         }
 

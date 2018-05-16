@@ -19,7 +19,7 @@ import main.com.handu.scada.utils.StringsUtils;
 @DtuUpParse
 public class UpLeakageProtectorDLT6452007 extends BaseDLT645 {
 
-    private UpLeakageProtectorDLT6452007() {
+    public UpLeakageProtectorDLT6452007() {
     }
 
     @Override
@@ -70,8 +70,8 @@ public class UpLeakageProtectorDLT6452007 extends BaseDLT645 {
         try {
             byte[] buff = mediaData.CommandData;
             if (buff == null) return null;
-            //漏报保温以0xFE开头0x16结束,去除前导字节
-            buff = HexUtils.cleanFE(buff);
+            //漏报报文以0xFE开头0x16结束,去除前导字节
+            buff = HexUtils.cleanFEAndFF(buff);
             if (valid(buff)) {
                 dtuAddress = mediaData.DTUString;
                 getAddress(buff);
@@ -109,7 +109,7 @@ public class UpLeakageProtectorDLT6452007 extends BaseDLT645 {
                     this.IsSuccess = identifyCodeDesc.parse();
                 }
                 if (IsSuccess) {
-                    protocolLayerData = new ProtocolLayerData() {{
+                    return new ProtocolLayerData() {{
                         deviceTypeEnum = DeviceTypeEnum.LP2007;
                         CommandData = mediaData.CommandData;
                         CommandName = mediaData.MsgName;
@@ -128,6 +128,6 @@ public class UpLeakageProtectorDLT6452007 extends BaseDLT645 {
         } catch (Exception e) {
             ExceptionHandler.handle(e);
         }
-        return protocolLayerData;
+        return null;
     }
 }
