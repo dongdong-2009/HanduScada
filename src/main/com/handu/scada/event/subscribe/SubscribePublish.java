@@ -39,7 +39,9 @@ public class SubscribePublish {
      */
 
     //订阅器存储队列，采用优先级队列，优先级越高则先处理
-    private BlockingQueue<Msg> queue = new PriorityBlockingQueue<>();
+    //private BlockingQueue<Msg> queue = new PriorityBlockingQueue<>();
+    //非优先级阻塞队列
+    private BlockingQueue<Msg> queue = new LinkedBlockingQueue<>();
     //订阅者
     private Set<ISubscriber> subscribers = new LinkedHashSet<>();
     //线程池

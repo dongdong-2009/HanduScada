@@ -78,7 +78,7 @@ public class DltControlWord {
 
     private byte[] word;
 
-    private DeviceGroup deviceGroup;
+    public DeviceGroup deviceGroup;
 
     private List<DataAttr> dataAttrs;
 

@@ -17,6 +17,7 @@ import main.com.handu.scada.db.mapper.DeviceAlarmMapper;
 import main.com.handu.scada.db.service.impl.*;
 import main.com.handu.scada.db.utils.DBServiceUtil;
 import main.com.handu.scada.db.utils.MyBatisUtil;
+import main.com.handu.scada.enums.DeviceGroup;
 import main.com.handu.scada.enums.DeviceTableEnum;
 import main.com.handu.scada.event.Subscriber;
 import main.com.handu.scada.event.events.BaseEvent;
@@ -34,7 +35,7 @@ import main.com.handu.scada.protocol.enums.RemoteType;
 import main.com.handu.scada.protocol.protocol.DLT645.LP2007.DltControlWord;
 import main.com.handu.scada.protocol.protocol.DLT645.TripEventRecord;
 import main.com.handu.scada.protocol.protocol.Data.DataAttr;
-import main.com.handu.scada.protocol101.protocol.bean.BaseData;
+import main.com.handu.scada.protocol101.protocol.bean.Protocol101BaseData;
 import main.com.handu.scada.thread.MyThreadPoolExecutor;
 import main.com.handu.scada.utils.DateUtils;
 import main.com.handu.scada.utils.LogUtils;
@@ -78,8 +79,8 @@ public class DeviceBusinessesService extends DBServiceUtil implements ISubscribe
             if (event.data != null) {
                 if (event.data instanceof ProtocolLayerData) {
                     executor.execute(new DtuTask((ProtocolLayerData) event.data));
-                } else if (event.data instanceof BaseData) {
-                    executor.execute(new Protocol101Task((BaseData) event.data));
+                } else if (event.data instanceof Protocol101BaseData) {
+                    executor.execute(new Protocol101Task((Protocol101BaseData) event.data));
                 }
             }
         }
@@ -376,7 +377,7 @@ public class DeviceBusinessesService extends DBServiceUtil implements ISubscribe
                 w.setRecordtime(c.recordTime);
                 DBCmdTask.getInstance().push(new DeviceData(w, DeviceRcdControlWordDBService.class));
                 //如果是97漏保则存入遥测电流整定值
-                if (protocolLayerData.attrList != null) {
+                if (protocolLayerData.controlWord.deviceGroup == DeviceGroup.LP1997 && protocolLayerData.attrList != null) {
                     saveDeviceTelemetering(new RealDataItem() {{
                         this.address = protocolLayerData.DTUString;
                         this.list = protocolLayerData.attrList;
@@ -896,14 +897,27 @@ public class DeviceBusinessesService extends DBServiceUtil implements ISubscribe
      */
     private class Protocol101Task implements Runnable {
 
-        private BaseData baseData;
+        private Protocol101BaseData protocol101BaseData;
 
-        public Protocol101Task(BaseData data) {
-            this.baseData = data;
+        private Protocol101Task(Protocol101BaseData protocol101BaseData) {
+            this.protocol101BaseData = protocol101BaseData;
         }
 
         @Override
         public void run() {
+            if (protocol101BaseData != null && protocol101BaseData.getCmdType() != null) {
+                switch (protocol101BaseData.getCmdType()) {
+                    case PROTOCOL101_ON_LINE:
+                        break;
+                    case PROTOCOL101_OFF_LINE:
+                        break;
+                    default:
+                        if (protocol101BaseData.getDataAttrs() != null) {
+                            System.err.println(protocol101BaseData.getDataAttrs().toString());
+                        }
+                        break;
+                }
+            }
         }
     }
 }

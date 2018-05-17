@@ -11,7 +11,7 @@ import org.apache.ibatis.session.SqlSession;
 import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
 /**
@@ -32,7 +32,7 @@ public class DBCmdTask {
     /**
      * 设备数据遥信遥测入库队列
      */
-    private BlockingQueue<DeviceData> dataQueue = new LinkedBlockingDeque<>();
+    private BlockingQueue<DeviceData> dataQueue = new LinkedBlockingQueue<>();
 
     private static DBCmdTask singleton;
 

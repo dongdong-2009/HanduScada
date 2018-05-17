@@ -29,8 +29,9 @@ import java.io.UnsupportedEncodingException;
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by 柳梦 on 2017/12/29.
@@ -46,7 +47,7 @@ public class MsgManager extends DBServiceUtil {
         //开始循环短信入库
         if (isLoop) {
             timer = new Timer();
-            queue = new LinkedBlockingDeque<>();
+            queue = new LinkedBlockingQueue<>();
             //每一段时间从队列中读取
             timer.schedule(new LoopThread(), 5000, 10000);
         }
@@ -257,35 +258,45 @@ public class MsgManager extends DBServiceUtil {
                 example.or(example.createCriteria().andIssendEqualTo(0));
                 example.setOrderByClause(" RecordTime desc,Priority desc ");
                 List<BaseSmssend> smssends = mapper.selectByExample(example);
-                if (smssends != null) {
-                    smssends = smssends.stream().
+                if (smssends != null && smssends.size() > 0) {
+                    //第一步获取设备id不为空的短信
+                    List<BaseSmssend> smssends1 = smssends.stream().
                             filter(smssend -> smssend.getPhoneno().length() == 11
                                     && StringsUtils.isNotEmpty(smssend.getSmscontent())
                                     && StringsUtils.isNotEmpty(smssend.getDeviceid())
                             ).collect(Collectors.toList());
-                    if (smssends.size() == 0) return;
+                    //以下用于获取设备的名称
                     Map<String, String> map = new HashMap<>();
-                    for (Map.Entry<String, List<BaseSmssend>> e : smssends
-                            .stream()
-                            .collect(Collectors.groupingBy(BaseSmssend::getDevicetablename))
-                            .entrySet()) {
-                        String tableName = e.getKey();
-                        String str = e.getValue().stream().map(e1 -> "'" + e1.getDeviceid() + "'").collect(Collectors.joining(","));
-                        mapper.selectListBySql("select Oid as deviceId,Name as name from " + tableName + " where Oid in(" + str + ")")
-                                .forEach(e2 -> {
-                                    String deviceId = (String) e2.get("deviceId");
-                                    String name = (String) e2.get("name");
-                                    map.put(deviceId, name);
-                                });
+                    if (smssends1.size() > 0) {
+                        for (Map.Entry<String, List<BaseSmssend>> e : smssends1
+                                .stream()
+                                .collect(Collectors.groupingBy(BaseSmssend::getDevicetablename))
+                                .entrySet()) {
+                            String tableName = e.getKey();
+                            String str = e.getValue().stream().map(e1 -> "'" + e1.getDeviceid() + "'").collect(Collectors.joining(","));
+                            mapper.selectListBySql("select Oid as deviceId,Name as name from " + tableName + " where Oid in(" + str + ")")
+                                    .forEach(e2 -> {
+                                        String deviceId = (String) e2.get("deviceId");
+                                        String name = (String) e2.get("name");
+                                        map.put(deviceId, name);
+                                    });
+                        }
+                        smssends1 = smssends1.stream().map(e -> {
+                            String content = e.getSmscontent();
+                            String name = map.get(e.getDeviceid());
+                            content = content.replace("[**]", "[" + name + "设备]");
+                            e.setSmscontent(content);
+                            return e;
+                        }).collect(Collectors.toList());
                     }
-                    smssends = smssends.stream().map(e -> {
-                        String content = e.getSmscontent();
-                        String name = map.get(e.getDeviceid());
-                        content = content.replace("[**]", "[" + name + "设备]");
-                        e.setSmscontent(content);
-                        return e;
-                    }).collect(Collectors.toList());
-
+                    //第二步获取设备id为空的短信
+                    List<BaseSmssend> smssends2 = smssends.stream().
+                            filter(smssend -> smssend.getPhoneno().length() == 11
+                                    && StringsUtils.isNotEmpty(smssend.getSmscontent())
+                                    && StringsUtils.isEmpty(smssend.getDeviceid())
+                            ).collect(Collectors.toList());
+                    //第三部将两个集合合并
+                    smssends = Stream.of(smssends1, smssends2).flatMap(Collection::stream).collect(Collectors.toList());
                     List<List<BaseSmssend>> lists = splitMsg(smssends, maxSendCount);
                     if (lists != null) {
                         StringBuilder sb = new StringBuilder();
