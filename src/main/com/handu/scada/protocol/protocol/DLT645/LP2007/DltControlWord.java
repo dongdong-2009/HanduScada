@@ -85,6 +85,7 @@ public class DltControlWord {
     public DltControlWord(byte[] word, DeviceGroup deviceGroup) {
         this.word = word;
         this.deviceGroup = deviceGroup;
+        this.recordTime = DateUtils.getNowSqlDateTime();
     }
 
     public List<DataAttr> parseControlWord() {
@@ -156,7 +157,6 @@ public class DltControlWord {
             flagOverVoltageAlarm = HexUtils.getBitFromByte(1, controlWord) == 1;
             flagUnderVoltageAlarm = HexUtils.getBitFromByte(0, controlWord) == 1;
         }
-        recordTime = DateUtils.getNowSqlDateTime();
         return dataAttrs;
     }
 }

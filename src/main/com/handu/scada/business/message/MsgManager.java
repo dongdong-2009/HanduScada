@@ -313,8 +313,8 @@ public class MsgManager extends DBServiceUtil {
                                             sb.append(getStartColumn(msgId))
                                                     .append(getColumn(1))
                                                     .append(getColumn(DateUtils.dateToStr(DateUtils.getNowSqlDateTime())))
-                                                    .append(0)
-                                                    .append(getEndColumn(msgid))
+                                                    .append(getColumn(0))
+                                                    .append(getEndColumn(msgId))
                                                     .append(",");
                                             i++;
                                         }
