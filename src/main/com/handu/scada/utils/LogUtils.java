@@ -66,4 +66,14 @@ public class LogUtils {
             }
         }
     }
+
+    /**
+     * 打印任务执行
+     *
+     * @param msg
+     */
+    public static void printTask(String msg) {
+        error(msg);
+        TxtUtils.getInstance().task(msg);
+    }
 }

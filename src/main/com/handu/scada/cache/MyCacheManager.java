@@ -2,6 +2,7 @@ package main.com.handu.scada.cache;
 
 import main.com.handu.scada.config.Config;
 import main.com.handu.scada.db.bean.common.AdditionProperty;
+import main.com.handu.scada.db.bean.common.Device101CacheResult;
 import main.com.handu.scada.db.bean.common.DeviceCacheResult;
 import main.com.handu.scada.db.bean.common.DtuCacheResult;
 import main.com.handu.scada.db.mapper.common.CommonMapper;
@@ -27,6 +28,7 @@ public class MyCacheManager extends DBServiceUtil implements ICacheManager {
     private long end = 0;
     private final static ConcurrentHashMap<String, DtuCacheResult> dtuCacheResultMap = new ConcurrentHashMap<>();
     private final static ConcurrentHashMap<String, DeviceCacheResult> deviceCacheResultMap = new ConcurrentHashMap<>();
+    private final static ConcurrentHashMap<String, Device101CacheResult> device101CacheResultMap = new ConcurrentHashMap<>();
 
     private static MyCacheManager singleton;
 
@@ -191,6 +193,7 @@ public class MyCacheManager extends DBServiceUtil implements ICacheManager {
             initDtuInfo(sqlSession);
             initDeviceInfo(sqlSession);
             updateDtuState(sqlSession);
+            initDevice101Info(sqlSession);
             return true;
         } catch (Exception e) {
             ExceptionHandler.handle(e);
@@ -224,12 +227,11 @@ public class MyCacheManager extends DBServiceUtil implements ICacheManager {
                     .forEach(entry -> {
                         DtuCacheResult cacheResult = entry.getValue();
                         if (i[0] != 0) sb.append(",");
-                        sb.append("('")
-                                .append(cacheResult.getDtuId())
-                                .append("','device_dtu','")
-                                .append(cacheResult.getDtuId())
-                                .append("',2,'离线'")
-                                .append(")");
+                        sb.append(getStartColumn(cacheResult.getDtuAddress()))
+                                .append(getColumn("device_dtu"))
+                                .append(getColumn(cacheResult.getDtuAddress()))
+                                .append(getColumn(2))
+                                .append(getEndColumn("离线"));
                         i[0]++;
                     });
             sb.append(" on duplicate key update RecordId=values(RecordId)," +
@@ -467,5 +469,36 @@ public class MyCacheManager extends DBServiceUtil implements ICacheManager {
                     }
                 });
         return deviceCacheResults;
+    }
+
+    /**
+     * 初始化101设备缓存
+     *
+     * @param sqlSession
+     */
+    private void initDevice101Info(SqlSession sqlSession) {
+        start = System.currentTimeMillis();
+        //初始化设备相关
+        CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
+        List<Device101CacheResult> device101CacheResults = commonMapper.selectDevice101CacheResult(Arrays.asList(Config.getSwitchPorts().split(",")), null);
+        if (device101CacheResults != null && device101CacheResults.size() > 0) {
+            synchronized (device101CacheResultMap) {
+                device101CacheResults
+                        .stream()
+                        .filter(e -> StringsUtils.isNotEmpty(e.getDeviceAddress()))
+                        .forEach(e -> device101CacheResultMap.put(e.getDeviceAddress(), e));
+                end = System.currentTimeMillis();
+                LogUtils.error("init device101 info ----->" + device101CacheResultMap.size() + " take " + (end - start) + " ms", true);
+            }
+        }
+    }
+
+    /**
+     * 获取device101设备缓存
+     *
+     * @return
+     */
+    public static ConcurrentHashMap<String, Device101CacheResult> getDevice101CacheMap() {
+        return device101CacheResultMap;
     }
 }

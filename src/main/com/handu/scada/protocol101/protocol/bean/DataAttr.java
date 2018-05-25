@@ -1,5 +1,7 @@
 package main.com.handu.scada.protocol101.protocol.bean;
 
+import main.com.handu.scada.protocol101.protocol.enums.DataType;
+
 import java.util.Date;
 
 /**
@@ -11,7 +13,25 @@ public class DataAttr {
     private Object value;
     private Date recordTime;
     private String unit;
+    private DataType dataType;
     private Date soeTime;
+    private int pointPosition;
+
+    public int getPointPosition() {
+        return pointPosition;
+    }
+
+    public void setPointPosition(int pointPosition) {
+        this.pointPosition = pointPosition;
+    }
+
+    public DataType getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(DataType dataType) {
+        this.dataType = dataType;
+    }
 
     public String getName() {
         return name;
@@ -60,7 +80,9 @@ public class DataAttr {
                 ", value=" + value +
                 ", recordTime=" + recordTime +
                 ", unit='" + unit + '\'' +
+                ", dataType=" + dataType +
                 ", soeTime=" + soeTime +
+                ", pointPosition=" + pointPosition +
                 '}';
     }
 }

@@ -10,8 +10,8 @@ public enum DeviceGroup {
     DTU,
     //DTU相关联的设备
     DTU_DEVICE,
-    //开关
-    SWITCH,
+    //101协议设备
+    PROTOCOL101_DEVICE,
     //台区总表
     HM,
     //国标
@@ -20,6 +20,8 @@ public enum DeviceGroup {
     LP1997,
     //有线测温
     WIRED_TEMPERATURE,
+    //无线测温
+    WIRELESS_TEMPERATURE,
     //跌落装置
     FALL_TYPE_SWITCH,
     //4G营配模块

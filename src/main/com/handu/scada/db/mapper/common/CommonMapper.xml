@@ -143,6 +143,37 @@
         </if>
     </select>
 
+
+    <resultMap id="Device101CacheResultMap" type="main.com.handu.scada.db.bean.common.Device101CacheResult"></resultMap>
+
+    <select id="selectDevice101CacheResult" parameterType="java.lang.String"
+            resultMap="Device101CacheResultMap">
+
+        SELECT
+        a.Oid AS deviceId,
+        a. NAME AS deviceName,
+        a.Address AS deviceAddress,
+        a.Ip AS ip,
+        a. PORT AS PORT,
+        b.ProtocolType AS deviceType,
+        'device_intelligentswitch' AS deviceTableName,
+        a.LineId AS lineId
+        FROM
+        device_intelligentswitch a
+        LEFT JOIN device_terminal b ON a.TerminalId = b.TerminalId
+        WHERE
+        1 = 1
+        <if test="ports != null">
+            AND a.PORT IN
+            <foreach collection="ports" index="index" item="item" open="(" separator="," close=")">#{item}</foreach>
+        </if>
+        <if test="deviceIds != null">
+            AND a.Oid IN
+            <foreach collection="deviceIds" index="index" item="item" open="(" separator="," close=")">#{item}</foreach>
+        </if>
+    </select>
+
+
     <delete id="deleteInfoChanges" parameterType="java.lang.String">
         <if test="ids != null">
             DELETE FROM device_infochanges WHERE Oid IN

@@ -47,8 +47,22 @@ public class TxtUtils {
         public void run() {
             Log log;
             while ((log = LogQueue.getInstance().poll()) != null) {
-                writeLogFile(log, log.getLogType() != EXPORT_DTU_ONLINE);
+                switch (log.getLogType()) {
+                    case EXPORT_DTU_ONLINE:
+                        writeLogFile(log, "yyyy-MM-dd-HH", false);
+                        break;
+                    case TASK:
+                        writeLogFile(log, "yyyy-MM-dd-HH", true);
+                        break;
+                    default:
+                        writeLogFile(log, true);
+                        break;
+                }
             }
+        }
+
+        private void writeLogFile(Log log, boolean append) {
+            writeLogFile(log, "yyyy-MM-dd-HH-mm", append);
         }
 
         /**
@@ -56,12 +70,12 @@ public class TxtUtils {
          *
          * @param log
          */
-        private void writeLogFile(Log log, boolean append) {
+        private void writeLogFile(Log log, String format, boolean append) {
             FileWriter writer = null;
             try {
                 //我们按照每分钟创建文件夹，减少日志的整体大小，方便阅读
                 String filePath = log.getPath() +
-                        DateUtils.getFileTimeStr(new Date(), "yyyy-MM-dd-HH-mm") + File.separator +
+                        DateUtils.getFileTimeStr(new Date(), format) + File.separator +
                         log.getName() + log.getSuffix();
 
                 File file = new File(filePath);
@@ -132,6 +146,11 @@ public class TxtUtils {
     public void alarm(String content) {
         if (StringsUtils.isEmpty(content)) return;
         LogQueue.getInstance().push(new Log(content, LogType.ALARM));
+    }
+
+    public void task(String content) {
+        if (StringsUtils.isEmpty(content)) return;
+        LogQueue.getInstance().push(new Log(content, LogType.TASK));
     }
 
     public void exportDtuOnline(String content) {

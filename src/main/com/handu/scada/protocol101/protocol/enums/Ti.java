@@ -1,5 +1,7 @@
 package main.com.handu.scada.protocol101.protocol.enums;
 
+import main.com.handu.scada.utils.HexUtils;
+
 /**
  * Created by 柳梦 on 2018/03/15.
  * 报文ti值类型
@@ -9,7 +11,7 @@ public enum Ti {
     /**
      * 总召
      */
-    C_IC_NA_1(DataType.NONE, (byte) 0x64, "召唤命令", "C_IC_NA_1"),
+    C_IC_NA_1(DataType.NONE, (byte) 0x64, "站总召唤命令", "C_IC_NA_1"),
 
     /**
      * 初始化结束
@@ -39,7 +41,6 @@ public enum Ti {
     M_ME_NB_1(DataType.YC, (byte) 0x0b, "测量值，标度化值", "M_ME_NB_1"),
     M_ME_NC_1(DataType.YC, (byte) 0x0d, "测量值，短浮点数", "M_ME_NC_1"),
 
-
     /**
      * 遥信
      */
@@ -50,8 +51,21 @@ public enum Ti {
      * SOE事件
      */
     M_ME_TE_1(DataType.SOE, (byte) 0x1e, "带CP56Time2a时标的单点信息", "M_ME_TE_1"),
-    M_ME_TF_1(DataType.SOE, (byte) 0x1f, "带CP56Time2a时标的双点信息", "M_ME_TF_1");
+    M_ME_TF_1(DataType.SOE, (byte) 0x1f, "带CP56Time2a时标的双点信息", "M_ME_TF_1"),
 
+
+    C_CI_NA_1(DataType.NONE, (byte) 0x65, "电能量召唤命令", "C_CI_NA_1"),
+    C_TS_NA_1(DataType.NONE, (byte) 0x68, "测试命令", "C_TS_NA_1"),
+    C_RP_NA_1(DataType.NONE, (byte) 0x69, "复位进程命令", "C_RP_NA_1"),
+    C_SR_NA_1(DataType.NONE, (byte) 0xc8, "切换定值区", "C_SR_NA_1"),
+    C_RR_NA_1(DataType.NONE, (byte) 0xc9, "读定值区号", "C_RR_NA_1"),
+    C_RS_NA_1(DataType.NONE, (byte) 0xca, "读参数和定值", "C_RS_NA_1"),
+    C_WS_NA_1(DataType.NONE, (byte) 0xcb, "写参数和定值", "C_WS_NA_1"),
+    M_IT_NB_1(DataType.NONE, (byte) 0xce, "累计量，短浮点数", "M_IT_NB_1"),
+    F_FR_NA_1(DataType.NONE, (byte) 0xd2, "文件传输", "F_FR_NA_1"),
+    F_SR_NA_1(DataType.NONE, (byte) 0xd3, "软件升级", "F_SR_NA_1"),
+
+    M_IT_TC_1(DataType.NONE, HexUtils.intToByte(207), "带CP56Time2a时标的累计量，短浮点数", "M_IT_TC_1");
 
     private DataType dataType;
     private byte tiType;

@@ -1,9 +1,9 @@
 package main.com.handu.scada.protocol101.protocol.enums;
 
-import main.com.handu.scada.protocol101.switch101.analysis.impl.SOEUpAnalysis;
-import main.com.handu.scada.protocol101.switch101.analysis.impl.YCUpAnalysis;
-import main.com.handu.scada.protocol101.switch101.analysis.impl.YKUpAnalysis;
-import main.com.handu.scada.protocol101.switch101.analysis.impl.YXUpAnalysis;
+import main.com.handu.scada.protocol101.device101.analysis.impl.SOEUpAnalysis;
+import main.com.handu.scada.protocol101.device101.analysis.impl.YCUpAnalysis;
+import main.com.handu.scada.protocol101.device101.analysis.impl.YKUpAnalysis;
+import main.com.handu.scada.protocol101.device101.analysis.impl.YXUpAnalysis;
 
 /**
  * Created by 柳梦 on 2018/03/15.

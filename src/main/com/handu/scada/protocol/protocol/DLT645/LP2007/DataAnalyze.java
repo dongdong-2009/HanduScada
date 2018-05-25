@@ -316,7 +316,6 @@ public class DataAnalyze extends BaseDataAnalyze {
                     tripEventRecord.setAddress(getAddress());
                     return null;
                 }
-
                 case ReadControlWordParameterModule://region 读控制字参数模块
                 {
                     this.controlWord = new DltControlWord(item.data, DeviceGroup.LP2007);

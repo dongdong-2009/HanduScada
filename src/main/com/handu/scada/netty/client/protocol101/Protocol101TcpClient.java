@@ -8,7 +8,7 @@ import main.com.handu.scada.netty.client.BaseTcpClient;
 import main.com.handu.scada.netty.client.dtu.MsgPriority;
 import main.com.handu.scada.netty.server.protocol101.Protocol101CommandHandler;
 import main.com.handu.scada.netty.server.protocol101.Protocol101CtxManager;
-import main.com.handu.scada.protocol101.protocol.bean.BaseData;
+import main.com.handu.scada.protocol101.protocol.bean.Protocol101BaseData;
 import main.com.handu.scada.utils.LogUtils;
 import main.com.handu.scada.utils.StringsUtils;
 
@@ -35,20 +35,20 @@ public class Protocol101TcpClient extends BaseTcpClient implements IProtocolClie
     @Override
     public void onEvent(String publisher, BaseEvent event) {
         if (event instanceof DownProtocolEvent) {
-            if (event.data != null && event.data instanceof BaseData) {
-                BaseData data = (BaseData) event.data;
+            if (event.data != null && event.data instanceof Protocol101BaseData) {
+                Protocol101BaseData data = (Protocol101BaseData) event.data;
                 service.execute(() -> send(event.priority, data));
             }
         }
     }
 
     @Override
-    public void send(MsgPriority priority, BaseData data) {
+    public void send(MsgPriority priority, Protocol101BaseData data) {
         String address = data.getAddress();
         if (StringsUtils.isNotEmpty(address)) {
             Protocol101CommandHandler handler = Protocol101CtxManager.getHandler(address);
             if (handler != null) {
-                handler.down(data);
+                handler.downAnalysis(data);
             } else {
                 LogUtils.error("deviceAddress " + address + " is not connection!");
             }

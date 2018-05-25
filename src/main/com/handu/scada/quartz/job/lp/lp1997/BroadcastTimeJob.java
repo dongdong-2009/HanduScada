@@ -2,24 +2,21 @@ package main.com.handu.scada.quartz.job.lp.lp1997;
 
 import main.com.handu.scada.enums.DeviceTypeEnum;
 import main.com.handu.scada.protocol.enums.DeviceCmdTypeEnum;
+import main.com.handu.scada.quartz.job.BaseDtuCommand;
 import main.com.handu.scada.quartz.job.BaseJob;
-import main.com.handu.scada.quartz.job.CommonJob;
-import main.com.handu.scada.utils.DateUtils;
-import main.com.handu.scada.utils.LogUtils;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 /**
  * Created by 柳梦 on 2018/03/02.
  */
-public class BroadcastTimeJob extends CommonJob implements BaseJob {
+public class BroadcastTimeJob extends BaseDtuCommand implements BaseJob {
 
     //广播校时
     private DeviceCmdTypeEnum cmdTypeEnum = DeviceCmdTypeEnum.BroadcastTime;
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        LogUtils.error(DateUtils.dateToStr(DateUtils.getNowSqlDateTime()) + "-->" + jobName());
         send(DeviceTypeEnum.LP1997, cmdTypeEnum);
     }
 

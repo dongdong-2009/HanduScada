@@ -15,7 +15,7 @@ public class TimerManager {
     /**
      * 创建一个全局的timer，每一秒tick一次，长度为60
      */
-    private HashedWheelTimer timer = new HashedWheelTimer(1, TimeUnit.SECONDS, 60);
+    private HashedWheelTimer timer = new HashedWheelTimer(100, TimeUnit.MILLISECONDS, 60);
     private ConcurrentHashMap<Integer, Timeout> hashMap = new ConcurrentHashMap<>();
     private static TimerManager ourInstance = new TimerManager();
 

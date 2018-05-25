@@ -1,0 +1,146 @@
+[
+  {
+    "Key": {
+      "x": 0,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16401,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "A相负荷电流",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 0,
+      "ItemShowType": 0,
+      "ItemSize": 4,
+      "ItemType": 9,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 1,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16402,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "B相负荷电流",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 1,
+      "ItemShowType": 0,
+      "ItemSize": 4,
+      "ItemType": 9,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 2,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16403,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "C相负荷电流",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 2,
+      "ItemShowType": 0,
+      "ItemSize": 4,
+      "ItemType": 9,
+      "ItemUnit": "A",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 3,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16413,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "A相电场强度",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 3,
+      "ItemShowType": 0,
+      "ItemSize": 4,
+      "ItemType": 9,
+      "ItemUnit": "V",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 4,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16414,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "B相电场强度",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 4,
+      "ItemShowType": 0,
+      "ItemSize": 4,
+      "ItemType": 9,
+      "ItemUnit": "V",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 5,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16415,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "C相电场强度",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 5,
+      "ItemShowType": 0,
+      "ItemSize": 4,
+      "ItemType": 9,
+      "ItemUnit": "V",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  }
+]

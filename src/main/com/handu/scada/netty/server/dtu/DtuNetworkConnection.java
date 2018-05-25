@@ -18,7 +18,7 @@ import main.com.handu.scada.protocol.base.MediaData;
 import main.com.handu.scada.protocol.base.ProtocolLayerData;
 import main.com.handu.scada.protocol.protocol.DLT645.LP2007.impl.SecondLpRecordCreate;
 import main.com.handu.scada.protocol.protocol.Data.DataAttr;
-import main.com.handu.scada.quartz.utils.DtuCommand;
+import main.com.handu.scada.business.dtu.DtuCommand;
 import main.com.handu.scada.thread.MyThreadPoolExecutor;
 import main.com.handu.scada.utils.*;
 

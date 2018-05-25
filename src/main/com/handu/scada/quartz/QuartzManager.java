@@ -184,6 +184,7 @@ public class QuartzManager {
                     .withIdentity(jobId, jobGroupName) //定义name/group
                     .startAt(DateUtils.getDelayedDateBySeconds(delayed))//一旦加入scheduler，30分钟后执行
                     .withSchedule(simpleSchedule() //使用SimpleTrigger
+                            .withMisfireHandlingInstructionFireNow()
                             .withRepeatCount(0)) //只执行一次,重复0次
                     .build();
             if (!scheduler.checkExists(new TriggerKey(jobId, jobGroupName))) {
@@ -217,7 +218,7 @@ public class QuartzManager {
                 jobDetail.getJobDataMap().put("jobId", jobId);
                 //表达式调度构建器
                 CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(cronExpression)
-                        .withMisfireHandlingInstructionDoNothing();
+                        .withMisfireHandlingInstructionFireAndProceed();
                 //按新的cronExpression表达式构建一个新的trigger
                 trigger = newTrigger().withIdentity(jobId, jobGroupName).withSchedule(scheduleBuilder).build();
                 //将任务及其触发器放入调度器

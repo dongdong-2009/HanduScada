@@ -37,7 +37,7 @@ public class DtuStateCallback implements DtuStateCallbackListener {
     @Override
     public void offline(String clientId, String dtuAddress) {
         if (dtuAddress == null) return;
-        LogUtils.error("dtu offline:clientId----" + clientId + "---dtuAddress " + dtuAddress, true);
+        LogUtils.error("dtu offline:clientId----" + clientId + "---dtuAddress " + dtuAddress + "---dtuNum=" + DtuChannelManager.getDtuMapCount(), true);
         MyCacheManager.updateDtuOnlineState(dtuAddress, false);
         if (MainServer.START_TYPE == MainServer.START_NO_SQL) return;
         ProtocolLayerData protocolLayerData = new ProtocolLayerData();

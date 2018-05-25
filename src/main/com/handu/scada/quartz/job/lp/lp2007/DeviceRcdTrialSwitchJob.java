@@ -1,14 +1,14 @@
 package main.com.handu.scada.quartz.job.lp.lp2007;
 
 import main.com.handu.scada.quartz.job.BaseJob;
-import main.com.handu.scada.quartz.job.CommonJob;
+import main.com.handu.scada.quartz.job.BaseDtuCommand;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 /**
  * Created by 柳梦 on 2017/12/29.
  */
-public class DeviceRcdTrialSwitchJob extends CommonJob implements BaseJob {
+public class DeviceRcdTrialSwitchJob extends BaseDtuCommand implements BaseJob {
 
     @Override
     public boolean isEnable() {
@@ -29,7 +29,6 @@ public class DeviceRcdTrialSwitchJob extends CommonJob implements BaseJob {
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         //SqlSession sqlSession;
 //        if (enable) {
-//            LogUtils.error(DateUtils.dateToStr(DateUtils.getNowSqlDateTime()) + "-->" + jobName());
 //            try {
 //                sqlSession = MyBatisUtil.getSqlSession(false);
 //                DeviceRcdTrialswitchlogMapper mapper = sqlSession.getMapper(DeviceRcdTrialswitchlogMapper.class);

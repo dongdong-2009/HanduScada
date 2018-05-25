@@ -9,13 +9,10 @@ import java.util.concurrent.TimeUnit;
  */
 public class LogQueue {
 
-    //队列大小
-    private static final int QUEUE_MAX_SIZE = 1000;
-
     private static LogQueue singleton;
 
     //阻塞队列
-    private BlockingQueue<Log> blockingQueue = new LinkedBlockingQueue<>(QUEUE_MAX_SIZE);
+    private BlockingQueue<Log> blockingQueue = new LinkedBlockingQueue<>();
 
     private LogQueue() {
     }

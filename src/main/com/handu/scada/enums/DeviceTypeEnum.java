@@ -12,11 +12,12 @@ public enum DeviceTypeEnum {
     LP2007(8, "国标漏保", DeviceTableEnum.Device_Rcd.getTableName().toLowerCase(), 1, DeviceGroup.LP2007),
     SECOND_LP2007(8, "国标二级漏保", DeviceTableEnum.Device_Rcd.getTableName().toLowerCase(), 2, DeviceGroup.LP2007),
     LP1997(9, "乾隆漏保", DeviceTableEnum.Device_Rcd.getTableName().toLowerCase(), 1, DeviceGroup.LP1997),
-    SWITCH(-99, "开关", DeviceTableEnum.Device_IntelligentSwitch.getTableName().toLowerCase(), DeviceGroup.SWITCH),
-    HM(-97, "台区总表", DeviceTableEnum.Device_HM.getTableName().toLowerCase(), DeviceGroup.SWITCH),
+    SWITCH(-99, "开关", DeviceTableEnum.Device_IntelligentSwitch.getTableName().toLowerCase(), DeviceGroup.PROTOCOL101_DEVICE),
+    HM(-97, "台区总表", DeviceTableEnum.Device_HM.getTableName().toLowerCase(), DeviceGroup.HM),
     FALL_TYPE_SWITCH(98, "跌落开关", DeviceTableEnum.Device_Falling_Type_Switch.getTableName().toLowerCase(), DeviceGroup.FALL_TYPE_SWITCH),
     REACTIVE_POWER(18, "智能电容器(无功设备)", DeviceTableEnum.Device_Reactive_Power.getTableName().toLowerCase(), DeviceGroup.REACTIVE_POWER),
-    WIRED_TEMPERATURE(24, "优科测温", DeviceTableEnum.Device_Temperature.getTableName().toLowerCase(), DeviceGroup.WIRED_TEMPERATURE);
+    WIRED_TEMPERATURE(24, "优科测温", DeviceTableEnum.Device_Temperature.getTableName().toLowerCase(), DeviceGroup.WIRED_TEMPERATURE),
+    WIRELESS_TEMPERATURE(97, "跌落无线测温", DeviceTableEnum.Device_Temperature.getTableName().toLowerCase(), DeviceGroup.WIRELESS_TEMPERATURE);
 
     private int deviceType;
     private String name;

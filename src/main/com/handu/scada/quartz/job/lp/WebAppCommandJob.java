@@ -4,16 +4,15 @@ import main.com.handu.scada.db.bean.BaseRequestdata;
 import main.com.handu.scada.db.bean.BaseRequestdataExample;
 import main.com.handu.scada.db.mapper.BaseRequestdataMapper;
 import main.com.handu.scada.db.utils.MyBatisUtil;
+import main.com.handu.scada.enums.DeviceTypeEnum;
 import main.com.handu.scada.event.EventManager;
 import main.com.handu.scada.event.events.DownProtocolEvent;
 import main.com.handu.scada.netty.client.dtu.MsgPriority;
 import main.com.handu.scada.protocol.base.ProtocolLayerData;
 import main.com.handu.scada.protocol.enums.DeviceCmdTypeEnum;
-import main.com.handu.scada.enums.DeviceTypeEnum;
-import main.com.handu.scada.quartz.job.CommonJob;
 import main.com.handu.scada.quartz.job.BaseJob;
+import main.com.handu.scada.quartz.job.BaseDtuCommand;
 import main.com.handu.scada.utils.DateUtils;
-import main.com.handu.scada.utils.LogUtils;
 import main.com.handu.scada.utils.StringsUtils;
 import main.com.handu.scada.utils.UUIDUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -25,7 +24,7 @@ import java.util.List;
 /**
  * Created by 柳梦 on 2018/01/03.
  */
-public class WebAppCommandJob extends CommonJob implements BaseJob {
+public class WebAppCommandJob extends BaseDtuCommand implements BaseJob {
 
     private SqlSession sqlSession;
 
@@ -41,7 +40,6 @@ public class WebAppCommandJob extends CommonJob implements BaseJob {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        LogUtils.error(DateUtils.dateToStr(DateUtils.getNowSqlDateTime()) + "-->" + jobName());
         try {
             sqlSession = MyBatisUtil.getSqlSession(false);
             BaseRequestdataMapper mapper = sqlSession.getMapper(BaseRequestdataMapper.class);

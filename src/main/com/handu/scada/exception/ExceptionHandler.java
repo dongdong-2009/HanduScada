@@ -33,7 +33,7 @@ public class ExceptionHandler {
      *
      * @param e
      */
-    public static void handle(Throwable e) {
+    public static synchronized void handle(Throwable e) {
         e.printStackTrace(printWriter);
         String exception = stringWriter.toString();
         TxtUtils.getInstance().error(exception);

@@ -12,9 +12,8 @@ import main.com.handu.scada.db.mapper.common.CommonMapper;
 import main.com.handu.scada.db.utils.MyBatisUtil;
 import main.com.handu.scada.enums.DeviceTableEnum;
 import main.com.handu.scada.exception.ExceptionHandler;
+import main.com.handu.scada.quartz.job.BaseDtuCommand;
 import main.com.handu.scada.quartz.job.BaseJob;
-import main.com.handu.scada.quartz.job.CommonJob;
-import main.com.handu.scada.utils.DateUtils;
 import main.com.handu.scada.utils.LogUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.quartz.JobExecutionContext;
@@ -29,7 +28,7 @@ import java.util.stream.Collectors;
 /**
  * Created by 柳梦 on 2018/01/03.
  */
-public class DeviceInfoChangeJob extends CommonJob implements BaseJob {
+public class DeviceInfoChangeJob extends BaseDtuCommand implements BaseJob {
 
     @Override
     public String jobName() {
@@ -43,7 +42,6 @@ public class DeviceInfoChangeJob extends CommonJob implements BaseJob {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        LogUtils.error(DateUtils.dateToStr(DateUtils.getNowSqlDateTime()) + "-->" + jobName());
         SqlSession sqlSession = null;
         try {
             sqlSession = MyBatisUtil.getSqlSession();
@@ -83,7 +81,7 @@ public class DeviceInfoChangeJob extends CommonJob implements BaseJob {
                                         break;
                                 }
                                 break;
-                            case SWITCH:
+                            case PROTOCOL101_DEVICE:
                                 break;
                         }
                     }

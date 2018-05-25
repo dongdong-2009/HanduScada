@@ -1,8 +1,8 @@
 package main.com.handu.scada.protocol101.protocol.factory;
 
 import main.com.handu.scada.exception.ExceptionHandler;
-import main.com.handu.scada.protocol101.switch101.analysis.IAnalysis;
-import main.com.handu.scada.protocol101.protocol.bean.BaseData;
+import main.com.handu.scada.protocol101.device101.analysis.IAnalysis;
+import main.com.handu.scada.protocol101.protocol.bean.Protocol101BaseData;
 import main.com.handu.scada.protocol101.protocol.enums.Ti;
 
 import java.lang.reflect.Constructor;
@@ -14,15 +14,15 @@ import java.lang.reflect.InvocationTargetException;
 public class Protocol101UpAnalysisFactory {
 
     private IAnalysis analysis;
-    private BaseData baseData;
+    private Protocol101BaseData baseData;
 
-    private Protocol101UpAnalysisFactory(BaseData baseData) throws InstantiationException, IllegalAccessException {
+    private Protocol101UpAnalysisFactory(Protocol101BaseData baseData) throws InstantiationException, IllegalAccessException {
         this.baseData = baseData;
         init();
     }
 
-    public BaseData analysis() throws Exception {
-        if (analysis != null && baseData != null) return analysis.analysis(baseData);
+    public Protocol101BaseData analysis() throws Exception {
+        if (analysis != null && baseData != null) return analysis.analysis();
         return null;
     }
 
@@ -38,7 +38,7 @@ public class Protocol101UpAnalysisFactory {
                     try {
                         Class<?> aClass = tiType.getDataType().getClazz();
                         // 首先准备一个Class[]做为ctor的参数类型
-                        Class[] type = new Class[]{BaseData.class};
+                        Class[] type = new Class[]{Protocol101BaseData.class};
                         // 调用pType为变量的getConstructor()，获得一个专属ctor
                         Constructor ctor = aClass.getConstructor(type);
                         // 准备一个Object[] 做为ctor实参值
@@ -53,7 +53,7 @@ public class Protocol101UpAnalysisFactory {
         }
     }
 
-    public static Protocol101UpAnalysisFactory getInstance(BaseData baseData) throws IllegalAccessException, InstantiationException {
+    public static Protocol101UpAnalysisFactory getInstance(Protocol101BaseData baseData) throws IllegalAccessException, InstantiationException {
         return new Protocol101UpAnalysisFactory(baseData);
     }
 }

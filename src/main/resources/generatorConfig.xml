@@ -74,7 +74,7 @@
         <!--<table tableName="base_user"/>-->
         <!--<table tableName="base_department"/>-->
         <!--<table tableName="base_dataitemdetail"/>-->
-        <table tableName="base_smssend"/>
+        <!--<table tableName="base_smssend"/>-->
         <!--<table tableName="base_requestdata"/>-->
         <!--<table tableName="base_organize"/>-->
         <!--<table tableName="device_lowvoltage"/>-->
@@ -127,7 +127,8 @@
         <!--<table tableName="device_infochanges"/>-->
         <!--<table tableName="device_hm_history_afn0c25"/>-->
         <!--<table tableName="device_hm_real_afn0c25"/>-->
-
+        <table tableName="device_intelligentswitch_telemetry"/>
+        <table tableName="device_intelligentswitch_telesignal"/>
         <!--<table tableName="device_hm_low_voltage"/>-->
         <!--<table tableName="device_hm_overload"/>-->
         <!--<table tableName="device_hm_utpc"/>-->

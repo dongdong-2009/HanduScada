@@ -3,7 +3,7 @@ package main.com.handu.scada.protocol101.protocol.impl;
 import main.com.handu.scada.exception.ExceptionHandler;
 import main.com.handu.scada.protocol101.protocol.IProtocol101;
 import main.com.handu.scada.protocol101.protocol.Protocol101UpParse;
-import main.com.handu.scada.protocol101.protocol.bean.BaseData;
+import main.com.handu.scada.protocol101.protocol.bean.Protocol101BaseData;
 import main.com.handu.scada.protocol101.protocol.factory.Protocol101UpAnalysisFactory;
 
 /**
@@ -33,10 +33,10 @@ public class UpCommandParse extends BaseProtocol101 implements IProtocol101 {
     }
 
     @Override
-    public BaseData parse(byte[] data) throws InstantiationException, IllegalAccessException {
+    public Protocol101BaseData parse(byte[] data) throws InstantiationException, IllegalAccessException {
         if (valid(data)) {
             try {
-                baseData = new BaseData(data);
+                baseData = new Protocol101BaseData(data);
                 return Protocol101UpAnalysisFactory.getInstance(baseData).analysis();
             } catch (Exception e) {
                 ExceptionHandler.handle(e);

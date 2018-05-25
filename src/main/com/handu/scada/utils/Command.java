@@ -1,10 +1,11 @@
 package main.com.handu.scada.utils;
 
+import main.com.handu.scada.business.dtu.DtuCommand;
 import main.com.handu.scada.business.dtu.DtuUpdateUtil;
+import main.com.handu.scada.business.protocol101.Protocol101Command;
 import main.com.handu.scada.config.Config;
 import main.com.handu.scada.protocol.enums.DeviceCmdTypeEnum;
 import main.com.handu.scada.quartz.QuartzManager;
-import main.com.handu.scada.quartz.utils.DtuCommand;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +44,7 @@ public class Command {
         add("cmd-1006(fallSwitch)");
         add("cmd-1007(readPostalAddress)");
         add("cmd-1008(readAFN0C25)");
+        add("cmd-1009(101allCall)");
     }};
 
     /**
@@ -124,7 +126,7 @@ public class Command {
                 LogUtils.info("log has " + (Config.isDebug ? "opened" : "closed"), true);
                 return;
             case DEBUG:
-                LogUtils.info("log has " + (Config.isDebug ? "opened" : "closed") + ",l-(o)pen,l-(c)losesss", true);
+                LogUtils.info("log has " + (Config.isDebug ? "opened" : "closed") + ",l-(o)pen,l-(c)lose", true);
                 return;
             case DEBUG_N:
                 Config.isDebug = false;
@@ -214,7 +216,13 @@ public class Command {
             command = command.substring(command.indexOf("-") + 1, command.length());
             try {
                 Integer i = Integer.valueOf(command);
-                DtuCommand.getInstance().sendByValue(i);
+                boolean b = DtuCommand.getInstance().sendByValue(i);
+                if (!b) {
+                    b = Protocol101Command.getInstance().sendByValue(i);
+                    if (!b) {
+                        LogUtils.error("not find cmd by value " + i, true);
+                    }
+                }
             } catch (NumberFormatException e) {
                 LogUtils.error("cmd type error,please retry", true);
             }
@@ -346,6 +354,13 @@ public class Command {
         LogUtils.error("command not find!", true);
     }
 
+    /**
+     * 匹配字符串是否满足某一字符串类型
+     *
+     * @param s
+     * @param p
+     * @return
+     */
     private static boolean isMatch(String s, String p) {
         int i = 0;
         int j = 0;

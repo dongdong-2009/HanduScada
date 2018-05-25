@@ -241,8 +241,8 @@ public class DataAnalyze extends BaseDataAnalyze {
     private void parseReadClock() {
         byte[] data = identifyCodeDesc.data;
         if (data != null && data.length == 8) {
-            itemNames = new String[]{"content", "dateTime"};
-            itemCnNames = new String[]{"内容", "时间"};
+            itemNames = new String[]{"content", "RunDate", "RunTime"};
+            itemCnNames = new String[]{"内容", "日期", "时间"};
             int index = 0;
             int state = data[index++];
             lpState = getLpState(state);
@@ -255,7 +255,7 @@ public class DataAnalyze extends BaseDataAnalyze {
             Calendar calendar = Calendar.getInstance();
             int y = calendar.get(Calendar.YEAR);
             if (data[index] != (byte) 0xff) {
-                y = HexUtils.bcdByteToInt(data[index]);
+                y = HexUtils.bcdByteToInt(data[index]) + 2000;
             }
             calendar.set(y, m - 1, d, h, mm, ss);
             Date date = DateUtils.date2SqlDate(calendar.getTime());
@@ -263,11 +263,21 @@ public class DataAnalyze extends BaseDataAnalyze {
                 setName(itemNames[1]);
                 setCnname(itemCnNames[1]);
                 setValue(date);
-                setUnit("年月日时分秒");
+                setUnit("年月日");
                 setDtime(identifyCodeDesc.dTime);
                 setDateType(RemoteType.YC);
             }};
             dataAttrs.add(dataAttr);
+            dataAttrs.add(new DataAttr() {
+                {
+                    setName(itemNames[2]);
+                    setCnname(itemCnNames[2]);
+                    setValue(date);
+                    setUnit("时分秒");
+                    setDtime(identifyCodeDesc.dTime);
+                    setDateType(RemoteType.YC);
+                }
+            });
         }
     }
 
@@ -277,7 +287,7 @@ public class DataAnalyze extends BaseDataAnalyze {
     private void parseRunStateAndTripEvent() {
         byte[] data = identifyCodeDesc.data;
         if (data != null && data.length == 7) {
-            itemNames = new String[]{"content", "dateTime"};
+            itemNames = new String[]{"content", "DateTime"};
             itemCnNames = new String[]{"跳闸记录", "时间"};
             int index = 0;
             int state = data[index++];

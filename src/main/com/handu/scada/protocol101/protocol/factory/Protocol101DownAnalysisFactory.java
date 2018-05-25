@@ -1,8 +1,8 @@
 package main.com.handu.scada.protocol101.protocol.factory;
 
-import main.com.handu.scada.protocol101.protocol.bean.BaseData;
-import main.com.handu.scada.protocol101.switch101.analysis.IAnalysis;
-import main.com.handu.scada.protocol101.switch101.analysis.impl.DownAnalysis;
+import main.com.handu.scada.protocol101.protocol.bean.Protocol101BaseData;
+import main.com.handu.scada.protocol101.device101.analysis.IAnalysis;
+import main.com.handu.scada.protocol101.device101.analysis.impl.DownAnalysis;
 
 /**
  * Created by 柳梦 on 2018/05/11.
@@ -16,7 +16,8 @@ public class Protocol101DownAnalysisFactory {
         return new Protocol101DownAnalysisFactory();
     }
 
-    public BaseData analysis(BaseData data) throws Exception {
+    public Protocol101BaseData analysis(Protocol101BaseData data) throws Exception {
+        if (data.getDeviceType() == null) return null;
         switch (data.getDeviceType()) {
             case SWITCH:
                 analysis = new DownAnalysis(data);

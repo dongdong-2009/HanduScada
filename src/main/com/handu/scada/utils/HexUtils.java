@@ -62,6 +62,16 @@ public class HexUtils {
     }
 
 
+    /**
+     * ascii转int
+     *
+     * @return
+     */
+    public static int byteAsciiToInt(byte b) {
+        char c = (char) b;
+        return Integer.parseInt(String.valueOf(c));
+    }
+
     public static String HexArrayToASCII(byte[] hexs) {
         String lin = "";
         for (byte hex : hexs) {
@@ -285,7 +295,7 @@ public class HexUtils {
      * @param bytes byte[]
      * @return String
      */
-    public static String byteToString(byte[] bytes) {
+    public static String byteToASCIIString(byte[] bytes) {
         String result = "";
         char temp;
         for (byte aByte : bytes) {

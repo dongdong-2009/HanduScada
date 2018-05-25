@@ -12,6 +12,7 @@ import main.com.handu.scada.cache.MyCacheManager;
 import main.com.handu.scada.config.Config;
 import main.com.handu.scada.db.bean.*;
 import main.com.handu.scada.db.bean.common.AdditionProperty;
+import main.com.handu.scada.db.bean.common.Device101CacheResult;
 import main.com.handu.scada.db.bean.common.DeviceCacheResult;
 import main.com.handu.scada.db.mapper.DeviceAlarmMapper;
 import main.com.handu.scada.db.service.impl.*;
@@ -36,6 +37,7 @@ import main.com.handu.scada.protocol.protocol.DLT645.LP2007.DltControlWord;
 import main.com.handu.scada.protocol.protocol.DLT645.TripEventRecord;
 import main.com.handu.scada.protocol.protocol.Data.DataAttr;
 import main.com.handu.scada.protocol101.protocol.bean.Protocol101BaseData;
+import main.com.handu.scada.protocol101.protocol.enums.DataType;
 import main.com.handu.scada.thread.MyThreadPoolExecutor;
 import main.com.handu.scada.utils.DateUtils;
 import main.com.handu.scada.utils.LogUtils;
@@ -911,11 +913,54 @@ public class DeviceBusinessesService extends DBServiceUtil implements ISubscribe
                         break;
                     case PROTOCOL101_OFF_LINE:
                         break;
-                    default:
-                        if (protocol101BaseData.getDataAttrs() != null) {
-                            System.err.println(protocol101BaseData.getDataAttrs().toString());
-                        }
+                    case ALL_CALL:
+                        saveAllCall();
                         break;
+                }
+            }
+        }
+
+        /**
+         * 存入总召数据
+         */
+        private void saveAllCall() {
+            List<main.com.handu.scada.protocol101.protocol.bean.DataAttr> dataAttrs = protocol101BaseData.getDataAttrs();
+            if (dataAttrs == null) return;
+            ConcurrentHashMap<String, Device101CacheResult> cacheMap = MyCacheManager.getDevice101CacheMap();
+            if (cacheMap != null) {
+                Device101CacheResult result = cacheMap.get(protocol101BaseData.getAddress());
+                if (result != null) {
+                    dataAttrs.forEach(e -> {
+                        DataType dataType = e.getDataType();
+                        if (dataType != null) {
+                            switch (dataType) {
+                                case YX:
+                                    DeviceIntelligentswitchTelesignal yx = new DeviceIntelligentswitchTelesignal();
+                                    yx.setDeviceid(result.getDeviceId());
+                                    yx.setDataitem(String.valueOf(e.getPointPosition()));
+                                    yx.setDataitemname(e.getName());
+                                    yx.setValue(String.valueOf(e.getValue()));
+                                    yx.setUnit(e.getUnit());
+                                    yx.setDescription(e.getName());
+                                    yx.setRecordtime(e.getRecordTime());
+                                    DBCmdTask.getInstance().push(new DeviceData(yx, DeviceIntelligentswitchTelesignalDBService.class));
+                                    break;
+                                case YC:
+                                    DeviceIntelligentswitchTelemetry yc = new DeviceIntelligentswitchTelemetry();
+                                    yc.setDeviceid(result.getDeviceId());
+                                    yc.setDataitem(String.valueOf(e.getPointPosition()));
+                                    yc.setDataitemname(e.getName());
+                                    yc.setValue(String.valueOf(e.getValue()));
+                                    yc.setUnit(e.getUnit());
+                                    yc.setDescription(e.getName());
+                                    yc.setRecordtime(e.getRecordTime());
+                                    DBCmdTask.getInstance().push(new DeviceData(yc, DeviceIntelligentswitchTelemetryDBService.class));
+                                    break;
+                                case SOE:
+                                    break;
+                            }
+                        }
+                    });
                 }
             }
         }

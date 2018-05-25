@@ -130,7 +130,7 @@ public class IdentifyCodeDesc extends BaseIdentifyCodeDesc {
             //电流整定
             else if (DICodeLP2007.equal(DiCode, DICodeLP2007.CurrentSettingParameterBlock, true)) {
                 //this.name = EnumHelper.GetDescription(DeviceCmdTypeEnum.CurrentSettingParameterBlock);
-                this.unit = "A,";
+                this.unit = "A,A";
                 this.length = 4;
                 this.codeSystem = CodeSysEnum.BCD;
                 this.cmdType = DeviceCmdTypeEnum.CurrentSettingParameterBlock;
@@ -290,98 +290,98 @@ public class IdentifyCodeDesc extends BaseIdentifyCodeDesc {
 
             //最值记录
             else if (DICodeLP2007.equal(DiCode, DICodeLP2007.MaxRC, true)) {
-                this.unit = ",mA,";
+                this.unit = ",mA,年月日时分秒";
                 this.length = 9;
                 this.codeSystem = CodeSysEnum.BCD;
                 this.cmdType = DeviceCmdTypeEnum.MaxRC;
                 //this.name = EnumHelper.GetDescription(this.cmdtype);
                 this.values = dataAnalyze.getData(this);
             } else if (DICodeLP2007.equal(DiCode, DICodeLP2007.MinRC, true)) {
-                this.unit = ",mA,";
+                this.unit = ",mA,年月日时分秒";
                 this.length = 9;
                 this.codeSystem = CodeSysEnum.BCD;
                 this.cmdType = DeviceCmdTypeEnum.MinRC;
                 //this.name = EnumHelper.GetDescription(this.cmdtype);
                 this.values = dataAnalyze.getData(this);
             } else if (DICodeLP2007.equal(DiCode, DICodeLP2007.MaxAC, true)) {
-                this.unit = "A,";
+                this.unit = "A,年月日时分秒";
                 this.length = 9;
                 this.codeSystem = CodeSysEnum.BCD;
                 this.cmdType = DeviceCmdTypeEnum.MaxAC;
                 //this.name = EnumHelper.GetDescription(this.cmdtype);
                 this.values = dataAnalyze.getData(this);
             } else if (DICodeLP2007.equal(DiCode, DICodeLP2007.MaxBC, true)) {
-                this.unit = "A,";
+                this.unit = "A,年月日时分秒";
                 this.length = 9;
                 this.codeSystem = CodeSysEnum.BCD;
                 this.cmdType = DeviceCmdTypeEnum.MaxBC;
                 //this.name = EnumHelper.GetDescription(this.cmdtype);
                 this.values = dataAnalyze.getData(this);
             } else if (DICodeLP2007.equal(DiCode, DICodeLP2007.MaxCC, true)) {
-                this.unit = "A,";
+                this.unit = "A,年月日时分秒";
                 this.length = 9;
                 this.codeSystem = CodeSysEnum.BCD;
                 this.cmdType = DeviceCmdTypeEnum.MaxCC;
                 //this.name = EnumHelper.GetDescription(this.cmdtype);
                 this.values = dataAnalyze.getData(this);
             } else if (DICodeLP2007.equal(DiCode, DICodeLP2007.MinAC, true)) {
-                this.unit = "A,";
+                this.unit = "A,年月日时分秒";
                 this.length = 9;
                 this.codeSystem = CodeSysEnum.BCD;
                 this.cmdType = DeviceCmdTypeEnum.MinAC;
                 //this.name = EnumHelper.GetDescription(this.cmdtype);
                 this.values = dataAnalyze.getData(this);
             } else if (DICodeLP2007.equal(DiCode, DICodeLP2007.MinBC, true)) {
-                this.unit = "A,";
+                this.unit = "A,年月日时分秒";
                 this.length = 9;
                 this.codeSystem = CodeSysEnum.BCD;
                 this.cmdType = DeviceCmdTypeEnum.MinBC;
                 //this.name = EnumHelper.GetDescription(this.cmdtype);
                 this.values = dataAnalyze.getData(this);
             } else if (DICodeLP2007.equal(DiCode, DICodeLP2007.MinCC, true)) {
-                this.unit = "A,";
+                this.unit = "A,年月日时分秒";
                 this.length = 9;
                 this.codeSystem = CodeSysEnum.BCD;
                 this.cmdType = DeviceCmdTypeEnum.MinCC;
                 //this.name = EnumHelper.GetDescription(this.cmdtype);
                 this.values = dataAnalyze.getData(this);
             } else if (DICodeLP2007.equal(DiCode, DICodeLP2007.MaxAV, true)) {
-                this.unit = "V,";
+                this.unit = "V,年月日时分秒";
                 this.length = 8;
                 this.codeSystem = CodeSysEnum.BCD;
                 this.cmdType = DeviceCmdTypeEnum.MaxAV;
                 //this.name = EnumHelper.GetDescription(this.cmdtype);
                 this.values = dataAnalyze.getData(this);
             } else if (DICodeLP2007.equal(DiCode, DICodeLP2007.MaxBV, true)) {
-                this.unit = "V,";
+                this.unit = "V,年月日时分秒";
                 this.length = 8;
                 this.codeSystem = CodeSysEnum.BCD;
                 this.cmdType = DeviceCmdTypeEnum.MaxBV;
                 //this.name = EnumHelper.GetDescription(this.cmdtype);
                 this.values = dataAnalyze.getData(this);
             } else if (DICodeLP2007.equal(DiCode, DICodeLP2007.MaxCV, true)) {
-                this.unit = "V,";
+                this.unit = "V,年月日时分秒";
                 this.length = 8;
                 this.codeSystem = CodeSysEnum.BCD;
                 this.cmdType = DeviceCmdTypeEnum.MaxCV;
                 //this.name = EnumHelper.GetDescription(this.cmdtype);
                 this.values = dataAnalyze.getData(this);
             } else if (DICodeLP2007.equal(DiCode, DICodeLP2007.MinAV, true)) {
-                this.unit = "V,";
+                this.unit = "V,年月日时分秒";
                 this.length = 8;
                 this.codeSystem = CodeSysEnum.BCD;
                 this.cmdType = DeviceCmdTypeEnum.MinAV;
                 //this.name = EnumHelper.GetDescription(this.cmdtype);
                 this.values = dataAnalyze.getData(this);
             } else if (DICodeLP2007.equal(DiCode, DICodeLP2007.MinBV, true)) {
-                this.unit = "V,";
+                this.unit = "V,年月日时分秒";
                 this.length = 8;
                 this.codeSystem = CodeSysEnum.BCD;
                 this.cmdType = DeviceCmdTypeEnum.MinBV;
                 //this.name = EnumHelper.GetDescription(this.cmdtype);
                 this.values = dataAnalyze.getData(this);
             } else if (DICodeLP2007.equal(DiCode, DICodeLP2007.MinCV, true)) {
-                this.unit = "V,";
+                this.unit = "V,年月日时分秒";
                 this.length = 8;
                 this.codeSystem = CodeSysEnum.BCD;
                 this.cmdType = DeviceCmdTypeEnum.MinCV;

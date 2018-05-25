@@ -15,7 +15,7 @@ public enum DeviceTableEnum {
     Device_Temperature("测温装置", "device_temperature", DeviceGroup.DTU_DEVICE, " SELECT TemperatureId AS deviceId, Address AS name, LimitValue AS value, MountingPosition AS description, '°C' AS unit FROM device_temperatureprobe WHERE TemperatureId IN ( "),
     Device_Falling_Type_Switch("跌落熔断器", "device_fallingtypeswitch", DeviceGroup.DTU_DEVICE, " SELECT DeviceId AS deviceId, DataItem AS name, Value AS value, Description AS description, Unit AS unit FROM device_real_remotesignalling WHERE DeviceId IN ( "),
     Device_Reactive_Power("无功设备", "device_reactive_power", DeviceGroup.DTU_DEVICE, ""),
-    Device_IntelligentSwitch("开关", "device_intelligentswitch", DeviceGroup.SWITCH),
+    Device_IntelligentSwitch("开关", "device_intelligentswitch", DeviceGroup.PROTOCOL101_DEVICE),
     Device_HM("台区总表", "device_hm", DeviceGroup.HM);
 
     private String deviceName;

@@ -2,6 +2,7 @@ package main.com.handu.scada.db.mapper.common;
 
 import main.com.handu.scada.business.message.MsgAdditionProperty;
 import main.com.handu.scada.db.bean.common.AdditionProperty;
+import main.com.handu.scada.db.bean.common.Device101CacheResult;
 import main.com.handu.scada.db.bean.common.DeviceCacheResult;
 import main.com.handu.scada.db.bean.common.DtuCacheResult;
 import org.apache.ibatis.annotations.Param;
@@ -38,6 +39,15 @@ public interface CommonMapper {
      */
     List<DeviceCacheResult> selectDeviceCacheResult(@Param("ports") List<String> ports, @Param("deviceIds") List<String> deviceIds);
 
+
+    /**
+     * 查询101协议设备缓存
+     *
+     * @param ports
+     * @param deviceIds
+     * @return
+     */
+    List<Device101CacheResult> selectDevice101CacheResult(@Param("ports") List<String> ports, @Param("deviceIds") List<String> deviceIds);
 
     /**
      * 根据id删除infoChanges
