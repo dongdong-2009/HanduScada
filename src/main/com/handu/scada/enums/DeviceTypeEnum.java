@@ -13,11 +13,12 @@ public enum DeviceTypeEnum {
     SECOND_LP2007(8, "国标二级漏保", DeviceTableEnum.Device_Rcd.getTableName().toLowerCase(), 2, DeviceGroup.LP2007),
     LP1997(9, "乾隆漏保", DeviceTableEnum.Device_Rcd.getTableName().toLowerCase(), 1, DeviceGroup.LP1997),
     SWITCH(-99, "开关", DeviceTableEnum.Device_IntelligentSwitch.getTableName().toLowerCase(), DeviceGroup.PROTOCOL101_DEVICE),
+    HC_FAULT_INDICATOR(16, "汇彩故障指示器", DeviceTableEnum.Device_FaultIndicator.getTableName().toLowerCase(), DeviceGroup.PROTOCOL101_DEVICE),
     HM(-97, "台区总表", DeviceTableEnum.Device_HM.getTableName().toLowerCase(), DeviceGroup.HM),
-    FALL_TYPE_SWITCH(98, "跌落开关", DeviceTableEnum.Device_Falling_Type_Switch.getTableName().toLowerCase(), DeviceGroup.FALL_TYPE_SWITCH),
+    CY_FALL_TYPE_SWITCH(98, "诚意跌落式熔断器", DeviceTableEnum.Device_Falling_Type_Switch.getTableName().toLowerCase(), DeviceGroup.FALL_TYPE_SWITCH),
     REACTIVE_POWER(18, "智能电容器(无功设备)", DeviceTableEnum.Device_Reactive_Power.getTableName().toLowerCase(), DeviceGroup.REACTIVE_POWER),
-    WIRED_TEMPERATURE(24, "优科测温", DeviceTableEnum.Device_Temperature.getTableName().toLowerCase(), DeviceGroup.WIRED_TEMPERATURE),
-    WIRELESS_TEMPERATURE(97, "跌落无线测温", DeviceTableEnum.Device_Temperature.getTableName().toLowerCase(), DeviceGroup.WIRELESS_TEMPERATURE);
+    YK_WIRED_TEMPERATURE(24, "优科有线测温", DeviceTableEnum.Device_Temperature.getTableName().toLowerCase(), DeviceGroup.WIRED_TEMPERATURE),
+    CY_WIRELESS_TEMPERATURE(97, "诚意无线测温", DeviceTableEnum.Device_Temperature.getTableName().toLowerCase(), DeviceGroup.WIRELESS_TEMPERATURE);
 
     private int deviceType;
     private String name;
@@ -79,6 +80,15 @@ public enum DeviceTypeEnum {
     public static DeviceTypeEnum getDeviceTypeByTableName(String tableName) {
         for (DeviceTypeEnum deviceTypeEnum : DeviceTypeEnum.values()) {
             if (Objects.equals(deviceTypeEnum.tableName, tableName)) {
+                return deviceTypeEnum;
+            }
+        }
+        return null;
+    }
+
+    public static DeviceTypeEnum getDeviceTypeByDeviceType(int deviceType) {
+        for (DeviceTypeEnum deviceTypeEnum : DeviceTypeEnum.values()) {
+            if (deviceTypeEnum.getDeviceType() == deviceType) {
                 return deviceTypeEnum;
             }
         }

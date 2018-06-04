@@ -59,7 +59,7 @@ public class HDFallTypeSwitch implements IProtocol {
                 DataAttr dataAttr;
                 //1表示测温
                 if (type == 1) {
-                    deviceTypeEnum_ = DeviceTypeEnum.WIRELESS_TEMPERATURE;
+                    deviceTypeEnum_ = DeviceTypeEnum.CY_WIRELESS_TEMPERATURE;
                     tableName = DeviceTableEnum.Device_Temperature.getTableName().toLowerCase();
                     dataAttr = new DataAttr();
                     dataAttr.setDateType(RemoteType.YC);
@@ -72,7 +72,7 @@ public class HDFallTypeSwitch implements IProtocol {
                 }
                 //2表示跌落装置
                 else {
-                    deviceTypeEnum_ = DeviceTypeEnum.FALL_TYPE_SWITCH;
+                    deviceTypeEnum_ = DeviceTypeEnum.CY_FALL_TYPE_SWITCH;
                     tableName = DeviceTableEnum.Device_Falling_Type_Switch.getTableName().toLowerCase();
                     dataAttr = new DataAttr();
                     dataAttr.setDateType(RemoteType.YX);

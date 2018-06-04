@@ -1,10 +1,14 @@
 package main.com.handu.scada.quartz.job;
 
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 
 /**
  * Created by 柳梦 on 2017/12/08.
  */
+
+//不允许并发执行
+@DisallowConcurrentExecution
 public interface BaseJob extends Job {
     /**
      * 是否启用

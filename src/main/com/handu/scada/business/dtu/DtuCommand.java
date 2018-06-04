@@ -68,14 +68,14 @@ public class DtuCommand extends BaseDtuCommand {
      * 跌落装置总召
      */
     private void fallSwitch() {
-        send(MsgPriority.LOW, DeviceTypeEnum.FALL_TYPE_SWITCH, DeviceCmdTypeEnum.ALL_CALL);
+        send(MsgPriority.LOW, DeviceTypeEnum.CY_FALL_TYPE_SWITCH, DeviceCmdTypeEnum.ALL_CALL);
     }
 
     /**
      * 测温总召
      */
     private void temperature() {
-        send(MsgPriority.HIGH, DeviceTypeEnum.WIRED_TEMPERATURE, DeviceCmdTypeEnum.ALL_CALL);
+        send(MsgPriority.HIGH, DeviceTypeEnum.YK_WIRED_TEMPERATURE, DeviceCmdTypeEnum.ALL_CALL);
     }
 
     /**

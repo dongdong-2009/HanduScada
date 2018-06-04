@@ -31,6 +31,6 @@ public class AllCallJob extends BaseDtuCommand implements BaseJob {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        send(DeviceTypeEnum.WIRED_TEMPERATURE, cmdType);
+        send(DeviceTypeEnum.YK_WIRED_TEMPERATURE, cmdType);
     }
 }

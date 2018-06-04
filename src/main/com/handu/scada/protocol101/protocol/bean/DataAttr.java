@@ -16,6 +16,15 @@ public class DataAttr {
     private DataType dataType;
     private Date soeTime;
     private int pointPosition;
+    private boolean inertHistory = true;
+
+    public boolean isInertHistory() {
+        return inertHistory;
+    }
+
+    public void setInertHistory(boolean inertHistory) {
+        this.inertHistory = inertHistory;
+    }
 
     public int getPointPosition() {
         return pointPosition;

@@ -156,10 +156,11 @@
         a.Ip AS ip,
         a. PORT AS PORT,
         b.ProtocolType AS deviceType,
-        'device_intelligentswitch' AS deviceTableName,
+        'device_switch' AS deviceTableName,
+        b.DevParamFolder AS terminalName,
         a.LineId AS lineId
         FROM
-        device_intelligentswitch a
+        device_switch a
         LEFT JOIN device_terminal b ON a.TerminalId = b.TerminalId
         WHERE
         1 = 1
@@ -171,6 +172,34 @@
             AND a.Oid IN
             <foreach collection="deviceIds" index="index" item="item" open="(" separator="," close=")">#{item}</foreach>
         </if>
+
+        UNION
+
+        SELECT
+        a.Oid AS deviceId,
+        a. NAME AS deviceName,
+        a.GroupAddress AS deviceAddress,
+        a.Ip AS ip,
+        a. PORT AS PORT,
+        b.ProtocolType AS deviceType,
+        'device_faultIndicator' AS deviceTableName,
+        b.DevParamFolder AS terminalName,
+        a.LineId AS lineId
+        FROM
+        device_faultIndicator a
+        LEFT JOIN device_terminal b ON a.TerminalId = b.TerminalId
+        WHERE
+        1 = 1
+
+        <if test="ports != null">
+            AND a.PORT IN
+            <foreach collection="ports" index="index" item="item" open="(" separator="," close=")">#{item}</foreach>
+        </if>
+        <if test="deviceIds != null">
+            AND a.Oid IN
+            <foreach collection="deviceIds" index="index" item="item" open="(" separator="," close=")">#{item}</foreach>
+        </if>
+
     </select>
 
 

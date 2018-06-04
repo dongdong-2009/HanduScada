@@ -31,6 +31,6 @@ public class AllCallJob extends BaseDtuCommand implements BaseJob {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        send(DeviceTypeEnum.FALL_TYPE_SWITCH, cmdType);
+        send(DeviceTypeEnum.CY_FALL_TYPE_SWITCH, cmdType);
     }
 }

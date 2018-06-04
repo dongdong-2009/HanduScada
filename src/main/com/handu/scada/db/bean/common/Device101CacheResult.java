@@ -1,5 +1,7 @@
 package main.com.handu.scada.db.bean.common;
 
+import main.com.handu.scada.utils.StringsUtils;
+
 /**
  * Created by 柳梦 on 2018/05/24.
  * 101协议设备缓存
@@ -11,7 +13,32 @@ public class Device101CacheResult {
     private String deviceAddress;
     private int deviceType;
     private String deviceTableName;
+    private String terminalName;
     private String lineId;
+    private boolean isOnline;
+
+    public boolean isOnline() {
+        return isOnline;
+    }
+
+    public void setOnline(boolean online) {
+        isOnline = online;
+    }
+
+    public String getDeviceGroupName() {
+        if (StringsUtils.isNotEmpty(terminalName)) {
+            return terminalName.substring(terminalName.lastIndexOf("_") + 1, terminalName.length());
+        }
+        return "";
+    }
+
+    public String getTerminalName() {
+        return terminalName;
+    }
+
+    public void setTerminalName(String terminalName) {
+        this.terminalName = terminalName;
+    }
 
     public String getDeviceId() {
         return deviceId;

@@ -123,8 +123,6 @@ public class Start {
                     Config.setDtuPorts(AesUtils.decrypt(String.valueOf(entry.getValue())));
                 } else if (entry.getKey().equals("cmd.port")) {
                     Config.setCmdPort(AesUtils.decrypt(String.valueOf(entry.getValue())));
-                } else if (entry.getKey().equals("switch.port")) {
-                    Config.setSwitchPorts(AesUtils.decrypt(String.valueOf(entry.getValue())));
                 } else if (entry.getKey().equals("dtu.heartbeat")) {
                     Config.setHeartBeat(Integer.valueOf(String.valueOf(entry.getValue())));
                 } else if (entry.getKey().equals("system.name")) {
@@ -139,6 +137,8 @@ public class Start {
                     this.isSqlStart = Boolean.parseBoolean(String.valueOf(entry.getValue()));
                 } else if (entry.getKey().equals("netty.timeout")) {
                     Config.setTimeout(Integer.parseInt(String.valueOf(entry.getValue())));
+                } else if (String.valueOf(entry.getKey()).startsWith("device101")) {
+                    Config.setDevice101Ports(AesUtils.decrypt(String.valueOf(entry.getValue())));
                 }
             }
         } catch (IOException e) {
@@ -192,8 +192,8 @@ public class Start {
         if (!StringsUtils.isEmpty(Config.getDtuPorts())) {
             portsList.add(new Ports(Config.getDtuPorts().split(","), PortType.DTU));
         }
-        if (!StringsUtils.isEmpty(Config.getSwitchPorts())) {
-            portsList.add(new Ports(Config.getSwitchPorts().split(","), PortType.SWITCH));
+        if (!StringsUtils.isEmpty(Config.getDevice101Ports())) {
+            portsList.add(new Ports(Config.getDevice101Ports().split(","), PortType.DEVICE101));
         }
         TcpServer.getInstance().start(Config.getHost(), portsList);
     }

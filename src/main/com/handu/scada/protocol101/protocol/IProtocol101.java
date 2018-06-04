@@ -1,6 +1,6 @@
 package main.com.handu.scada.protocol101.protocol;
 
-import main.com.handu.scada.protocol101.protocol.bean.Protocol101BaseData;
+import main.com.handu.scada.protocol101.protocol.bean.Protocol101Data;
 
 /**
  * Created by 柳梦 on 2018/03/14.
@@ -21,7 +21,7 @@ public interface IProtocol101 {
      *
      * @return
      */
-    default Protocol101BaseData send(Protocol101BaseData data) {
+    default Protocol101Data send(Protocol101Data data) {
         return null;
     }
 
@@ -30,7 +30,7 @@ public interface IProtocol101 {
      *
      * @return
      */
-    default Protocol101BaseData parse(byte[] data) throws InstantiationException, IllegalAccessException {
+    default Protocol101Data parse(byte[] data) throws InstantiationException, IllegalAccessException {
         return null;
     }
 }

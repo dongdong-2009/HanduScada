@@ -7,7 +7,7 @@ import main.com.handu.scada.netty.server.MsgType;
  */
 public interface ProtocolStateCallbackListener {
 
-    void online(String connectionId, String deviceAddress, MsgType type);
+    void online(String connectionId, String ip, String port, String deviceAddress, MsgType type);
 
-    void offline(String connectionId, String deviceAddress);
+    void offline(String connectionId, String ip, String port, String deviceAddress);
 }

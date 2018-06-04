@@ -5,19 +5,19 @@
       "y": 0
     },
     "Value": {
-      "InfoAddress": 16401,
+      "InfoAddress": 16385,
       "IsPlusMinusAmbit": false,
       "IsValidValue": false,
       "ItemBitPosition": 0,
       "ItemByteOrder": 1,
       "ItemDecimalBits": 1,
-      "ItemName": "A相负荷电流",
+      "ItemName": "汇集单元电池电压",
       "ItemPlusMinusAmbit": 0,
       "ItemPosition": 0,
       "ItemShowType": 0,
       "ItemSize": 4,
       "ItemType": 9,
-      "ItemUnit": "A",
+      "ItemUnit": "V",
       "ItemValue": 0,
       "SmsCode": "",
       "SmsSendFilter": false
@@ -29,13 +29,13 @@
       "y": 0
     },
     "Value": {
-      "InfoAddress": 16402,
+      "InfoAddress": 16401,
       "IsPlusMinusAmbit": false,
       "IsValidValue": false,
       "ItemBitPosition": 0,
       "ItemByteOrder": 1,
       "ItemDecimalBits": 1,
-      "ItemName": "B相负荷电流",
+      "ItemName": "A相负荷电流",
       "ItemPlusMinusAmbit": 0,
       "ItemPosition": 1,
       "ItemShowType": 0,
@@ -53,13 +53,13 @@
       "y": 0
     },
     "Value": {
-      "InfoAddress": 16403,
+      "InfoAddress": 16402,
       "IsPlusMinusAmbit": false,
       "IsValidValue": false,
       "ItemBitPosition": 0,
       "ItemByteOrder": 1,
       "ItemDecimalBits": 1,
-      "ItemName": "C相负荷电流",
+      "ItemName": "B相负荷电流",
       "ItemPlusMinusAmbit": 0,
       "ItemPosition": 2,
       "ItemShowType": 0,
@@ -77,19 +77,19 @@
       "y": 0
     },
     "Value": {
-      "InfoAddress": 16413,
+      "InfoAddress": 16403,
       "IsPlusMinusAmbit": false,
       "IsValidValue": false,
       "ItemBitPosition": 0,
       "ItemByteOrder": 1,
       "ItemDecimalBits": 1,
-      "ItemName": "A相电场强度",
+      "ItemName": "C相负荷电流",
       "ItemPlusMinusAmbit": 0,
       "ItemPosition": 3,
       "ItemShowType": 0,
       "ItemSize": 4,
       "ItemType": 9,
-      "ItemUnit": "V",
+      "ItemUnit": "A",
       "ItemValue": 0,
       "SmsCode": "",
       "SmsSendFilter": false
@@ -101,19 +101,19 @@
       "y": 0
     },
     "Value": {
-      "InfoAddress": 16414,
+      "InfoAddress": 16406,
       "IsPlusMinusAmbit": false,
       "IsValidValue": false,
       "ItemBitPosition": 0,
       "ItemByteOrder": 1,
-      "ItemDecimalBits": 1,
-      "ItemName": "B相电场强度",
+      "ItemDecimalBits": 0,
+      "ItemName": "温度a",
       "ItemPlusMinusAmbit": 0,
       "ItemPosition": 4,
       "ItemShowType": 0,
-      "ItemSize": 4,
-      "ItemType": 9,
-      "ItemUnit": "V",
+      "ItemSize": 0,
+      "ItemType": 1,
+      "ItemUnit": "°C",
       "ItemValue": 0,
       "SmsCode": "",
       "SmsSendFilter": false
@@ -125,6 +125,174 @@
       "y": 0
     },
     "Value": {
+      "InfoAddress": 16407,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "温度b",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 5,
+      "ItemShowType": 0,
+      "ItemSize": 0,
+      "ItemType": 1,
+      "ItemUnit": "°C",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 6,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16408,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "温度c",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 6,
+      "ItemShowType": 0,
+      "ItemSize": 0,
+      "ItemType": 1,
+      "ItemUnit": "°C",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 7,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16410,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "采集单元a电池电压",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 7,
+      "ItemShowType": 0,
+      "ItemSize": 0,
+      "ItemType": 1,
+      "ItemUnit": "V",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 8,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16411,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "采集单元b电池电压",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 8,
+      "ItemShowType": 0,
+      "ItemSize": 0,
+      "ItemType": 1,
+      "ItemUnit": "V",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 9,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16412,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "采集单元c电池电压",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 9,
+      "ItemShowType": 0,
+      "ItemSize": 0,
+      "ItemType": 1,
+      "ItemUnit": "V",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 10,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16413,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "A相电场强度",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 10,
+      "ItemShowType": 0,
+      "ItemSize": 4,
+      "ItemType": 9,
+      "ItemUnit": "V",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 11,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 16414,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 1,
+      "ItemName": "B相电场强度",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 11,
+      "ItemShowType": 0,
+      "ItemSize": 4,
+      "ItemType": 9,
+      "ItemUnit": "V",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 12,
+      "y": 0
+    },
+    "Value": {
       "InfoAddress": 16415,
       "IsPlusMinusAmbit": false,
       "IsValidValue": false,
@@ -133,7 +301,7 @@
       "ItemDecimalBits": 1,
       "ItemName": "C相电场强度",
       "ItemPlusMinusAmbit": 0,
-      "ItemPosition": 5,
+      "ItemPosition": 12,
       "ItemShowType": 0,
       "ItemSize": 4,
       "ItemType": 9,

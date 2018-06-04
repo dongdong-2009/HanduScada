@@ -94,7 +94,7 @@ public class TcpServer {
                         serverBootstrap.childHandler(new DtuCmdChannelInitializer());
                     } else if (type == PortType.DTU) {
                         serverBootstrap.childHandler(new DtuChannelInitializer());
-                    } else if (type == PortType.SWITCH) {
+                    } else if (type == PortType.DEVICE101) {
                         serverBootstrap.childHandler(new Protocol101ChannelInitializer());
                     }
                     if (!StringsUtils.isEmpty(p)) {

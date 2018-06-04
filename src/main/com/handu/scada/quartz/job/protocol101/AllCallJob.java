@@ -24,6 +24,6 @@ public class AllCallJob extends Base101Command implements BaseJob {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        send(Protocol101CmdEnum.ALL_CALL, DeviceTypeEnum.SWITCH);
+        send(DeviceTypeEnum.HC_FAULT_INDICATOR, Protocol101CmdEnum.ALL_CALL);
     }
 }

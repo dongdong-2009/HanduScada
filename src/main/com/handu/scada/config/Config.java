@@ -1,5 +1,7 @@
 package main.com.handu.scada.config;
 
+import main.com.handu.scada.utils.StringsUtils;
+
 public class Config {
 
     /**
@@ -32,7 +34,7 @@ public class Config {
     /**
      * 开关端口
      */
-    private static String switchPorts;
+    private static String device101Ports;
     /**
      * 是否处于debug模式
      */
@@ -43,12 +45,16 @@ public class Config {
      */
     public static boolean isSQLPrint = false;
 
-    public static String getSwitchPorts() {
-        return switchPorts;
+    public static String getDevice101Ports() {
+        return device101Ports;
     }
 
-    public static void setSwitchPorts(String switchPorts) {
-        Config.switchPorts = switchPorts;
+    public static void setDevice101Ports(String device101Ports) {
+        if (StringsUtils.isNotEmpty(Config.device101Ports)) {
+            Config.device101Ports += "," + device101Ports;
+        } else {
+            Config.device101Ports = device101Ports;
+        }
     }
 
     public static String getDtuPorts() {

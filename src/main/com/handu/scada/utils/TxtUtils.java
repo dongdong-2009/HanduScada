@@ -71,7 +71,6 @@ public class TxtUtils {
          * @param log
          */
         private void writeLogFile(Log log, String format, boolean append) {
-            FileWriter writer = null;
             try {
                 //我们按照每分钟创建文件夹，减少日志的整体大小，方便阅读
                 String filePath = log.getPath() +
@@ -89,16 +88,12 @@ public class TxtUtils {
                     if (!b) return;
                 }
                 // 打开一个写文件器，构造函数中的第二个参数true表示以追加形式写文件
-                writer = new FileWriter(filePath, append);
+                FileWriter writer = new FileWriter(filePath, append);
                 writer.write(log.getContent());
+                writer.close();
             } catch (IOException e) {
                 ExceptionHandler.handle(e);
             } finally {
-                try {
-                    if (writer != null) writer.close();
-                } catch (IOException e) {
-                    ExceptionHandler.handle(e);
-                }
                 if (log.getLogType() == EXPORT_DTU_ONLINE) {
                     LogUtils.info("export dtu online list to txt success...", true);
                 }

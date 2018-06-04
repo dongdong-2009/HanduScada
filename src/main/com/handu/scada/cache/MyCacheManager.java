@@ -390,6 +390,7 @@ public class MyCacheManager extends DBServiceUtil implements ICacheManager {
      * @param sqlSession
      */
     private void initDtuInfo(SqlSession sqlSession) {
+        if (StringsUtils.isEmpty(Config.getDtuPorts())) return;
         start = System.currentTimeMillis();
         //初始化设备相关
         CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
@@ -412,6 +413,7 @@ public class MyCacheManager extends DBServiceUtil implements ICacheManager {
      * @param sqlSession
      */
     private void initDeviceInfo(SqlSession sqlSession) {
+        if (StringsUtils.isEmpty(Config.getDtuPorts())) return;
         start = System.currentTimeMillis();
         //初始化设备相关
         CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
@@ -477,10 +479,12 @@ public class MyCacheManager extends DBServiceUtil implements ICacheManager {
      * @param sqlSession
      */
     private void initDevice101Info(SqlSession sqlSession) {
+        String device101Ports = Config.getDevice101Ports();
+        if (StringsUtils.isEmpty(device101Ports)) return;
         start = System.currentTimeMillis();
         //初始化设备相关
         CommonMapper commonMapper = sqlSession.getMapper(CommonMapper.class);
-        List<Device101CacheResult> device101CacheResults = commonMapper.selectDevice101CacheResult(Arrays.asList(Config.getSwitchPorts().split(",")), null);
+        List<Device101CacheResult> device101CacheResults = commonMapper.selectDevice101CacheResult(Arrays.asList(Config.getDevice101Ports().split(",")), null);
         if (device101CacheResults != null && device101CacheResults.size() > 0) {
             synchronized (device101CacheResultMap) {
                 device101CacheResults
@@ -500,5 +504,19 @@ public class MyCacheManager extends DBServiceUtil implements ICacheManager {
      */
     public static ConcurrentHashMap<String, Device101CacheResult> getDevice101CacheMap() {
         return device101CacheResultMap;
+    }
+
+
+    /**
+     * 更新101设备在线状态
+     *
+     * @param deviceAddress
+     * @param isOnline
+     */
+    public static void updateDevice101OnlineState(String deviceAddress, boolean isOnline) {
+        synchronized (device101CacheResultMap) {
+            Device101CacheResult result = device101CacheResultMap.get(deviceAddress);
+            if (result != null) result.setOnline(isOnline);
+        }
     }
 }

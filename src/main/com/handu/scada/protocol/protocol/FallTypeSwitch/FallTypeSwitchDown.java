@@ -23,7 +23,7 @@ public class FallTypeSwitchDown implements IProtocol {
 
     @Override
     public MediaData sendCommand(ProtocolLayerData protocolLayerData) {
-        if (protocolLayerData.deviceTypeEnum != DeviceTypeEnum.FALL_TYPE_SWITCH) return null;
+        if (protocolLayerData.deviceTypeEnum != DeviceTypeEnum.CY_FALL_TYPE_SWITCH) return null;
         return new MediaData() {
             {
                 MsgName = "跌落开关总召";

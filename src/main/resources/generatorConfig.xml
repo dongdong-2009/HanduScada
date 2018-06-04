@@ -127,11 +127,20 @@
         <!--<table tableName="device_infochanges"/>-->
         <!--<table tableName="device_hm_history_afn0c25"/>-->
         <!--<table tableName="device_hm_real_afn0c25"/>-->
-        <table tableName="device_intelligentswitch_telemetry"/>
-        <table tableName="device_intelligentswitch_telesignal"/>
         <!--<table tableName="device_hm_low_voltage"/>-->
         <!--<table tableName="device_hm_overload"/>-->
         <!--<table tableName="device_hm_utpc"/>-->
+
+        <!--<table tableName="device_101_offline"/>-->
+        <!--<table tableName="device_101_online"/>-->
+
+        <!--<table tableName="device_faultIndicator_history_telemetry"/>-->
+        <!--<table tableName="device_faultIndicator_history_telesignal"/>-->
+        <!--<table tableName="device_faultIndicator_real_telemetry"/>-->
+        <!--<table tableName="device_faultIndicator_real_telesignal"/>-->
+        <!--<table tableName="device_faultIndicator_soe"/>-->
+
+        <table tableName="bintest"/>
 
     </context>
 </generatorConfiguration>

@@ -25,7 +25,13 @@ public class Protocol101Command extends Base101Command {
     public boolean sendByValue(int value) {
         switch (value) {
             case 1009:
-                send(Protocol101CmdEnum.ALL_CALL, DeviceTypeEnum.SWITCH);
+                send(DeviceTypeEnum.HC_FAULT_INDICATOR, Protocol101CmdEnum.ALL_CALL);
+                return true;
+            case 1010:
+                send(DeviceTypeEnum.HC_FAULT_INDICATOR, Protocol101CmdEnum.CONSTANT_VALUE);
+                return true;
+            case 1011:
+                send(DeviceTypeEnum.HC_FAULT_INDICATOR, Protocol101CmdEnum.READ_FILE_CATALOGUE);
                 return true;
             default:
                 return false;

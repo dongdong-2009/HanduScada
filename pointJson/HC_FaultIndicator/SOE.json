@@ -238,5 +238,29 @@
       "SmsCode": "",
       "SmsSendFilter": false
     }
+  },
+  {
+    "Key": {
+      "x": 10,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 33,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "A相温度超限",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 8,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 5,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
   }
 ]

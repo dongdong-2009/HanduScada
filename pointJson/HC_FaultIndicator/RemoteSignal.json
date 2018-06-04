@@ -5,13 +5,13 @@
       "y": 0
     },
     "Value": {
-      "InfoAddress": 12,
+      "InfoAddress": 1,
       "IsPlusMinusAmbit": false,
       "IsValidValue": false,
       "ItemBitPosition": 0,
       "ItemByteOrder": 1,
       "ItemDecimalBits": 0,
-      "ItemName": "A相瞬时短路",
+      "ItemName": "汇集单元设备状态",
       "ItemPlusMinusAmbit": 0,
       "ItemPosition": 0,
       "ItemShowType": 0,
@@ -29,13 +29,13 @@
       "y": 0
     },
     "Value": {
-      "InfoAddress": 13,
+      "InfoAddress": 2,
       "IsPlusMinusAmbit": false,
       "IsValidValue": false,
       "ItemBitPosition": 0,
       "ItemByteOrder": 1,
       "ItemDecimalBits": 0,
-      "ItemName": "A相永久性短路",
+      "ItemName": "汇集单元电池低电压告警",
       "ItemPlusMinusAmbit": 0,
       "ItemPosition": 1,
       "ItemShowType": 0,
@@ -53,13 +53,13 @@
       "y": 0
     },
     "Value": {
-      "InfoAddress": 14,
+      "InfoAddress": 4,
       "IsPlusMinusAmbit": false,
       "IsValidValue": false,
       "ItemBitPosition": 0,
       "ItemByteOrder": 1,
       "ItemDecimalBits": 0,
-      "ItemName": "A相接地",
+      "ItemName": "录播闭锁",
       "ItemPlusMinusAmbit": 0,
       "ItemPosition": 2,
       "ItemShowType": 0,
@@ -77,13 +77,13 @@
       "y": 0
     },
     "Value": {
-      "InfoAddress": 21,
+      "InfoAddress": 17,
       "IsPlusMinusAmbit": false,
       "IsValidValue": false,
       "ItemBitPosition": 0,
       "ItemByteOrder": 1,
       "ItemDecimalBits": 0,
-      "ItemName": "B相瞬时短路",
+      "ItemName": "A相采集单元通信状态",
       "ItemPlusMinusAmbit": 0,
       "ItemPosition": 3,
       "ItemShowType": 0,
@@ -101,13 +101,13 @@
       "y": 0
     },
     "Value": {
-      "InfoAddress": 22,
+      "InfoAddress": 18,
       "IsPlusMinusAmbit": false,
       "IsValidValue": false,
       "ItemBitPosition": 0,
       "ItemByteOrder": 1,
       "ItemDecimalBits": 0,
-      "ItemName": "B相永久性短路",
+      "ItemName": "A相瞬时性短路",
       "ItemPlusMinusAmbit": 0,
       "ItemPosition": 4,
       "ItemShowType": 0,
@@ -125,13 +125,13 @@
       "y": 0
     },
     "Value": {
-      "InfoAddress": 23,
+      "InfoAddress": 19,
       "IsPlusMinusAmbit": false,
       "IsValidValue": false,
       "ItemBitPosition": 0,
       "ItemByteOrder": 1,
       "ItemDecimalBits": 0,
-      "ItemName": "B相接地",
+      "ItemName": "A相永久性短路",
       "ItemPlusMinusAmbit": 0,
       "ItemPosition": 5,
       "ItemShowType": 0,
@@ -149,13 +149,13 @@
       "y": 0
     },
     "Value": {
-      "InfoAddress": 32,
+      "InfoAddress": 20,
       "IsPlusMinusAmbit": false,
       "IsValidValue": false,
       "ItemBitPosition": 0,
       "ItemByteOrder": 1,
       "ItemDecimalBits": 0,
-      "ItemName": "C相瞬时短路",
+      "ItemName": "A相接地",
       "ItemPlusMinusAmbit": 0,
       "ItemPosition": 6,
       "ItemShowType": 0,
@@ -173,13 +173,13 @@
       "y": 0
     },
     "Value": {
-      "InfoAddress": 33,
+      "InfoAddress": 21,
       "IsPlusMinusAmbit": false,
       "IsValidValue": false,
       "ItemBitPosition": 0,
       "ItemByteOrder": 1,
       "ItemDecimalBits": 0,
-      "ItemName": "C相永久性短路",
+      "ItemName": "A相温度超限",
       "ItemPlusMinusAmbit": 0,
       "ItemPosition": 7,
       "ItemShowType": 0,
@@ -197,7 +197,295 @@
       "y": 0
     },
     "Value": {
+      "InfoAddress": 22,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "A相电流超限",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 8,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 5,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 10,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 23,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "A相欠压告警",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 10,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 5,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 11,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 33,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "B相采集单元通信状态",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 11,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 5,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 12,
+      "y": 0
+    },
+    "Value": {
       "InfoAddress": 34,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "B相瞬时性短路",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 12,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 5,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 13,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 35,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "B相永久性短路",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 13,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 5,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 14,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 36,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "B相接地",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 14,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 5,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 15,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 37,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "B相温度超限",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 15,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 5,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 16,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 38,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "B相电流超限",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 16,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 5,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 17,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 39,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "B相欠压告警",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 17,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 5,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 18,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 49,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "C相采集单元通信状态",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 18,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 5,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 19,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 50,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "C相瞬时性短路",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 19,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 5,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 20,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 51,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "C相永久性短路",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 20,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 5,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 21,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 52,
       "IsPlusMinusAmbit": false,
       "IsValidValue": false,
       "ItemBitPosition": 0,
@@ -205,7 +493,79 @@
       "ItemDecimalBits": 0,
       "ItemName": "C相接地",
       "ItemPlusMinusAmbit": 0,
-      "ItemPosition": 8,
+      "ItemPosition": 21,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 5,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 22,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 53,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "C相温度超限",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 22,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 5,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 23,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 54,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "C相电流超限",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 23,
+      "ItemShowType": 0,
+      "ItemSize": 1,
+      "ItemType": 5,
+      "ItemUnit": "",
+      "ItemValue": 0,
+      "SmsCode": "",
+      "SmsSendFilter": false
+    }
+  },
+  {
+    "Key": {
+      "x": 24,
+      "y": 0
+    },
+    "Value": {
+      "InfoAddress": 55,
+      "IsPlusMinusAmbit": false,
+      "IsValidValue": false,
+      "ItemBitPosition": 0,
+      "ItemByteOrder": 1,
+      "ItemDecimalBits": 0,
+      "ItemName": "C相欠压告警",
+      "ItemPlusMinusAmbit": 0,
+      "ItemPosition": 24,
       "ItemShowType": 0,
       "ItemSize": 1,
       "ItemType": 5,

@@ -1,5 +1,7 @@
 package main.com.handu.scada.enums;
 
+import java.util.Objects;
+
 /**
  * Created by 柳梦 on 2018/04/23.
  * 设备分组
@@ -27,5 +29,19 @@ public enum DeviceGroup {
     //4G营配模块
     DTU4G,
     //无功补偿
-    REACTIVE_POWER
+    REACTIVE_POWER,
+    //开关
+    SWITCH,
+    //故障指示器
+    FAULT_INDICATOR;
+
+    public static DeviceGroup getDeviceGroup(String name) {
+        name = name.toLowerCase();
+        for (DeviceGroup deviceGroup : DeviceGroup.values()) {
+            if (Objects.equals(deviceGroup.name().toLowerCase().replace("_", ""), name)) {
+                return deviceGroup;
+            }
+        }
+        return null;
+    }
 }

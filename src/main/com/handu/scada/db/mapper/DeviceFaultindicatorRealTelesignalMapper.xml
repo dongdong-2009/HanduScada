@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="main.com.handu.scada.db.mapper.DeviceFaultindicatorRealTelesignalMapper">
+  <resultMap id="BaseResultMap" type="main.com.handu.scada.db.bean.DeviceFaultindicatorRealTelesignal">
+    <id column="DeviceId" jdbcType="VARCHAR" property="deviceid" />
+    <id column="DataItem" jdbcType="VARCHAR" property="dataitem" />
+    <result column="Value" jdbcType="VARCHAR" property="value" />
+    <result column="DataItemName" jdbcType="VARCHAR" property="dataitemname" />
+    <result column="Unit" jdbcType="VARCHAR" property="unit" />
+    <result column="Description" jdbcType="VARCHAR" property="description" />
+    <result column="RecordTime" jdbcType="TIMESTAMP" property="recordtime" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    DeviceId, DataItem, Value, DataItemName, Unit, Description, RecordTime
+  </sql>
+  <select id="selectByExample" parameterType="main.com.handu.scada.db.bean.DeviceFaultindicatorRealTelesignalExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from device_faultindicator_real_telesignal
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="map" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from device_faultindicator_real_telesignal
+    where DeviceId = #{deviceid,jdbcType=VARCHAR}
+      and DataItem = #{dataitem,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="map">
+    delete from device_faultindicator_real_telesignal
+    where DeviceId = #{deviceid,jdbcType=VARCHAR}
+      and DataItem = #{dataitem,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="main.com.handu.scada.db.bean.DeviceFaultindicatorRealTelesignalExample">
+    delete from device_faultindicator_real_telesignal
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="main.com.handu.scada.db.bean.DeviceFaultindicatorRealTelesignal">
+    insert into device_faultindicator_real_telesignal (DeviceId, DataItem, Value, 
+      DataItemName, Unit, Description, 
+      RecordTime)
+    values (#{deviceid,jdbcType=VARCHAR}, #{dataitem,jdbcType=VARCHAR}, #{value,jdbcType=VARCHAR}, 
+      #{dataitemname,jdbcType=VARCHAR}, #{unit,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, 
+      #{recordtime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="main.com.handu.scada.db.bean.DeviceFaultindicatorRealTelesignal">
+    insert into device_faultindicator_real_telesignal
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="deviceid != null">
+        DeviceId,
+      </if>
+      <if test="dataitem != null">
+        DataItem,
+      </if>
+      <if test="value != null">
+        Value,
+      </if>
+      <if test="dataitemname != null">
+        DataItemName,
+      </if>
+      <if test="unit != null">
+        Unit,
+      </if>
+      <if test="description != null">
+        Description,
+      </if>
+      <if test="recordtime != null">
+        RecordTime,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="deviceid != null">
+        #{deviceid,jdbcType=VARCHAR},
+      </if>
+      <if test="dataitem != null">
+        #{dataitem,jdbcType=VARCHAR},
+      </if>
+      <if test="value != null">
+        #{value,jdbcType=VARCHAR},
+      </if>
+      <if test="dataitemname != null">
+        #{dataitemname,jdbcType=VARCHAR},
+      </if>
+      <if test="unit != null">
+        #{unit,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null">
+        #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="recordtime != null">
+        #{recordtime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="main.com.handu.scada.db.bean.DeviceFaultindicatorRealTelesignalExample" resultType="java.lang.Long">
+    select count(*) from device_faultindicator_real_telesignal
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update device_faultindicator_real_telesignal
+    <set>
+      <if test="record.deviceid != null">
+        DeviceId = #{record.deviceid,jdbcType=VARCHAR},
+      </if>
+      <if test="record.dataitem != null">
+        DataItem = #{record.dataitem,jdbcType=VARCHAR},
+      </if>
+      <if test="record.value != null">
+        Value = #{record.value,jdbcType=VARCHAR},
+      </if>
+      <if test="record.dataitemname != null">
+        DataItemName = #{record.dataitemname,jdbcType=VARCHAR},
+      </if>
+      <if test="record.unit != null">
+        Unit = #{record.unit,jdbcType=VARCHAR},
+      </if>
+      <if test="record.description != null">
+        Description = #{record.description,jdbcType=VARCHAR},
+      </if>
+      <if test="record.recordtime != null">
+        RecordTime = #{record.recordtime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update device_faultindicator_real_telesignal
+    set DeviceId = #{record.deviceid,jdbcType=VARCHAR},
+      DataItem = #{record.dataitem,jdbcType=VARCHAR},
+      Value = #{record.value,jdbcType=VARCHAR},
+      DataItemName = #{record.dataitemname,jdbcType=VARCHAR},
+      Unit = #{record.unit,jdbcType=VARCHAR},
+      Description = #{record.description,jdbcType=VARCHAR},
+      RecordTime = #{record.recordtime,jdbcType=TIMESTAMP}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="main.com.handu.scada.db.bean.DeviceFaultindicatorRealTelesignal">
+    update device_faultindicator_real_telesignal
+    <set>
+      <if test="value != null">
+        Value = #{value,jdbcType=VARCHAR},
+      </if>
+      <if test="dataitemname != null">
+        DataItemName = #{dataitemname,jdbcType=VARCHAR},
+      </if>
+      <if test="unit != null">
+        Unit = #{unit,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null">
+        Description = #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="recordtime != null">
+        RecordTime = #{recordtime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where DeviceId = #{deviceid,jdbcType=VARCHAR}
+      and DataItem = #{dataitem,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="main.com.handu.scada.db.bean.DeviceFaultindicatorRealTelesignal">
+    update device_faultindicator_real_telesignal
+    set Value = #{value,jdbcType=VARCHAR},
+      DataItemName = #{dataitemname,jdbcType=VARCHAR},
+      Unit = #{unit,jdbcType=VARCHAR},
+      Description = #{description,jdbcType=VARCHAR},
+      RecordTime = #{recordtime,jdbcType=TIMESTAMP}
+    where DeviceId = #{deviceid,jdbcType=VARCHAR}
+      and DataItem = #{dataitem,jdbcType=VARCHAR}
+  </update>
+</mapper>

@@ -59,7 +59,7 @@ public class DownWiredTemperatureProtocol extends BaseDownStreamTemperature {
 
     @Override
     public MediaData sendCommand(ProtocolLayerData protocolLayerData) {
-        if (protocolLayerData.deviceTypeEnum != DeviceTypeEnum.WIRED_TEMPERATURE) return null;
+        if (protocolLayerData.deviceTypeEnum != DeviceTypeEnum.YK_WIRED_TEMPERATURE) return null;
         try {
             if (protocolLayerData.CmdType == DeviceCmdTypeEnum.ALL_CALL) {
                 MediaData mediaData = new MediaData() {

@@ -6,18 +6,25 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.ReferenceCountUtil;
 import main.com.handu.scada.business.protocol101.Protocol101StateCallback;
+import main.com.handu.scada.cache.MyCacheManager;
 import main.com.handu.scada.config.Config;
+import main.com.handu.scada.db.bean.common.Device101CacheResult;
+import main.com.handu.scada.enums.DeviceTypeEnum;
 import main.com.handu.scada.event.EventManager;
 import main.com.handu.scada.event.events.DBEvent;
 import main.com.handu.scada.exception.ExceptionHandler;
 import main.com.handu.scada.netty.client.dtu.MsgPriority;
 import main.com.handu.scada.netty.server.MsgType;
+import main.com.handu.scada.netty.server.protocol101.factory.Protocol101HandlerFactory;
+import main.com.handu.scada.protocol101.faultRecord.FaultRecordFile;
+import main.com.handu.scada.protocol101.faultRecord.FaultRecordFileManager;
+import main.com.handu.scada.protocol101.faultRecord.FaultRecordJsonManager;
+import main.com.handu.scada.protocol101.faultRecord.FileCmdType;
 import main.com.handu.scada.protocol101.protocol.IProtocol101;
 import main.com.handu.scada.protocol101.protocol.Protocol101DownParse;
 import main.com.handu.scada.protocol101.protocol.Protocol101UpParse;
-import main.com.handu.scada.protocol101.protocol.bean.Protocol101BaseData;
-import main.com.handu.scada.protocol101.protocol.enums.COT;
-import main.com.handu.scada.protocol101.protocol.enums.DataType;
+import main.com.handu.scada.protocol101.protocol.bean.Protocol101Data;
+import main.com.handu.scada.protocol101.protocol.enums.Protocol101CmdEnum;
 import main.com.handu.scada.protocol101.protocol.enums.Ti;
 import main.com.handu.scada.utils.AnnotationUtils;
 import main.com.handu.scada.utils.HexUtils;
@@ -30,9 +37,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.SocketAddress;
 import java.util.*;
-
-import static main.com.handu.scada.protocol101.protocol.enums.Ti.C_IC_NA_1;
-import static main.com.handu.scada.protocol101.protocol.enums.Ti.M_EI_NA_1;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Created by 柳梦 on 2018/03/13.
@@ -55,11 +61,11 @@ public class Protocol101CommandHandler extends SimpleChannelInboundHandler<Strin
     /**
      * 发送命令低队列
      */
-    private Queue<Protocol101BaseData> lowQueue = new ArrayDeque<>();
+    private Queue<Protocol101Data> lowQueue = new ArrayDeque<>();
     /**
      * 发送命令高队列
      */
-    private Queue<Protocol101BaseData> highQueue = new ArrayDeque<>();
+    private Queue<Protocol101Data> highQueue = new ArrayDeque<>();
     //最近一次发送时间
     private long lastSendTime;
     //高位地址
@@ -74,6 +80,114 @@ public class Protocol101CommandHandler extends SimpleChannelInboundHandler<Strin
      * 下发解析类型集合
      */
     private Set<IProtocol101> iDownParseProtocols = new HashSet<>();
+    //负责建立链路的handler
+    private IHandler handler;
+    //设备类型
+    private DeviceTypeEnum deviceTypeEnum;
+
+    public String getIp() {
+        return ip;
+    }
+
+    public String getPort() {
+        return port;
+    }
+
+    public boolean isBusy() {
+        return isBusy;
+    }
+
+    public byte getControlCode() {
+        return controlCode;
+    }
+
+    public byte getFCB() {
+        return FCB;
+    }
+
+    public boolean isHasConfirmed() {
+        return hasConfirmed;
+    }
+
+    public String getDeviceAddress() {
+        return deviceAddress;
+    }
+
+    public ChannelHandlerContext getContext() {
+        return context;
+    }
+
+    public Protocol101StateCallback getCallback() {
+        return callback;
+    }
+
+    public Queue<Protocol101Data> getLowQueue() {
+        return lowQueue;
+    }
+
+    public Queue<Protocol101Data> getHighQueue() {
+        return highQueue;
+    }
+
+    public long getLastSendTime() {
+        return lastSendTime;
+    }
+
+    public byte getAddressHigh() {
+        return addressHigh;
+    }
+
+    public byte getAddressLow() {
+        return addressLow;
+    }
+
+    public Set<IProtocol101> getiUpProtocols() {
+        return iUpProtocols;
+    }
+
+    public Set<IProtocol101> getiDownParseProtocols() {
+        return iDownParseProtocols;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
+    }
+
+    public void setBusy(boolean busy) {
+        isBusy = busy;
+    }
+
+    public void setControlCode(byte controlCode) {
+        this.controlCode = controlCode;
+    }
+
+    public void setFCB(byte FCB) {
+        this.FCB = FCB;
+    }
+
+    public void setHasConfirmed(boolean hasConfirmed) {
+        this.hasConfirmed = hasConfirmed;
+    }
+
+    public void setDeviceAddress(String deviceAddress) {
+        this.deviceAddress = deviceAddress;
+    }
+
+    public void setLastSendTime(long lastSendTime) {
+        this.lastSendTime = lastSendTime;
+    }
+
+    public void setAddressHigh(byte addressHigh) {
+        this.addressHigh = addressHigh;
+    }
+
+    public void setAddressLow(byte addressLow) {
+        this.addressLow = addressLow;
+    }
 
     /**
      * 初始化获取解析类和下发类
@@ -119,22 +233,7 @@ public class Protocol101CommandHandler extends SimpleChannelInboundHandler<Strin
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        if (ctx.channel() != null && ctx.channel().isActive()) {
-            init(IProtocol101.class);
-            this.context = ctx;
-            this.callback = new Protocol101StateCallback();
-            this.lastSendTime = System.currentTimeMillis();
-            SocketAddress socketAddress = ctx.channel().remoteAddress();
-            String address = socketAddress.toString().replace("/", "");
-            if (StringsUtils.isNotEmpty(address)) {
-                String[] s = address.split(":");
-                if (s.length == 2) {
-                    ip = s[0];
-                    port = s[1];
-                }
-            }
-            callback.online(ctx.channel().id().asShortText(), address, MsgType.ONLINE);
-        }
+        online(ctx);
     }
 
     @Override
@@ -156,12 +255,45 @@ public class Protocol101CommandHandler extends SimpleChannelInboundHandler<Strin
         try {
             if (ctx.channel() != null && !ctx.channel().isActive()) {
                 Protocol101CtxManager.removeHandler(deviceAddress);
-                callback.offline(ctx.channel().id().asShortText(), deviceAddress);
+                callback.offline(ctx.channel().id().asShortText(), ip, port, deviceAddress);
             }
         } catch (Exception e) {
             ExceptionHandler.handle(e);
         } finally {
             ctx.close();
+        }
+    }
+
+    /**
+     * 上线
+     */
+    private void online(ChannelHandlerContext ctx) {
+        if (ctx.channel() != null && ctx.channel().isActive()) {
+            //15分钟没收到数据服务端主动断掉连接
+            ctx.channel().closeFuture().addListener(future -> offline(ctx));
+            ctx.executor().schedule((Runnable) ctx.channel()::close, 900, TimeUnit.SECONDS);
+            init(IProtocol101.class);
+            this.context = ctx;
+            this.callback = new Protocol101StateCallback();
+            this.lastSendTime = System.currentTimeMillis();
+            SocketAddress socketAddress = ctx.channel().remoteAddress();
+            String address = socketAddress.toString().replace("/", "");
+            if (StringsUtils.isNotEmpty(address)) {
+                String[] s = address.split(":");
+                if (s.length == 2) {
+                    ip = s[0];
+                }
+            }
+            SocketAddress localAddress = ctx.channel().localAddress();
+            address = localAddress.toString().replace("/", "");
+            if (StringsUtils.isNotEmpty(address)) {
+                String[] s = address.split(":");
+                if (s.length == 2) {
+                    port = s[1];
+                }
+            }
+            //这里判断是否为无登录报文的101设备，检查是否配置了ip地址，
+            //callback.online(ctx.channel().id().asShortText(), ip, port, address, MsgType.ONLINE);
         }
     }
 
@@ -177,38 +309,10 @@ public class Protocol101CommandHandler extends SimpleChannelInboundHandler<Strin
                 //101协议设备登录
                 if (bytes[0] == (byte) 0xeb) {
                     login(bytes);
-                }
-                //确认
-                else if (bytes[0] == (byte) 0x10) {
-                    if (bytes.length == 6) {
-                        clientNotarize(bytes);
+                } else {
+                    if (handler != null) {
+                        handler.channelRead(bytes);
                     }
-                    //设备10帧和10帧粘包
-                    else if (bytes.length == 12) {
-                        byte[] b = new byte[6];
-                        System.arraycopy(bytes, 0, b, 0, b.length);
-                        clientNotarize(b);
-                        b = new byte[6];
-                        System.arraycopy(bytes, 6, b, 0, b.length);
-                        clientNotarize(b);
-                    }
-                    //处理10帧和68帧粘包
-                    else {
-                        //长度要大于6才认为是10和68粘包
-                        if (bytes.length > 6) {
-                            byte[] b = Arrays.copyOf(bytes, 6);
-                            clientNotarize(b);
-                            b = new byte[bytes.length - 6];
-                            System.arraycopy(bytes, 6, b, 0, b.length);
-                            if (b[0] == 0x68) {
-                                serialPort(b);
-                            }
-                        }
-                    }
-                }
-                //上行
-                else if (bytes[0] == 0x68) {
-                    serialPort(bytes);
                 }
             }
         } catch (Exception e) {
@@ -236,142 +340,34 @@ public class Protocol101CommandHandler extends SimpleChannelInboundHandler<Strin
             System.arraycopy(bytes, 6, b, 0, b.length);
             if (b[2] == 0x16) {
                 int low = HexUtils.byteToInt(b[0]);
-                int high = HexUtils.byteToInt(b[1]) * 256;
-                //获取开关的地址
+                int high = b[1] << 8;
+                //获取设备的地址
                 String deviceAddress = String.valueOf(high + low);
                 addressLow = b[0];
                 addressHigh = b[1];
                 this.deviceAddress = deviceAddress;
-                Protocol101CtxManager.addHandler(deviceAddress, this);
-                callback.online(context.channel().id().asShortText(), this.deviceAddress, MsgType.LOGIN);
-                startLinkQuest();
-            }
-        }
-    }
-
-    /**
-     * 开始链路请求
-     */
-    private void startLinkQuest() {
-        //开始主站链路请求
-        byte[] b = new byte[6];
-        b[0] = 0x10;
-        b[1] = 0x49;
-        b[2] = addressLow;
-        b[3] = addressHigh;
-        byte checksum = (byte) (b[1] + b[2] + b[3]);
-        b[4] = checksum;
-        b[5] = 0x16;
-        sendCommand(b);
-    }
-
-    /**
-     * 设备确认帧
-     */
-    private void clientNotarize(byte[] bytes) {
-        if (bytes.length == 6) {
-            byte[] b = new byte[4];
-            System.arraycopy(bytes, 1, b, 0, b.length);
-            byte checksum = (byte) (b[0] + b[1] + b[2]);
-            if (b[3] == checksum) {
-                //链路响应
-                if (b[0] == (byte) 0x8b) {
-                    //链路复位
-                    b = new byte[]{0x10, 0x40, addressLow, addressHigh, 0x00, 0x16};
-                    checksum = (byte) (0x40 + addressLow + addressHigh);
-                    b[b.length - 2] = checksum;
-                    ByteBuf byteBuf = context.alloc().buffer(b.length);
-                    byteBuf.writeBytes(b);
-                    sendCommand(b);
-                }
-                //设备确认帧
-                else if (b[0] == (byte) 0x80) {
-                    hasConfirmed = true;
-                }
-                //终端远方链路状态
-                else if (b[0] == (byte) 0xc9) {
-                    if (hasConfirmed) {
-                        //响应链路状态
-                        b = new byte[]{0x10, 0x0b, addressLow, addressHigh, 0x00, 0x16};
-                        checksum = (byte) (0x0b + addressLow + addressHigh);
-                        b[b.length - 2] = checksum;
-                        ByteBuf byteBuf = context.alloc().buffer(b.length);
-                        byteBuf.writeBytes(b);
-                        sendCommand(b);
+                Protocol101CtxManager.addHandler(this.deviceAddress, this);
+                callback.online(context.channel().id().asShortText(), ip, port, this.deviceAddress, MsgType.LOGIN);
+                Device101CacheResult result = MyCacheManager.getDevice101CacheMap().get(this.deviceAddress);
+                if (result != null) {
+                    DeviceTypeEnum deviceTypeEnum = DeviceTypeEnum.getDeviceTypeByDeviceType(result.getDeviceType());
+                    if (deviceTypeEnum != null) {
+                        this.deviceTypeEnum = deviceTypeEnum;
+                        handler = Protocol101HandlerFactory.getInstance().getHandler(this, this.deviceTypeEnum);
+                        if (handler != null) {
+                            //开始链路请求
+                            handler.startLinkQuest();
+                        }
                     }
-                }
-                //终端远方复位链路
-                else if (b[0] == (byte) 0xc0) {
-                    //复位确认
-                    sendConfirm();
                 }
             }
         }
-    }
-
-    /**
-     * 收到0x68开始的数据
-     */
-    private void serialPort(byte[] bytes) {
-        if (bytes.length >= 9) {
-            //标识码
-            byte ti = bytes[7];
-            //传送原因
-            byte reason = bytes[9];
-            //数据长度
-            //byte length = bytes[1];
-            Ti tiType = Ti.getTI(ti);
-            if (tiType != null) {
-                //召唤开始和终止(总召)
-                if (tiType == C_IC_NA_1) {
-                    //总召唤激活确认
-                    if (reason == COT.COT07.getCot()) {
-                        sendConfirm();
-                    }
-                    //总召唤激活终止
-                    else if (reason == COT.COT0a.getCot()) {
-                        sendConfirm();
-                    }
-                }
-                //初始化结束
-                else if (tiType == M_EI_NA_1) {
-                    //总召
-                    if (reason == COT.COT04.getCot()) {
-                        callback.online(context.channel().id().asShortText(), deviceAddress, MsgType.CONNECTION_SUCCESS);
-                        sendConfirm();
-                        sendFirstAllCall();
-                    }
-                }
-                //遥信报文
-                //68 12 12 68 73 ae 02 01 87 14 00 ae 02 01 00 01 00 00 01 00 00 00 72 16
-                else if (tiType.getDataType() == DataType.YX) {
-                    sendConfirm();
-                    upAnalysis(bytes);
-                }
-                //遥测报文
-                //68 1d 1d 68 53 ae 02 09 86 14 00 ae 02 01 40 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 97 16
-                else if (tiType.getDataType() == DataType.YC) {
-                    sendConfirm();
-                    upAnalysis(bytes);
-                }
-            }
-        }
-    }
-
-    /**
-     * 主站回复 10 00 xx xx xx 16
-     */
-    private void sendConfirm() {
-        byte[] bytes = new byte[]{0x10, 0x00, addressLow, addressHigh, 0x00, 0x16};
-        byte checksum = (byte) (addressLow + addressHigh);
-        bytes[bytes.length - 2] = checksum;
-        sendCommand(bytes);
     }
 
     /**
      * 发送第一次总召
      */
-    private void sendFirstAllCall() {
+    public void sendFirstAllCall() {
         //第一次总召翻转位为0
         FCB = 0;
         byte QOI = 0x14;
@@ -398,11 +394,11 @@ public class Protocol101CommandHandler extends SimpleChannelInboundHandler<Strin
      *
      * @param bytes
      */
-    private void upAnalysis(byte[] bytes) {
+    public void upAnalysis(byte[] bytes) {
         if (bytes == null) return;
         for (IProtocol101 protocol : iUpProtocols) {
             try {
-                Protocol101BaseData data = protocol.parse(bytes);
+                Protocol101Data data = protocol.parse(bytes);
                 if (data != null) {
                     data.setIp(this.ip);
                     data.setPort(this.port);
@@ -416,11 +412,75 @@ public class Protocol101CommandHandler extends SimpleChannelInboundHandler<Strin
     }
 
     /**
+     * 读取录波文件目录和文件名称
+     */
+    public void readFaultFileCatalogue() {
+        downAnalysis(new Protocol101Data() {{
+            setCmdType(Protocol101CmdEnum.READ_FILE_CATALOGUE);
+            setDeviceType(deviceTypeEnum);
+            setAddress(deviceAddress);
+        }});
+    }
+
+    /**
+     * 读文件传输确认
+     */
+    public void readFaultFileConfirm(FaultRecordFile file) {
+        byte data[] = new byte[]{
+                FileCmdType.READ_FILE_RESPONSE_CONFIRM.getId(),
+                file.getId1(),
+                file.getId2(),
+                file.getId3(),
+                file.getId4(),
+                file.getDataNum()[0],
+                file.getDataNum()[1],
+                file.getDataNum()[2],
+                file.getDataNum()[3],
+                file.getMore()
+        };
+        downAnalysis(new Protocol101Data() {{
+            setCommandData(data);
+            setCmdType(Protocol101CmdEnum.READ_FILE_CONFIRM);
+            setDeviceType(deviceTypeEnum);
+            setAddress(deviceAddress);
+        }});
+    }
+
+    /**
+     * 读取录波文件
+     */
+    public void readFaultRecordFile() {
+        List<FaultRecordFile> files = FaultRecordFileManager.getInstance().getFaultRecordFiles(deviceAddress);
+        if (files != null) {
+            List<String> names = files.stream().map(FaultRecordFile::getName).collect(Collectors.toList());
+            List<String> notReadFileNames = FaultRecordJsonManager.getInstance().getNotReadFileNames(deviceAddress, names);
+            files = files.stream()
+                    .filter(e -> notReadFileNames.contains(e.getName()))
+                    .collect(Collectors.toList());
+            for (FaultRecordFile file : files) {
+                byte fileName[] = file.getName().getBytes();
+                byte data[] = new byte[2 + fileName.length];
+                //读文件激活
+                data[0] = FileCmdType.READ_FILE_START.getId();
+                //文件名长度
+                data[1] = (byte) fileName.length;
+                System.arraycopy(fileName, 0, data, 2, fileName.length);
+                downAnalysis(new Protocol101Data() {{
+                    setCommandData(data);
+                    setCmdType(Protocol101CmdEnum.READ_FILE_START);
+                    setDeviceType(deviceTypeEnum);
+                    setAddress(deviceAddress);
+                }});
+            }
+        }
+    }
+
+    /**
      * 解析下行报文
      *
      * @param data
      */
-    public synchronized void downAnalysis(Protocol101BaseData data) {
+    public synchronized void downAnalysis(Protocol101Data data) {
         if (data == null) return;
         FCB = (byte) (FCB == 0x00 ? 0x01 : 0x00);
         controlCode = (byte) (FCB == 0x00 ? 0x53 : 0x73);
@@ -441,25 +501,25 @@ public class Protocol101CommandHandler extends SimpleChannelInboundHandler<Strin
     /**
      * @param bytes
      */
-    private void sendCommand(byte[] bytes) {
-        isBusy = true;
-        ByteBuf byteBuf = context.alloc().buffer(bytes.length);
-        byteBuf.writeBytes(bytes);
-        ChannelFuture f = context.writeAndFlush(byteBuf);
-        f.addListener(future -> printSendMsg(bytes));
-    }
-
-    /**
-     * @param data
-     */
-    private void sendCommand(Protocol101BaseData data) {
-        if (data != null && data.getCommandData() != null) {
-            byte[] bytes = data.getCommandData();
+    public void sendCommand(byte[] bytes) {
+        try {
             isBusy = true;
             ByteBuf byteBuf = context.alloc().buffer(bytes.length);
             byteBuf.writeBytes(bytes);
             ChannelFuture f = context.writeAndFlush(byteBuf);
             f.addListener(future -> printSendMsg(bytes));
+        } catch (Exception e) {
+            ExceptionHandler.handle(e);
+        }
+    }
+
+    /**
+     * @param data
+     */
+    private void sendCommand(Protocol101Data data) {
+        if (data != null && data.getCommandData() != null) {
+            byte[] bytes = data.getCommandData();
+            sendCommand(bytes);
         }
     }
 
@@ -468,7 +528,7 @@ public class Protocol101CommandHandler extends SimpleChannelInboundHandler<Strin
      *
      * @param data
      */
-    private void sendOrInsertIntoQueue(Protocol101BaseData data) {
+    private void sendOrInsertIntoQueue(Protocol101Data data) {
         if (data != null && data.getCommandData() != null) {
             if (!isBusy || System.currentTimeMillis() - lastSendTime > 60000) {
                 isBusy = true;
@@ -480,6 +540,7 @@ public class Protocol101CommandHandler extends SimpleChannelInboundHandler<Strin
                 } else if (priority == MsgPriority.LOW) {
                     lowQueue.add(data);
                 }
+                printSendMsg(data.getCommandData(), "into queue");
             }
         }
     }
@@ -488,7 +549,7 @@ public class Protocol101CommandHandler extends SimpleChannelInboundHandler<Strin
      * 下一次发送
      */
     private void nextSend() {
-        Protocol101BaseData data;
+        Protocol101Data data;
         if (highQueue.size() > 0) {
             data = highQueue.poll();
             if (data != null) {
@@ -512,7 +573,7 @@ public class Protocol101CommandHandler extends SimpleChannelInboundHandler<Strin
     private void printReceiveMsg(byte[] bytes) {
         if (Config.isDebug) {
             String resultStr = HexUtils.byteArrayToHexStr(bytes);
-            LogUtils.error("protocol101 switch " + deviceAddress + " receive-->" + resultStr);
+            LogUtils.error("protocol101--" + deviceTypeEnum + "--" + deviceAddress + "--receive-->" + resultStr);
         }
     }
 
@@ -522,9 +583,13 @@ public class Protocol101CommandHandler extends SimpleChannelInboundHandler<Strin
      * @param bytes
      */
     private void printSendMsg(byte[] bytes) {
+        printSendMsg(bytes, "send");
+    }
+
+    private void printSendMsg(byte[] bytes, String msg) {
         if (Config.isDebug) {
             String resultStr = HexUtils.byteArrayToHexStr(bytes);
-            LogUtils.info("protocol101 switch " + deviceAddress + " downAnalysis-->" + resultStr);
+            LogUtils.info("protocol101--" + deviceTypeEnum + "--" + deviceAddress + "--" + msg + "-->" + resultStr);
         }
     }
 }

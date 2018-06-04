@@ -37,7 +37,7 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
             DtuChannelManager.addClient(clientId, state);
             //3倍心跳没收到数据服务端主动断掉连接
             channel.closeFuture().addListener(future -> offline(ctx));
-            ctx.executor().schedule((Runnable) channel::close, 3 * Config.getHeartBeat(), TimeUnit.SECONDS);
+            ctx.executor().schedule((Runnable) channel::close, 3 * Config.getHeartBeat(), TimeUnit.MILLISECONDS);
         }
     }
 

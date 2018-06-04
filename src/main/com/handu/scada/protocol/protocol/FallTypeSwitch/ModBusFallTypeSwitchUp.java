@@ -114,7 +114,7 @@ public class ModBusFallTypeSwitchUp implements IProtocol {
 
             return new ProtocolLayerData() {{
                 CommandName = "跌落开关装置";
-                deviceTypeEnum = DeviceTypeEnum.FALL_TYPE_SWITCH;
+                deviceTypeEnum = DeviceTypeEnum.CY_FALL_TYPE_SWITCH;
                 PostalAddress = deviceAddress;
                 DTUString = mediaData.DTUString;
                 attrList = attrs;

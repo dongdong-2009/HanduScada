@@ -1,5 +1,7 @@
 package main.com.handu.scada.utils;
 
+import java.math.BigInteger;
+
 public class HexUtils {
 
 
@@ -209,7 +211,6 @@ public class HexUtils {
         }
         return nResult;
     }
-
 
     //16进制转java有符号byte
     public static byte HexToByte(String strHex) {
@@ -489,14 +490,14 @@ public class HexUtils {
         return result;
     }
 
-
-    /// <summary>
-    /// 将缓冲区的字节数组转换为16进制
-    /// </summary>
-    /// <param name="value">缓冲字节</param>
-    /// <param name="pos">开始字节</param>
-    /// <param name="flag">偏移量</param>
-    /// <returns>16进制字符串</returns>
+    /**
+     * 将缓冲区的字节数组转换为16进制
+     *
+     * @param value 缓冲字节
+     * @param pos   开始字节
+     * @param flag  偏移量
+     * @return
+     */
     public static String byteArrayToHexStr(byte[] value, int pos, int flag) {
         StringBuilder sb = new StringBuilder();
         int MaxLen;
@@ -510,7 +511,6 @@ public class HexUtils {
         }
         return sb.toString();
     }
-
 
     /**
      * 获取byte高四位
@@ -559,7 +559,7 @@ public class HexUtils {
     }
 
     /**
-     * 获取int的高位
+     * 获取2位int的高位 0xffff
      *
      * @param i
      * @return
@@ -569,12 +569,87 @@ public class HexUtils {
     }
 
     /**
-     * 获取int的低位
+     * 获取2位int的低位 0xfffff
      *
      * @param i
      * @return
      */
     public static byte getIntLow(int i) {
-        return (byte) (i - 256 * byteToInt(getIntHigh(i)));
+        return (byte) (i % 256);
+    }
+
+    /**
+     * 将byte[]转为各种进制的字符串
+     *
+     * @param bytes byte[]
+     * @param radix 基数可以转换进制的范围，从Character.MIN_RADIX到Character.MAX_RADIX，超出范围后变为10进制
+     * @return 转换后的字符串
+     */
+    public static String binary(byte[] bytes, int radix) {
+        return new BigInteger(1, bytes).toString(radix);// 这里的1代表正数
+    }
+
+    /**
+     * 将byte转换为一个长度为8的byte数组，数组每个值代表bit
+     */
+    public static byte[] getBitArrayFromByte(byte b) {
+        byte[] array = new byte[8];
+        for (int i = 7; i >= 0; i--) {
+            array[i] = (byte) (b & 1);
+            b = (byte) (b >> 1);
+        }
+        return array;
+    }
+
+    /**
+     * 把byte转为字符串的bit
+     */
+    public static String byteToBit(byte b) {
+        return ""
+                + (byte) ((b >> 7) & 0x1) + (byte) ((b >> 6) & 0x1)
+                + (byte) ((b >> 5) & 0x1) + (byte) ((b >> 4) & 0x1)
+                + (byte) ((b >> 3) & 0x1) + (byte) ((b >> 2) & 0x1)
+                + (byte) ((b >> 1) & 0x1) + (byte) ((b) & 0x1);
+    }
+
+    /**
+     * 二进制转字符串
+     *
+     * @param b
+     * @return
+     */
+    public static String byte2hex(byte[] b) {
+        String hs = "";
+        String temp;
+        for (byte aB : b) {
+            temp = (Integer.toHexString(aB & 0XFF));
+            if (temp.length() == 1)
+                hs = hs + "0" + temp;
+            else
+                hs = hs + temp;
+        }
+        return hs;
+    }
+
+    /**
+     * 字符串转二进制
+     *
+     * @param str
+     * @return
+     */
+    public static byte[] hex2byte(String str) {
+        if (str == null) return null;
+        str = str.trim();
+        int len = str.length();
+        if (len == 0 || len % 2 == 1) return null;
+        byte[] b = new byte[len / 2];
+        try {
+            for (int i = 0; i < str.length(); i += 2) {
+                b[i / 2] = (byte) Integer.decode("0x" + str.substring(i, i + 2)).intValue();
+            }
+            return b;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

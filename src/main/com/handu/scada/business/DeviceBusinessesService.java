@@ -16,6 +16,7 @@ import main.com.handu.scada.db.bean.common.Device101CacheResult;
 import main.com.handu.scada.db.bean.common.DeviceCacheResult;
 import main.com.handu.scada.db.mapper.DeviceAlarmMapper;
 import main.com.handu.scada.db.service.impl.*;
+import main.com.handu.scada.db.service.impl101.*;
 import main.com.handu.scada.db.utils.DBServiceUtil;
 import main.com.handu.scada.db.utils.MyBatisUtil;
 import main.com.handu.scada.enums.DeviceGroup;
@@ -36,7 +37,8 @@ import main.com.handu.scada.protocol.enums.RemoteType;
 import main.com.handu.scada.protocol.protocol.DLT645.LP2007.DltControlWord;
 import main.com.handu.scada.protocol.protocol.DLT645.TripEventRecord;
 import main.com.handu.scada.protocol.protocol.Data.DataAttr;
-import main.com.handu.scada.protocol101.protocol.bean.Protocol101BaseData;
+import main.com.handu.scada.protocol101.faultRecord.FaultRecordFile;
+import main.com.handu.scada.protocol101.protocol.bean.Protocol101Data;
 import main.com.handu.scada.protocol101.protocol.enums.DataType;
 import main.com.handu.scada.thread.MyThreadPoolExecutor;
 import main.com.handu.scada.utils.DateUtils;
@@ -81,8 +83,8 @@ public class DeviceBusinessesService extends DBServiceUtil implements ISubscribe
             if (event.data != null) {
                 if (event.data instanceof ProtocolLayerData) {
                     executor.execute(new DtuTask((ProtocolLayerData) event.data));
-                } else if (event.data instanceof Protocol101BaseData) {
-                    executor.execute(new Protocol101Task((Protocol101BaseData) event.data));
+                } else if (event.data instanceof Protocol101Data) {
+                    executor.execute(new Protocol101Task((Protocol101Data) event.data));
                 }
             }
         }
@@ -899,9 +901,9 @@ public class DeviceBusinessesService extends DBServiceUtil implements ISubscribe
      */
     private class Protocol101Task implements Runnable {
 
-        private Protocol101BaseData protocol101BaseData;
+        private Protocol101Data protocol101BaseData;
 
-        private Protocol101Task(Protocol101BaseData protocol101BaseData) {
+        private Protocol101Task(Protocol101Data protocol101BaseData) {
             this.protocol101BaseData = protocol101BaseData;
         }
 
@@ -910,20 +912,87 @@ public class DeviceBusinessesService extends DBServiceUtil implements ISubscribe
             if (protocol101BaseData != null && protocol101BaseData.getCmdType() != null) {
                 switch (protocol101BaseData.getCmdType()) {
                     case PROTOCOL101_ON_LINE:
+                        online(1, "登录");
                         break;
                     case PROTOCOL101_OFF_LINE:
+                        online(2, "离线");
+                        offline();
                         break;
                     case ALL_CALL:
                         saveAllCall();
+                        break;
+                    //读取录波文件成功
+                    case READ_FILE_SUCCESS:
+                        saveFaultRecordFile();
                         break;
                 }
             }
         }
 
         /**
-         * 存入总召数据
+         * @param msg
+         */
+        private void online(int state, String msg) {
+            if (StringsUtils.isNotEmpty(protocol101BaseData.getAddress())) {
+                Device101Online online = new Device101Online();
+                online.setIp(protocol101BaseData.getIp());
+                online.setPort(Integer.valueOf(protocol101BaseData.getPort()));
+                online.setId(protocol101BaseData.getAddress());
+                online.setDeviceid(protocol101BaseData.getAddress());
+                online.setState(state);
+                online.setDescription(msg);
+                online.setOnlinetime(DateUtils.getNowSqlDateTime());
+                DBCmdTask.getInstance().push(new DeviceData(online, Device101OnlineDBService.class));
+            }
+        }
+
+        /**
+         */
+        private void offline() {
+            if (StringsUtils.isNotEmpty(protocol101BaseData.getAddress())) {
+                Device101Offline offline = new Device101Offline();
+                offline.setIp(protocol101BaseData.getIp());
+                offline.setPort(Integer.valueOf(protocol101BaseData.getPort()));
+                offline.setId(UUIDUtils.getUUId());
+                offline.setDeviceid(protocol101BaseData.getAddress());
+                offline.setState(2);
+                offline.setDescription("离线");
+                offline.setOfflinetime(DateUtils.getNowSqlDateTime());
+                DBCmdTask.getInstance().push(new DeviceData(offline, Device101OfflineDBService.class));
+            }
+        }
+
+        /**
          */
         private void saveAllCall() {
+            List<main.com.handu.scada.protocol101.protocol.bean.DataAttr> dataAttrs = protocol101BaseData.getDataAttrs();
+            if (dataAttrs == null) return;
+            ConcurrentHashMap<String, Device101CacheResult> cacheMap = MyCacheManager.getDevice101CacheMap();
+            if (cacheMap != null) {
+                Device101CacheResult result = cacheMap.get(protocol101BaseData.getAddress());
+                if (result != null) {
+                    online(1, "数据采集");
+                    if (StringsUtils.isNotEmpty(result.getDeviceGroupName())) {
+                        String groupName = result.getDeviceGroupName().toLowerCase();
+                        DeviceGroup group = DeviceGroup.getDeviceGroup(groupName);
+                        if (group != null) {
+                            switch (group) {
+                                case FAULT_INDICATOR:
+                                    saveFaultIndicator(result, dataAttrs);
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * 保存故障指示器录波文件数据
+         */
+        private void saveFaultRecordFile() {
             List<main.com.handu.scada.protocol101.protocol.bean.DataAttr> dataAttrs = protocol101BaseData.getDataAttrs();
             if (dataAttrs == null) return;
             ConcurrentHashMap<String, Device101CacheResult> cacheMap = MyCacheManager.getDevice101CacheMap();
@@ -934,35 +1003,93 @@ public class DeviceBusinessesService extends DBServiceUtil implements ISubscribe
                         DataType dataType = e.getDataType();
                         if (dataType != null) {
                             switch (dataType) {
-                                case YX:
-                                    DeviceIntelligentswitchTelesignal yx = new DeviceIntelligentswitchTelesignal();
-                                    yx.setDeviceid(result.getDeviceId());
-                                    yx.setDataitem(String.valueOf(e.getPointPosition()));
-                                    yx.setDataitemname(e.getName());
-                                    yx.setValue(String.valueOf(e.getValue()));
-                                    yx.setUnit(e.getUnit());
-                                    yx.setDescription(e.getName());
-                                    yx.setRecordtime(e.getRecordTime());
-                                    DBCmdTask.getInstance().push(new DeviceData(yx, DeviceIntelligentswitchTelesignalDBService.class));
-                                    break;
-                                case YC:
-                                    DeviceIntelligentswitchTelemetry yc = new DeviceIntelligentswitchTelemetry();
-                                    yc.setDeviceid(result.getDeviceId());
-                                    yc.setDataitem(String.valueOf(e.getPointPosition()));
-                                    yc.setDataitemname(e.getName());
-                                    yc.setValue(String.valueOf(e.getValue()));
-                                    yc.setUnit(e.getUnit());
-                                    yc.setDescription(e.getName());
-                                    yc.setRecordtime(e.getRecordTime());
-                                    DBCmdTask.getInstance().push(new DeviceData(yc, DeviceIntelligentswitchTelemetryDBService.class));
-                                    break;
-                                case SOE:
+                                case FILE:
+                                    FaultRecordFile file = (FaultRecordFile) e.getValue();
+                                    if (file != null) {
+
+
+                                    }
                                     break;
                             }
                         }
                     });
                 }
             }
+        }
+
+        /**
+         * 故障指示器
+         *
+         * @param result
+         * @param dataAttrs
+         */
+        private void saveFaultIndicator(Device101CacheResult result, List<main.com.handu.scada.protocol101.protocol.bean.DataAttr> dataAttrs) {
+            dataAttrs.forEach(e -> {
+                DataType dataType = e.getDataType();
+                if (dataType != null) {
+                    switch (dataType) {
+                        case YX:
+                            DeviceFaultindicatorRealTelesignal yx = new DeviceFaultindicatorRealTelesignal();
+                            yx.setDeviceid(result.getDeviceId());
+                            yx.setDataitem(String.valueOf(e.getPointPosition()));
+                            yx.setDataitemname(e.getName());
+                            yx.setValue(String.valueOf(e.getValue()));
+                            yx.setUnit(e.getUnit());
+                            yx.setDescription(e.getName());
+                            yx.setRecordtime(e.getRecordTime());
+                            DBCmdTask.getInstance().push(new DeviceData(yx, DeviceFaultIndicatorRealTelesignalDBService.class));
+                            if (e.isInertHistory()) {
+                                DeviceFaultindicatorHistoryTelesignal telesignal = new DeviceFaultindicatorHistoryTelesignal();
+                                telesignal.setId(UUIDUtils.getUUId());
+                                telesignal.setDeviceid(result.getDeviceId());
+                                telesignal.setDataitem(String.valueOf(e.getPointPosition()));
+                                telesignal.setDataitemname(e.getName());
+                                telesignal.setValue(String.valueOf(e.getValue()));
+                                telesignal.setUnit(e.getUnit());
+                                telesignal.setDescription(e.getName());
+                                telesignal.setRecordtime(e.getRecordTime());
+                                DBCmdTask.getInstance().push(new DeviceData(telesignal, DeviceFaultIndicatorHistoryTelesignalDBService.class));
+                            }
+                            break;
+                        case YC:
+                            DeviceFaultindicatorRealTelemetry yc = new DeviceFaultindicatorRealTelemetry();
+                            yc.setDeviceid(result.getDeviceId());
+                            yc.setDataitem(String.valueOf(e.getPointPosition()));
+                            yc.setDataitemname(e.getName());
+                            yc.setValue(String.valueOf(e.getValue()));
+                            yc.setUnit(e.getUnit());
+                            yc.setDescription(e.getName());
+                            yc.setRecordtime(e.getRecordTime());
+                            DBCmdTask.getInstance().push(new DeviceData(yc, DeviceFaultIndicatorRealTelemetryDBService.class));
+                            if (e.isInertHistory()) {
+                                DeviceFaultindicatorHistoryTelemetry telemetry = new DeviceFaultindicatorHistoryTelemetry();
+                                telemetry.setId(UUIDUtils.getUUId());
+                                telemetry.setDeviceid(result.getDeviceId());
+                                telemetry.setDataitem(String.valueOf(e.getPointPosition()));
+                                telemetry.setDataitemname(e.getName());
+                                telemetry.setValue(String.valueOf(e.getValue()));
+                                telemetry.setUnit(e.getUnit());
+                                telemetry.setDescription(e.getName());
+                                telemetry.setRecordtime(e.getRecordTime());
+                                DBCmdTask.getInstance().push(new DeviceData(telemetry, DeviceFaultIndicatorHistoryTelemetryDBService.class));
+                            }
+                            break;
+                        case SOE:
+                            DeviceFaultindicatorSoe soe = new DeviceFaultindicatorSoe();
+                            soe.setSoeid(UUIDUtils.getUUId());
+                            soe.setDeviceid(result.getDeviceId());
+                            soe.setDescription(e.getName());
+                            soe.setDataitemname(e.getName());
+                            soe.setSoetime(e.getSoeTime());
+                            soe.setRecordtime(e.getRecordTime());
+                            soe.setUnit("");
+                            soe.setValue(String.valueOf(e.getValue()));
+                            soe.setDataitem(String.valueOf(e.getPointPosition()));
+                            DBCmdTask.getInstance().push(new DeviceData(soe, DeviceFaultIndicatorSoeDBService.class));
+                            break;
+                    }
+                }
+            });
         }
     }
 }

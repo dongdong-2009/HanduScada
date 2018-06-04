@@ -62,7 +62,7 @@ public class UpWiredTemperatureProtocol extends BaseUpTemperatureProtocol {
                 PostalAddress = addressStr;
                 DTUString = mediaData.DTUString;
                 attrList = values;
-                deviceTypeEnum = DeviceTypeEnum.WIRED_TEMPERATURE;
+                deviceTypeEnum = DeviceTypeEnum.YK_WIRED_TEMPERATURE;
                 TabName = DeviceTableEnum.Device_Temperature.getTableName();
             }};
         } catch (Exception e) {
