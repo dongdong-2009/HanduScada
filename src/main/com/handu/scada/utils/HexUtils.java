@@ -555,7 +555,7 @@ public class HexUtils {
      * @return
      */
     public static byte getBitFromByte(int di, byte b) {
-        return (byte) (b >> (di) & 0x01);
+        return (byte) ((b >> di) & 0x01);
     }
 
     /**
@@ -651,5 +651,16 @@ public class HexUtils {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    /**
+     * 将四位byte转float
+     *
+     * @param bytes
+     * @return
+     */
+    public static float intBitsToFloat(byte[] bytes) {
+        if (bytes.length != 4) return 0f;
+        return Float.intBitsToFloat(Integer.parseInt(byte2hex(bytes), 16));
     }
 }

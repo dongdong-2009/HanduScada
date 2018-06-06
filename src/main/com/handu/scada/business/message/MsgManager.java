@@ -374,10 +374,10 @@ public class MsgManager extends DBServiceUtil {
                 e1.addElement("PHONENUM").setText(smssend.getPhoneno());
                 e1.addElement("SMSCONTENT").setText(smssend.getSmscontent() == null ? "" : smssend.getSmscontent());
                 e1.addElement("MSG_ID").setText(smssend.getOid());
-                e1.addElement("BS_TYPE_ID").setText("01");
-                e1.addElement("UNIT_ID").setText("0");
+                e1.addElement("BS_TYPE_ID").setText("018");
+                e1.addElement("UNIT_ID").setText("SC001.017");
                 e1.addElement("SENDTIME").setText(DateUtils.getTimeByMinute(1));
-                e1.addElement("SEND_USER_ID").setText("0");
+                e1.addElement("SEND_USER_ID").setText(username);
             }
             return document.getRootElement().asXML();
         }

@@ -33,6 +33,8 @@ public abstract class BaseUpAnalysis implements IAnalysis {
     private Gson gson = new Gson();
     protected List<DataAttr> dataAttrs = new ArrayList<>();
     protected Protocol101Data protocol101Data;
+    //值符号位
+    protected byte signBit = 0x00;
     //整个报文
     private byte[] commandData;
     //设备地址
@@ -68,7 +70,6 @@ public abstract class BaseUpAnalysis implements IAnalysis {
         TI = protocol101Data.getTI();
         dataType = protocol101Data.getDataType();
     }
-
 
     /**
      * 根据data获取地址
@@ -140,19 +141,23 @@ public abstract class BaseUpAnalysis implements IAnalysis {
     private List<PointJsonData> getPointJsonDataList() {
         if (dataType != null && StringsUtils.isNotEmpty(terminalName) && StringsUtils.isNotEmpty(dataType.getJsonName())) {
             String path = PATH + terminalName + File.separator + dataType.getJsonName();
-            File file = new File(path);
-            if (file.exists()) {
-                try {
+            try {
+                File file = new File(path);
+                if (!file.getParentFile().exists()) {
+                    boolean b = file.getParentFile().mkdirs();
+                    if (!b) return null;
+                }
+                if (file.exists()) {
                     String content = FileUtils.readFileToString(file, "UTF-8");
                     if (StringsUtils.isNotEmpty(content)) {
                         return gson.fromJson(content, new TypeToken<List<PointJsonData>>() {
                         }.getType());
                     }
-                } catch (Exception e) {
-                    ExceptionHandler.handle(e);
+                } else {
+                    ExceptionHandler.handle(new Exception("not find " + path + "!"));
                 }
-            } else {
-                ExceptionHandler.handle(new Exception("not find " + path + "!"));
+            } catch (Exception e) {
+                ExceptionHandler.handle(e);
             }
         }
         return null;
@@ -170,14 +175,42 @@ public abstract class BaseUpAnalysis implements IAnalysis {
                     .findFirst();
             if (optional.isPresent()) {
                 PointJsonData pointJsonData = optional.get();
-                dataAttr = new DataAttr();
                 Value v = pointJsonData.getValue();
-                dataAttr.setPointPosition(startInfoAddress);
-                dataAttr.setName(v.getItemName());
-                dataAttr.setValue(value);
-                dataAttr.setUnit(v.getItemUnit());
-                dataAttr.setDataType(dataType);
-                dataAttr.setRecordTime(DateUtils.getNowSqlDateTime());
+                if (v != null) {
+                    dataAttr = new DataAttr();
+                    dataAttr.setPointPosition(startInfoAddress);
+                    dataAttr.setName(v.getItemName());
+                    dataAttr.setValue(value);
+                    dataAttr.setUnit(v.getItemUnit());
+                    dataAttr.setDataType(dataType);
+                    dataAttr.setRecordTime(DateUtils.getNowSqlDateTime());
+                    if (dataType == DataType.YC) {
+                        float va = Float.parseFloat(String.valueOf(value));
+                        va = (float) (va * Math.pow(10, -v.getItemDecimalBits()));
+                        //归一化值
+                        if (TI == Ti.M_ME_NA_1) {
+                            //float min = 0f;
+                            float max;
+                            //数据为正数
+                            if (signBit == 0x00) {
+                                max = 32767f;
+                                //value = va * max + min * (1 - va);
+                                value = (va * max) / max;
+                            }
+                            //数据为负数
+                            else if (signBit == 0x01) {
+                                max = 32768f;
+                                //value = -(va * max + min * (1 - va));
+                                value = (va * max) / max;
+                            }
+                        }
+                        //标度化值
+                        else if (TI == Ti.M_ME_NB_1) {
+                            value = va;
+                        }
+                        dataAttr.setValue(value);
+                    }
+                }
             }
         }
         return dataAttr;

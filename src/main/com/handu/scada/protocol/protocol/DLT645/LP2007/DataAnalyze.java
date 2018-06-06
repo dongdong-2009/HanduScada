@@ -21,6 +21,7 @@ public class DataAnalyze extends BaseDataAnalyze {
         try {
             if (item.data == null) return null;
             if (item.data.length == 0) return null;
+            if (item.length != item.data.length) return null;
             this.cmdType = item.cmdType;
             item.data = (DICodeLP2007.decrease33(item.data));
             dataAttrs = new ArrayList<>();
@@ -392,7 +393,6 @@ public class DataAnalyze extends BaseDataAnalyze {
 
                 //额定电流整定值", "电流超限报警整定值
                 case CurrentSettingParameterBlock:
-
                     itemNames = new String[]{"Ratedcurrentsettingvalue", "Currentlimitalarmsettingvalue"};
                     itemCnNames = new String[]{"额定电流整定值", "电流超限报警整定值"};
 
@@ -422,7 +422,6 @@ public class DataAnalyze extends BaseDataAnalyze {
                     dataAttr.setInsertHistory(false);
                     dataAttr.setValue(HexUtils.bcdByteToInt(item.data[3]));
                     dataAttrs.add(dataAttr);
-
                     return dataAttrs;
 
                 //"剩余电流超限报警整定值", "剩余电流记录变化差值整定值", "剩余电流记录间隔时间整定值"
@@ -482,7 +481,7 @@ public class DataAnalyze extends BaseDataAnalyze {
                     itemNames = new String[]{"Overvoltagesettingvalue", "Undervoltagesetting", "Settingvalueoffaultphasevoltage"};
                     itemCnNames = new String[]{"过电压整定值", "欠电压整定值", "断相电压整定值"};
 
-                    if (item.length == 6) {
+                    if (item.data.length == 6) {
                         int[][] BcdArr = new int[3][2];
                         int k = 0;
                         for (int i = 0; i < 3; i++) {

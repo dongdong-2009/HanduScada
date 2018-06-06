@@ -68,6 +68,8 @@ public class Protocol101CommandHandler extends SimpleChannelInboundHandler<Strin
     private Queue<Protocol101Data> highQueue = new ArrayDeque<>();
     //最近一次发送时间
     private long lastSendTime;
+    //最后一次接收时间
+    private long lastReceiptTime;
     //高位地址
     private byte addressHigh;
     //低位地址
@@ -127,6 +129,14 @@ public class Protocol101CommandHandler extends SimpleChannelInboundHandler<Strin
 
     public Queue<Protocol101Data> getHighQueue() {
         return highQueue;
+    }
+
+    public long getLastReceiptTime() {
+        return lastReceiptTime;
+    }
+
+    public void setLastReceiptTime(long lastReceiptTime) {
+        this.lastReceiptTime = lastReceiptTime;
     }
 
     public long getLastSendTime() {
@@ -271,7 +281,11 @@ public class Protocol101CommandHandler extends SimpleChannelInboundHandler<Strin
         if (ctx.channel() != null && ctx.channel().isActive()) {
             //15分钟没收到数据服务端主动断掉连接
             ctx.channel().closeFuture().addListener(future -> offline(ctx));
-            ctx.executor().schedule((Runnable) ctx.channel()::close, 900, TimeUnit.SECONDS);
+            ctx.executor().scheduleAtFixedRate(() -> {
+                if (System.currentTimeMillis() - lastReceiptTime > 900) {
+                    this.context.channel().close();
+                }
+            }, 900, 1200, TimeUnit.SECONDS);
             init(IProtocol101.class);
             this.context = ctx;
             this.callback = new Protocol101StateCallback();
@@ -318,6 +332,7 @@ public class Protocol101CommandHandler extends SimpleChannelInboundHandler<Strin
         } catch (Exception e) {
             ExceptionHandler.handle(e);
         } finally {
+            setLastReceiptTime(System.currentTimeMillis());
             if (bytes.length > 0) printReceiveMsg(bytes);
             //释放资源，这行很关键
             ReferenceCountUtil.release(byteBuf);

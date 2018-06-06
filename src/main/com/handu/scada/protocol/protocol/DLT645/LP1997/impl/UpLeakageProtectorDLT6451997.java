@@ -60,6 +60,7 @@ public class UpLeakageProtectorDLT6451997 extends BaseDLT645 {
         try {
             byte[] buff = mediaData.CommandData;
             if (buff == null) return null;
+            if (buff.length < 10) return null;
             //去除前导字节
             buff = HexUtils.cleanFEAndFF(buff);
             if (valid(buff)) {

@@ -69,7 +69,7 @@ public class SOEUpAnalysis extends BaseUpAnalysis {
                                 dataAttrs.add(dataAttr);
                                 //如果是录波闭锁就开始读取录波文件目录和文件名称
                                 if (Objects.equals(dataAttr.getName(), SOE.FAULT_RECORD.getName())) {
-                                    int value = (int) dataAttr.getValue();
+                                    int value = Integer.parseInt(String.valueOf(dataAttr.getValue()));
                                     if (value == 1) {
                                         Protocol101CommandHandler handler = Protocol101CtxManager.getHandler(address);
                                         if (handler != null) {

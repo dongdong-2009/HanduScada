@@ -90,7 +90,7 @@ public class YXUpAnalysis extends BaseUpAnalysis {
     }
 
     private void addDataAttr(DataAttr dataAttr) {
-        int value = (int) dataAttr.getValue();
+        int value = Integer.parseInt(String.valueOf(dataAttr.getValue()));
         byte v = HexUtils.intToByte(value);
         if (HexUtils.getBitFromByte(7, v) == 0x01) {
             dataAttr.setValue(-1);

@@ -2,9 +2,7 @@ package main.com.handu.scada.netty.server.dtu;
 
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import io.netty.util.ReferenceCountUtil;
 import main.com.handu.scada.config.Config;
 import main.com.handu.scada.exception.ExceptionHandler;
@@ -16,7 +14,6 @@ import main.com.handu.scada.utils.StringsUtils;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
-
 
 public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
 
@@ -35,9 +32,58 @@ public class DtuCommandHandler extends SimpleChannelInboundHandler<String> {
             DtuNetworkConnection state = new DtuNetworkConnection(ctx.channel(), ctx);
             state.getCallback().online(clientId, null, MsgType.ONLINE);
             DtuChannelManager.addClient(clientId, state);
-            //3倍心跳没收到数据服务端主动断掉连接
-            channel.closeFuture().addListener(future -> offline(ctx));
-            ctx.executor().schedule((Runnable) channel::close, 3 * Config.getHeartBeat(), TimeUnit.MILLISECONDS);
+            //连接创建后3倍心跳后开始检查，以后每隔4倍心跳时间检查是否有数据传输，没有则断掉连接
+            ctx.executor().scheduleAtFixedRate(new TimeOutRunnable(ctx), 3 * Config.getHeartBeat(), 4 * Config.getHeartBeat(), TimeUnit.MILLISECONDS);
+            channel.closeFuture().addListener(new OfflineFutureListener(ctx));
+        }
+    }
+
+    /**
+     * 掉线监听
+     */
+    private class OfflineFutureListener implements ChannelFutureListener {
+
+        OfflineFutureListener(ChannelHandlerContext ctx) {
+            this.ctx = ctx;
+        }
+
+        private ChannelHandlerContext ctx;
+
+        @Override
+        public void operationComplete(ChannelFuture channelFuture) throws Exception {
+            if (ctx != null) {
+                offline(ctx);
+            }
+        }
+    }
+
+    /**
+     * 超时处理
+     * 一定时间没收到数据服务端主动断掉连接
+     */
+    private class TimeOutRunnable implements Runnable {
+
+        private ChannelHandlerContext ctx;
+
+        TimeOutRunnable(ChannelHandlerContext ctx) {
+            this.ctx = ctx;
+        }
+
+        @Override
+        public void run() {
+            if (ctx != null) {
+                Channel channel = ctx.channel();
+                if (channel != null && channel.isActive()) {
+                    String clientId = ctx.channel().id().asShortText();
+                    DtuNetworkConnection state = DtuChannelManager.getNetworkState(clientId);
+                    if (state != null) {
+                        long time = System.currentTimeMillis() - state.getLastReceiptTime();
+                        //如果最后一次接收时间与当前的时间差值大于三倍心跳就强制下线
+                        boolean isActive = time < Config.getHeartBeat() * 3;
+                        if (!isActive) channel.close();
+                    }
+                }
+            }
         }
     }
 

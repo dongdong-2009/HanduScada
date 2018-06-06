@@ -48,7 +48,8 @@ public class DeviceRcdLowvoltageDBService extends BaseDBService implements IDBSe
                             .append(lowvoltage.getDuration())
                             .append(",")
                             .append(lowvoltage.getMinu())
-                            .append(")");
+                            .append(")")
+                            .append(",");
                     num++;
                 }
             }
